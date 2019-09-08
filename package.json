@@ -1,5 +1,5 @@
 {
-	"name": "minecraftping",
+	"name": "minecraft-server-util",
 	"version": "1.0.0",
 	"description": "A utility to get the status of Minecraft servers, and retrieve the ping.",
 	"main": "src/index.js",

@@ -1,12 +1,12 @@
-# Minecraft-Ping
+# Minecraft Server Util
 A library to get information about a Minecraft server.
 
 ## Installation
-`npm i minecraftping`
+`npm i minecraft-server-util`
 
 ## Example
 ```js
-const ping = require('minecraftping');
+const ping = require('minecraft-server-util');
 
 // Callback
 ping('play.hypixel.net', 25565, (error, response) => {
