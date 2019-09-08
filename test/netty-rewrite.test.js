@@ -29,6 +29,7 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.maxPlayers).toEqual('number');
 			expect(typeof data.samplePlayers).toEqual('object');
 			expect(typeof data.descriptionText).toEqual('string');
+			expect(typeof data.favicon).toEqual('string');
 
 			expect(data.onlinePlayers).toBeGreaterThanOrEqual(0);
 			expect(data.maxPlayers).toBeGreaterThanOrEqual(0);
@@ -48,6 +49,7 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.maxPlayers).toEqual('number');
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
+				expect(typeof data.favicon).toEqual('string');
 
 				expect(data.onlinePlayers).toBeGreaterThanOrEqual(0);
 				expect(data.maxPlayers).toBeGreaterThanOrEqual(0);

@@ -17,6 +17,7 @@ class Response {
 		this.maxPlayers = 'players' in data && 'max' in data.players ? data.players.max : null;
 		this.samplePlayers = 'players' in data && 'samplePlayers' in data.players ? data.players.samplePlayers : null;
 		this.descriptionText = descriptionText;
+		this.favicon = 'favicon' in data ? data.favicon : null;
 	}
 
 	getHost() {
@@ -53,6 +54,10 @@ class Response {
 
 	getDescriptionText() {
 		return this.descriptionText;
+	}
+
+	getFavicon() {
+		return this.favicon;
 	}
 }
 
