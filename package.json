@@ -1,0 +1,21 @@
+{
+	"name": "minecraftping",
+	"version": "1.0.0",
+	"description": "A utility to get the status of Minecraft servers, and retrieve the ping.",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "jest --detectOpenHandles"
+	},
+	"keywords": [
+		"minecraft",
+		"server",
+		"status",
+		"ping"
+	],
+	"author": "Jacob Gunther",
+	"license": "MIT",
+	"devDependencies": {
+		"bluebird": "^3.5.5",
+		"jest": "^24.9.0"
+	}
+}
