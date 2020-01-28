@@ -70,7 +70,7 @@ const ping = (host, port = 25565, options, callback) => {
 			let parsed;
 
 			try {
-				parsed = JSON.parse(readingPacket.data.map((value) => String.fromCodePoint(value)).join(''));
+				parsed = JSON.parse(Buffer.from(readingPacket.data).toString("utf8"));
 			} catch (e) {
 				return reject(new Error('Invalid or corrupt payload data'));
 			}
