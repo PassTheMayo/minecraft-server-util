@@ -31,6 +31,10 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.descriptionText).toEqual('string');
 			expect(typeof data.favicon).toEqual('string');
 
+			if (data.modList != null) {
+				expect(data.modList).toBeInstanceOf(Array);
+			}
+
 			expect(data.onlinePlayers).toBeGreaterThanOrEqual(0);
 			expect(data.maxPlayers).toBeGreaterThanOrEqual(0);
 
@@ -50,6 +54,10 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
 				expect(typeof data.favicon).toEqual('string');
+
+				if (data.modList != null) {
+					expect(data.modList).toBeInstanceOf(Array);
+				}
 
 				expect(data.onlinePlayers).toBeGreaterThanOrEqual(0);
 				expect(data.maxPlayers).toBeGreaterThanOrEqual(0);

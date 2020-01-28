@@ -18,6 +18,7 @@ class Response {
 		this.samplePlayers = 'players' in data && 'sample' in data.players ? data.players.sample : null;
 		this.descriptionText = descriptionText;
 		this.favicon = 'favicon' in data ? data.favicon : null;
+		this.modList = 'modinfo' in data && 'modList' in data.modinfo ? data.modinfo.modList : null;
 	}
 
 	getHost() {
@@ -58,6 +59,10 @@ class Response {
 
 	getFavicon() {
 		return this.favicon;
+	}
+
+	getModList() {
+		return this.modList;
 	}
 }
 
