@@ -34,6 +34,10 @@ module.exports = (description) => {
 				for (let i = 0; i < description.extra.length; i++) {
 					const extra = description.extra[i];
 
+					if (extra.color) {
+						result += '\u00A7' + colorCodes[extra.color];
+					}
+
 					if (extra.obfuscated) {
 						result += '\u00A7k';
 					}
@@ -55,11 +59,7 @@ module.exports = (description) => {
 					}
 
 					if (extra.reset) {
-						result += '\u00A7r'; // Don't know if this exists, adding anyway
-					}
-
-					if (extra.color) {
-						result += '\u00A7' + colorCodes[extra.color];
+						result += '\u00A7r';
 					}
 
 					result += extra.text || '';

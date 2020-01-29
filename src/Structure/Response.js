@@ -15,9 +15,10 @@ class Response {
 		this.protocolVersion = 'version' in data && 'protocol' in data.version ? data.version.protocol : null;
 		this.onlinePlayers = 'players' in data && 'online' in data.players ? data.players.online : null;
 		this.maxPlayers = 'players' in data && 'max' in data.players ? data.players.max : null;
-		this.samplePlayers = 'players' in data && 'samplePlayers' in data.players ? data.players.samplePlayers : null;
+		this.samplePlayers = 'players' in data && 'sample' in data.players ? data.players.sample : null;
 		this.descriptionText = descriptionText;
 		this.favicon = 'favicon' in data ? data.favicon : null;
+		this.modList = 'modinfo' in data && 'modList' in data.modinfo ? data.modinfo.modList : null;
 	}
 
 	getHost() {
@@ -58,6 +59,10 @@ class Response {
 
 	getFavicon() {
 		return this.favicon;
+	}
+
+	getModList() {
+		return this.modList;
 	}
 }
 
