@@ -75,8 +75,6 @@ const ping = (host, port = 25565, options, callback) => {
 				return reject(new Error('Invalid or corrupt payload data'));
 			}
 
-			isResolved = true;
-
 			try {
 				let response = new Response(host, port, parsed);
 				resolve(response);
@@ -84,6 +82,8 @@ const ping = (host, port = 25565, options, callback) => {
 			catch(e) {
 				return reject(new Error('Invalid or corrupt payload data'));
 			}
+
+			isResolved = true;
 
 			socket.end();
 		});
