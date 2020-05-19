@@ -1,4 +1,5 @@
 const net = require('net');
+const dns = require('dns');
 const Packet = require('./Structure/Packet');
 const Response = require('./Structure/Response');
 
@@ -21,7 +22,16 @@ const ping = (host, port = 25565, options, callback) => {
 	if (typeof port !== 'number') throw new TypeError('Port must be a number');
 	if (typeof options !== 'object') throw new TypeError('Options must be an object');
 
-	const resultPromise = new Promise((resolve, reject) => {
+	const resultPromise = new Promise(async (resolve, reject) => {
+		({ host, port } = await new Promise((resolve, reject) => {
+			dns.resolveSrv(`_minecraft._tcp.${host}`, (err, address) => {
+				resolve({
+					host: err ? host : (address?.[0]?.name ?? host),
+					port: err ? port : (address?.[0]?.port ?? port)
+				});
+			});
+		}));
+
 		let connectTimeout, isResolved = false;
 
 		const readingPacket = new Packet();
