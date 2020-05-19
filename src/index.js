@@ -1,4 +1,5 @@
 const net = require('net');
+const dns = require('dns');
 const Packet = require('./Structure/Packet');
 const Response = require('./Structure/Response');
 
@@ -14,14 +15,29 @@ const ping = (host, port = 25565, options, callback) => {
 
 	options = Object.assign({
 		protocolVersion: 47,
-		connectTimeout: 1000 * 5
+		connectTimeout: 1000 * 5,
+		enableSRV: true
 	}, options);
 
 	if (typeof host !== 'string') throw new TypeError('Host must be a string');
 	if (typeof port !== 'number') throw new TypeError('Port must be a number');
 	if (typeof options !== 'object') throw new TypeError('Options must be an object');
 
-	const resultPromise = new Promise((resolve, reject) => {
+	const resultPromise = new Promise(async (resolve, reject) => {
+		if (options.enableSRV && isNaN(Number(host.split('.').pop())))
+			({ host, port } = await new Promise((resolve, reject) => {
+				dns.resolveSrv(`_minecraft._tcp.${host}`, (err, address) => {
+					const addr = { host: host, port: port };
+					if (!err && address && address[0]) {
+						if (address[0].name)
+							addr.host = address[0].name;
+						if (address[0].port)
+							addr.port = address[0].port;
+					}
+					resolve(addr);
+				});
+			}));
+
 		let isResolved = false;
 
 		const readingPacket = new Packet();
