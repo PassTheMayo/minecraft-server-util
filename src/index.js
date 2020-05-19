@@ -23,14 +23,15 @@ const ping = (host, port = 25565, options, callback) => {
 	if (typeof options !== 'object') throw new TypeError('Options must be an object');
 
 	const resultPromise = new Promise(async (resolve, reject) => {
-		({ host, port } = await new Promise((resolve, reject) => {
-			dns.resolveSrv(`_minecraft._tcp.${host}`, (err, address) => {
-				resolve({
-					host: err ? host : (address?.[0]?.name ?? host),
-					port: err ? port : (address?.[0]?.port ?? port)
+		if (isNaN(Number(host.split('.').pop())))
+			({ host, port } = await new Promise((resolve, reject) => {
+				dns.resolveSrv(`_minecraft._tcp.${host}`, (err, address) => {
+					resolve({
+						host: err ? host : (address?.[0]?.name ?? host),
+						port: err ? port : (address?.[0]?.port ?? port)
+					});
 				});
-			});
-		}));
+			}));
 
 		let connectTimeout, isResolved = false;
 
