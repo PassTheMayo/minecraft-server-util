@@ -1,6 +1,7 @@
 const bluebird = require('bluebird');
 bluebird.config({ longStackTraces: true, warnings: true });
 global.Promise = bluebird;
+jest.setTimeout(8000);
 
 const ping = require('../src/index.js');
 

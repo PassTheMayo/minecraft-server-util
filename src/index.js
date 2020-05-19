@@ -33,15 +33,15 @@ const ping = (host, port = 25565, options, callback) => {
 				});
 			}));
 
-		let connectTimeout, isResolved = false;
+		let isResolved = false;
 
 		const readingPacket = new Packet();
 
 		const socket = net.createConnection({ host, port });
 
-		socket.on('connect', async () => {
-			clearTimeout(connectTimeout);
+		socket.setTimeout(options.connectTimeout);
 
+		socket.on('connect', async () => {
 			try {
 				const handshakePacket = new Packet();
 				handshakePacket.writeVarInt(0x00); // Handshake packet ID
@@ -111,10 +111,13 @@ const ping = (host, port = 25565, options, callback) => {
 			reject(error);
 		});
 
-		socket.on('timeout', (error) => {
+		socket.on('timeout', () => {
+			socket.end();
+			socket.destroy();
+
 			if (isResolved) return;
 
-			reject(error);
+			reject(new Error('Socket did not connect in time'));
 		});
 
 		socket.on('end', () => {
@@ -122,13 +125,6 @@ const ping = (host, port = 25565, options, callback) => {
 
 			reject(new Error('Socket closed unexpectedly'));
 		});
-
-		connectTimeout = setTimeout(() => {
-			if (isResolved) return;
-
-			socket.end();
-			reject(new Error('Socket did not connect in time'));
-		}, options.connectTimeout);
 	});
 
 	if (callback) {
