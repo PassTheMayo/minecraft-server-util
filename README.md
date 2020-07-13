@@ -42,7 +42,7 @@ ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 1
 ```
 
 ## License
-[https://github.com/PassTheMayo/Minecraft-Ping/blob/master/LICENSE](MIT License)
+[MIT License](https://github.com/PassTheMayo/Minecraft-Ping/blob/master/LICENSE)
 
 ## Contributing
 You can contribute in any way possible, either by opening an issue or doing a pull request.
