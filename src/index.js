@@ -143,4 +143,4 @@ const ping = (host, port = 25565, options, callback) => {
 
 module.exports.Packet = Packet;
 module.exports.Response = Response;
-module.exports = ping;
+module.exports.ping = ping;
