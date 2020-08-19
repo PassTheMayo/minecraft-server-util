@@ -1,9 +1,10 @@
 const bluebird = require('bluebird');
 bluebird.config({ longStackTraces: true, warnings: true });
 global.Promise = bluebird;
+
 jest.setTimeout(8000);
 
-const ping = require('../src/index.js');
+const ping = require('../');
 
 const servers = [
 	'hub.mcs.gg',
@@ -18,12 +19,12 @@ const servers = [
 ];
 
 for (let i = 0; i < servers.length; i++) {
-	test(servers[i] + ' ping test, callback', (done) => {
+	test(servers[i] + ' ping test - callback', (done) => {
 		ping(servers[i], 25565, (error, data) => {
 			if (error) return done.fail(error);
 
-			// expect(data.host).toEqual(servers[i]);
-			// expect(data.port).toEqual(25565);
+			expect(data.host).toEqual(servers[i]);
+			expect(data.port).toEqual(25565);
 			expect(typeof data.version).toEqual('string');
 			expect(typeof data.protocolVersion).toEqual('number');
 			expect(typeof data.onlinePlayers).toEqual('number');
@@ -43,11 +44,11 @@ for (let i = 0; i < servers.length; i++) {
 		});
 	});
 
-	test(servers[i] + ' ping test, promise', (done) => {
+	test(servers[i] + ' ping test - promise', (done) => {
 		ping(servers[i], 25565)
 			.then((data) => {
-				// expect(data.host).toEqual(servers[i]);
-				// expect(data.port).toEqual(25565);
+				expect(data.host).toEqual(servers[i]);
+				expect(data.port).toEqual(25565);
 				expect(typeof data.version).toEqual('string');
 				expect(typeof data.protocolVersion).toEqual('number');
 				expect(typeof data.onlinePlayers).toEqual('number');

@@ -12,6 +12,10 @@ interface SamplePlayer {
 interface Response {
     host: string;
     port: number;
+    srvRecord: {
+        host: string,
+        port: number
+    } | null,
     version: string | null;
     protocolVersion: number | null;
     onlinePlayers: number | null;
@@ -24,6 +28,6 @@ interface Response {
 
 type ErrorType = Error | null;
 
-declare function ping(host: string, port: number, options?: Options, callback?: (error: ErrorType, response: Response | null) => void): Promise<Response | null>;
+declare function ping(host: string, port?: number, options?: Options, callback?: (error: ErrorType, response: Response | null) => void): Promise<Response>;
 
 export = ping;

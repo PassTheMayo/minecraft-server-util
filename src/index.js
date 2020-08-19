@@ -1,7 +1,12 @@
 const net = require('net');
-const dns = require('dns');
-const Packet = require('./Structure/Packet');
-const Response = require('./Structure/Response');
+const Packet = require('./structure/Packet');
+const Socket = require('./structure/Socket');
+const getVarIntSize = require('./util/getVarIntSize');
+const formatResult = require('./util/formatResult');
+const resolveSRV = require('./util/resolveSRV');
+const { assert } = require('console');
+
+const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 const ping = (host, port = 25565, options, callback) => {
 	if (typeof port === 'function') {
@@ -19,117 +24,65 @@ const ping = (host, port = 25565, options, callback) => {
 		enableSRV: true
 	}, options);
 
-	if (typeof host !== 'string') throw new TypeError('Host must be a string');
-	if (typeof port !== 'number') throw new TypeError('Port must be a number');
-	if (typeof options !== 'object') throw new TypeError('Options must be an object');
+	assert(typeof host === 'string', 'Expected string, got ' + (typeof host));
+	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
+	assert(typeof port === 'number', 'Expected number, got ' + (typeof port));
+	assert(Number.isInteger(port), 'Expected integer, got ' + port);
+	assert(port > 0, 'Expected port > 0, got ' + port);
+	assert(port < 65536, 'Expected port < 65536, got ' + port);
+	assert(typeof options === 'object', 'Expected object, got ' + (typeof options));
 
 	const resultPromise = new Promise(async (resolve, reject) => {
-		if (options.enableSRV && isNaN(Number(host.split('.').pop())))
-			({ host, port } = await new Promise((resolve, reject) => {
-				dns.resolveSrv(`_minecraft._tcp.${host}`, (err, address) => {
-					const addr = { host: host, port: port };
-					if (!err && address && address[0]) {
-						if (address[0].name)
-							addr.host = address[0].name;
-						if (address[0].port)
-							addr.port = address[0].port;
-					}
-					resolve(addr);
-				});
-			}));
+		let srvRecord = null;
 
-		let isResolved = false;
+		if (options.enableSRV && !ipAddressRegEx.test(host)) {
+			srvRecord = await resolveSRV(host);
+		}
 
-		const readingPacket = new Packet();
+		const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, 1000 * 15);
 
-		const socket = net.createConnection({ host, port });
+		await socket.waitUntilConnected();
 
-		socket.setTimeout(options.connectTimeout);
+		const handshakePacket = new Packet();
+		handshakePacket.writeVarInt(0x00); // Handshake packet ID
+		handshakePacket.writeVarInt(options.protocolVersion); // Protocol version
+		handshakePacket.writeString(host); // Host
+		handshakePacket.writeUnsignedShort(port); // Port
+		handshakePacket.writeVarInt(1); // Next state - status
+		socket.writeBytes(handshakePacket.finish());
 
-		socket.on('connect', async () => {
-			try {
-				const handshakePacket = new Packet();
-				handshakePacket.writeVarInt(0x00); // Handshake packet ID
-				handshakePacket.writeVarInt(options.protocolVersion); // Protocol version
-				handshakePacket.writeString(host); // Host
-				handshakePacket.writeUnsignedShort(port); // Port
-				handshakePacket.writeVarInt(1); // Next state - status
-				socket.write(handshakePacket.finish());
+		const requestPacket = new Packet();
+		requestPacket.writeVarInt(0x00); // Request packet ID
+		socket.writeBytes(requestPacket.finish());
 
-				const requestPacket = new Packet();
-				requestPacket.writeVarInt(0x00); // Request packet ID
-				socket.write(requestPacket.finish());
-			} catch (e) {
-				reject(e);
-			}
-		});
+		let result;
 
-		socket.on('data', (data) => {
-			readingPacket.writeByte(...data);
+		while (true) {
+			const packetLength = await socket.readVarInt();
+			const packetType = await socket.readVarInt();
 
-			let length;
+			if (packetType !== 0) {
+				await socket.readBytes(packetLength - getVarIntSize(packetType));
 
-			try {
-				length = readingPacket.readVarInt();
-			} catch (e) {
-				return; // Data not long enough, we'll just wait
+				continue;
 			}
 
-			if (readingPacket.data.length < length) return;
+			result = await socket.readString();
 
-			readingPacket.readVarIntSplice(); // Packet length
+			break;
+		}
 
-			if (readingPacket.readVarIntSplice() !== 0x00) return reject(new Error('Received a packet, but it was not a response'));
+		socket.destroy();
 
-			readingPacket.readVarIntSplice(); // JSON length
+		let data;
 
-			let parsed;
+		try {
+			data = JSON.parse(result);
+		} catch (e) {
+			reject(new Error('Response from server is not valid JSON'));
+		}
 
-			try {
-				parsed = JSON.parse(Buffer.from(readingPacket.data).toString("utf8"));
-			} catch (e) {
-				return reject(new Error('Invalid or corrupt payload data'));
-			}
-
-			try {
-				const response = new Response(host, port, parsed);
-
-				resolve(response);
-			} catch (e) {
-				return reject(new Error('Invalid or corrupt payload data'));
-			}
-
-			isResolved = true;
-
-			socket.end();
-		});
-
-		socket.on('close', () => {
-			if (isResolved) return;
-
-			reject(new Error('Socket closed unexpectedly'));
-		});
-
-		socket.on('error', (error) => {
-			if (isResolved) return;
-
-			reject(error);
-		});
-
-		socket.on('timeout', () => {
-			socket.end();
-			socket.destroy();
-
-			if (isResolved) return;
-
-			reject(new Error('Socket did not connect in time'));
-		});
-
-		socket.on('end', () => {
-			if (isResolved) return;
-
-			reject(new Error('Socket closed unexpectedly'));
-		});
+		resolve(formatResult(host, port, srvRecord, data));
 	});
 
 	if (callback) {
