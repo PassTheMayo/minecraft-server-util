@@ -1,5 +1,10 @@
 # Minecraft Server Util
-A library to get information about a Minecraft server.
+A Node.js library that retrieves information about a Minecraft server.
+
+![npm version](https://img.shields.io/npm/v/minecraft-server-util?label=version)
+![License](https://img.shields.io/npm/l/minecraft-server-util)
+![npm weekly downloads](https://img.shields.io/npm/dw/minecraft-server-util)
+![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/Minecraft-Ping)
 
 ## Installation
 `npm i minecraft-server-util`
@@ -7,6 +12,8 @@ A library to get information about a Minecraft server.
 ## Example
 ```js
 const ping = require('minecraft-server-util');
+// or
+import ping from 'minecraft-server-util';
 
 // Callback
 ping('play.hypixel.net', 25565, (error, response) => {
@@ -18,7 +25,7 @@ ping('play.hypixel.net', 25565, (error, response) => {
 // Promise
 ping('play.hypixel.net', 25565)
     .then((response) => {
-        console.log(data);
+        console.log(response);
     })
     .catch((error) => {
         throw error;
@@ -34,7 +41,7 @@ ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 1
 // Promise - with options
 ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10 })
     .then((response) => {
-        console.log(data);
+        console.log(response);
     })
     .catch((error) => {
         throw error;
