@@ -22,46 +22,68 @@ class Response {
 	}
 
 	getHost() {
+		console.warn('(minecraft-server-util) deprecation warning: getHost() will be removed in the next major release, use .host instead');
+
 		return this.host;
 	}
 
 	getPort() {
+		console.warn('(minecraft-server-util) deprecation warning: getPort() will be removed in the next major release, use .port instead');
+
 		return this.port;
 	}
 
 	getVersion() {
+		console.warn('(minecraft-server-util) deprecation warning: getVersion() will be removed in the next major release, use .version instead');
+
 		return this.version;
 	}
 
 	getProtocolVersion() {
+		console.warn('(minecraft-server-util) deprecation warning: getProtocolVersion() will be removed in the next major release, use .protocolVersion instead');
+
 		return this.protocolVersion;
 	}
 
 	getOnlinePlayers() {
+		console.warn('(minecraft-server-util) deprecation warning: getOnlinePlayers() will be removed in the next major release, use .onlinePlayers instead');
+
 		return this.onlinePlayers;
 	}
 
 	getPlayersOnline() {
+		console.warn('(minecraft-server-util) deprecation warning: getPlayersOnline() will be removed in the next major release, use .onlinePlayers instead');
+
 		return this.onlinePlayers;
 	}
 
 	getMaxPlayers() {
+		console.warn('(minecraft-server-util) deprecation warning: getMaxPlayers() will be removed in the next major release, use .maxPlayers instead');
+
 		return this.maxPlayers;
 	}
 
 	getSamplePlayers() {
+		console.warn('(minecraft-server-util) deprecation warning: getSamplePlayers() will be removed in the next major release, use .samplePlayers instead');
+
 		return this.samplePlayers;
 	}
 
 	getDescriptionText() {
+		console.warn('(minecraft-server-util) deprecation warning: getDescriptionText() will be removed in the next major release, use .descriptionText instead');
+
 		return this.descriptionText;
 	}
 
 	getFavicon() {
+		console.warn('(minecraft-server-util) deprecation warning: getFavicon() will be removed in the next major release, use .favicon instead');
+
 		return this.favicon;
 	}
 
 	getModList() {
+		console.warn('(minecraft-server-util) deprecation warning: getModList() will be removed in the next major release, use .modList instead');
+
 		return this.modList;
 	}
 }

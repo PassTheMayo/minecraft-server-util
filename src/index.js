@@ -92,10 +92,10 @@ const ping = (host, port = 25565, options, callback) => {
 			}
 
 			try {
-				let response = new Response(host, port, parsed);
+				const response = new Response(host, port, parsed);
+
 				resolve(response);
-			}
-			catch(e) {
+			} catch (e) {
 				return reject(new Error('Invalid or corrupt payload data'));
 			}
 
@@ -141,6 +141,4 @@ const ping = (host, port = 25565, options, callback) => {
 	}
 };
 
-module.exports.Packet = Packet;
-module.exports.Response = Response;
 module.exports = ping;
