@@ -1,10 +1,10 @@
 const net = require('net');
+const assert = require('assert');
 const Packet = require('./structure/Packet');
 const Socket = require('./structure/Socket');
 const getVarIntSize = require('./util/getVarIntSize');
 const formatResult = require('./util/formatResult');
 const resolveSRV = require('./util/resolveSRV');
-const { assert } = require('console');
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
