@@ -27,7 +27,8 @@ interface Response {
 }
 
 type ErrorType = Error | null;
+type PingCallback = (error: ErrorType, response: Response | null) => void;
 
-declare function ping(host: string, port?: number, options?: Options, callback?: (error: ErrorType, response: Response | null) => void): Promise<Response>;
+declare function ping(host: string, port?: number | Options | PingCallback, options?: Options | PingCallback, callback?: PingCallback): Promise<Response>;
 
 export = ping;

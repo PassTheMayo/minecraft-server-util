@@ -9,11 +9,17 @@ const resolveSRV = require('./util/resolveSRV');
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 const ping = (host, port = 25565, options, callback) => {
-	if (typeof port === 'function') {
+	if (typeof port === 'function') { // ping('host', (error) => {})
 		callback = port;
 		port = 25565;
 		options = {};
-	} else if (typeof options === 'function') {
+	} else if (typeof port === 'object') { // ping('host', { protocolVersion: 47 }, (error) => {})
+		callback = options;
+		options = port;
+		port = 25565;
+	}
+
+	if (typeof options === 'function') {
 		callback = options;
 		options = {};
 	}
@@ -33,56 +39,60 @@ const ping = (host, port = 25565, options, callback) => {
 	assert(typeof options === 'object', 'Expected object, got ' + (typeof options));
 
 	const resultPromise = new Promise(async (resolve, reject) => {
-		let srvRecord = null;
+		try {
+			let srvRecord = null;
 
-		if (options.enableSRV && !ipAddressRegEx.test(host)) {
-			srvRecord = await resolveSRV(host);
-		}
-
-		const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, 1000 * 15);
-
-		await socket.waitUntilConnected();
-
-		const handshakePacket = new Packet();
-		handshakePacket.writeVarInt(0x00); // Handshake packet ID
-		handshakePacket.writeVarInt(options.protocolVersion); // Protocol version
-		handshakePacket.writeString(host); // Host
-		handshakePacket.writeUnsignedShort(port); // Port
-		handshakePacket.writeVarInt(1); // Next state - status
-		socket.writeBytes(handshakePacket.finish());
-
-		const requestPacket = new Packet();
-		requestPacket.writeVarInt(0x00); // Request packet ID
-		socket.writeBytes(requestPacket.finish());
-
-		let result;
-
-		while (true) {
-			const packetLength = await socket.readVarInt();
-			const packetType = await socket.readVarInt();
-
-			if (packetType !== 0) {
-				await socket.readBytes(packetLength - getVarIntSize(packetType));
-
-				continue;
+			if (options.enableSRV && !ipAddressRegEx.test(host)) {
+				srvRecord = await resolveSRV(host);
 			}
 
-			result = await socket.readString();
+			const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, 1000 * 15);
 
-			break;
-		}
+			await socket.waitUntilConnected();
 
-		socket.destroy();
+			const handshakePacket = new Packet();
+			handshakePacket.writeVarInt(0x00); // Handshake packet ID
+			handshakePacket.writeVarInt(options.protocolVersion); // Protocol version
+			handshakePacket.writeString(host); // Host
+			handshakePacket.writeUnsignedShort(port); // Port
+			handshakePacket.writeVarInt(1); // Next state - status
+			socket.writeBytes(handshakePacket.finish());
 
-		let data;
+			const requestPacket = new Packet();
+			requestPacket.writeVarInt(0x00); // Request packet ID
+			socket.writeBytes(requestPacket.finish());
 
-		try {
-			data = JSON.parse(result);
+			let result;
+
+			while (true) {
+				const packetLength = await socket.readVarInt();
+				const packetType = await socket.readVarInt();
+
+				if (packetType !== 0) {
+					await socket.readBytes(packetLength - getVarIntSize(packetType));
+
+					continue;
+				}
+
+				result = await socket.readString();
+
+				break;
+			}
+
+			socket.destroy();
+
+			let data;
+
+			try {
+				data = JSON.parse(result);
+			} catch (e) {
+				reject(new Error('Response from server is not valid JSON'));
+			}
+
+			resolve(formatResult(host, port, srvRecord, data));
 		} catch (e) {
-			reject(new Error('Response from server is not valid JSON'));
+			reject(e);
 		}
-
-		resolve(formatResult(host, port, srvRecord, data));
 	});
 
 	if (callback) {
