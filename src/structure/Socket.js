@@ -162,6 +162,7 @@ class Socket {
     }
 
     destroy() {
+        this.socket.removeAllListeners();
         this.socket.destroy();
     }
 }

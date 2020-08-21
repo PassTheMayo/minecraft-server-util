@@ -25,7 +25,7 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.maxPlayers).toEqual('number');
 			expect(typeof data.samplePlayers).toEqual('object');
 			expect(typeof data.descriptionText).toEqual('string');
-			expect(typeof data.favicon).toEqual('string');
+			if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 			if (data.modList != null) {
 				expect(data.modList).toBeInstanceOf(Array);
@@ -49,7 +49,7 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.maxPlayers).toEqual('number');
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
-				expect(typeof data.favicon).toEqual('string');
+				if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 				if (data.modList != null) {
 					expect(data.modList).toBeInstanceOf(Array);
@@ -77,7 +77,7 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.maxPlayers).toEqual('number');
 			expect(typeof data.samplePlayers).toEqual('object');
 			expect(typeof data.descriptionText).toEqual('string');
-			expect(typeof data.favicon).toEqual('string');
+			if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 			if (data.modList != null) {
 				expect(data.modList).toBeInstanceOf(Array);
@@ -101,7 +101,7 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.maxPlayers).toEqual('number');
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
-				expect(typeof data.favicon).toEqual('string');
+				if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 				if (data.modList != null) {
 					expect(data.modList).toBeInstanceOf(Array);
@@ -129,7 +129,7 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.maxPlayers).toEqual('number');
 			expect(typeof data.samplePlayers).toEqual('object');
 			expect(typeof data.descriptionText).toEqual('string');
-			expect(typeof data.favicon).toEqual('string');
+			if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 			if (data.modList != null) {
 				expect(data.modList).toBeInstanceOf(Array);
@@ -153,7 +153,7 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.maxPlayers).toEqual('number');
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
-				expect(typeof data.favicon).toEqual('string');
+				if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 				if (data.modList != null) {
 					expect(data.modList).toBeInstanceOf(Array);
@@ -181,7 +181,7 @@ for (let i = 0; i < servers.length; i++) {
 			expect(typeof data.maxPlayers).toEqual('number');
 			expect(typeof data.samplePlayers).toEqual('object');
 			expect(typeof data.descriptionText).toEqual('string');
-			expect(typeof data.favicon).toEqual('string');
+			if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 			if (data.modList != null) {
 				expect(data.modList).toBeInstanceOf(Array);
@@ -205,7 +205,7 @@ for (let i = 0; i < servers.length; i++) {
 				expect(typeof data.maxPlayers).toEqual('number');
 				expect(typeof data.samplePlayers).toEqual('object');
 				expect(typeof data.descriptionText).toEqual('string');
-				expect(typeof data.favicon).toEqual('string');
+				if (data.favicon !== null) expect(typeof data.favicon).toEqual('string');
 
 				if (data.modList != null) {
 					expect(data.modList).toBeInstanceOf(Array);

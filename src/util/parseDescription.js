@@ -1,70 +1,61 @@
+const assert = require('assert');
+
 const colorCodes = {
-	'black': 0,
-	'dark_blue': 1,
-	'dark_green': 2,
-	'dark_aqua': 3,
-	'dark_red': 4,
-	'dark_purple': 5,
-	'gold': 6,
-	'gray': 7,
-	'dark_gray': 8,
-	'blue': 9,
-	'green': 'a',
-	'aqua': 'b',
-	'red': 'c',
-	'light_purple': 'd',
-	'yellow': 'e',
-	'white': 'f'
+	black: 0,
+	dark_blue: 1,
+	dark_green: 2,
+	dark_aqua: 3,
+	dark_red: 4,
+	dark_purple: 5,
+	gold: 6,
+	gray: 7,
+	dark_gray: 8,
+	blue: 9,
+	green: 'a',
+	aqua: 'b',
+	red: 'c',
+	light_purple: 'd',
+	yellow: 'e',
+	white: 'f'
+};
+
+const formatCodes = {
+	obfuscated: 'k',
+	bold: 'l',
+	strikethrough: 'm',
+	underline: 'n',
+	italic: 'o',
+	reset: 'r'
 };
 
 module.exports = (description) => {
-	if (typeof description !== 'object' && typeof description !== 'string') throw new Error('description must be an object or string, got ' + typeof description);
+	assert(typeof description === 'object' || typeof description === 'string', 'Expected object or string, got ' + (typeof description));
+
+	if (typeof description === 'string') {
+		return description;
+	}
 
 	let result = '';
 
-	if (typeof description === 'string') {
-		result = description;
-	} else if (typeof description === 'object') {
-		if (Object.keys(description).length === 1 && Object.prototype.hasOwnProperty.call(description, 'text')) {
-			result = description.text;
-		} else {
-			result = description.text || '';
+	if (description.color) {
+		if (description.color in colorCodes || description.color in formatCodes) {
+			result += '\u00A7' + (colorCodes[description.color] || formatCodes[description.color]);
+		}
+	}
 
-			if (Object.prototype.hasOwnProperty.call(description, 'extra')) {
-				for (let i = 0; i < description.extra.length; i++) {
-					const extra = description.extra[i];
+	for (const prop in description) {
+		if (prop in formatCodes) {
+			result += '\u00A7' + formatCodes[prop];
+		}
+	}
 
-					if (extra.color) {
-						result += '\u00A7' + colorCodes[extra.color];
-					}
+	result += description.text || '';
 
-					if (extra.obfuscated) {
-						result += '\u00A7k';
-					}
+	if (Object.prototype.hasOwnProperty.call(description, 'extra') && description.constructor === Array) {
+		for (let i = 0; i < description.extra.length; i++) {
+			console.log(description.extra[i]);
 
-					if (extra.bold) {
-						result += '\u00A7l';
-					}
-
-					if (extra.strikethrough) {
-						result += '\u00A7m';
-					}
-
-					if (extra.underline) {
-						result += '\u00A7n';
-					}
-
-					if (extra.italic) {
-						result += '\u00A7o';
-					}
-
-					if (extra.reset) {
-						result += '\u00A7r';
-					}
-
-					result += extra.text || '';
-				}
-			}
+			result += this.call(null, description.extra[i]);
 		}
 	}
 

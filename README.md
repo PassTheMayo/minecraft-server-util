@@ -32,14 +32,14 @@ ping('play.hypixel.net', 25565)
     });
 
 // Callback - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10 }, (error, response) => {
+ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true }, (error, response) => {
     if (error) throw error;
 
     console.log(response);
 });
 
 // Promise - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10 })
+ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true })
     .then((response) => {
         console.log(response);
     })

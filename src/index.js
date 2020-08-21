@@ -24,12 +24,14 @@ const ping = (host, port = 25565, options, callback) => {
 		options = {};
 	}
 
+	// Apply the provided options on the default options
 	options = Object.assign({
 		protocolVersion: 47,
 		connectTimeout: 1000 * 5,
 		enableSRV: true
 	}, options);
 
+	// Validate all arguments to ensure they are the correct type
 	assert(typeof host === 'string', 'Expected string, got ' + (typeof host));
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 	assert(typeof port === 'number', 'Expected number, got ' + (typeof port));
@@ -42,14 +44,18 @@ const ping = (host, port = 25565, options, callback) => {
 		try {
 			let srvRecord = null;
 
+			// Automatically resolve from host (e.g. play.hypixel.net) into a connect-able address
 			if (options.enableSRV && !ipAddressRegEx.test(host)) {
 				srvRecord = await resolveSRV(host);
 			}
 
+			// Create a new TCP connection to the specified address
 			const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, 1000 * 15);
 
+			// Wait until the connection is established
 			await socket.waitUntilConnected();
 
+			// Create a new Handshake packet and sent it to the server
 			const handshakePacket = new Packet();
 			handshakePacket.writeVarInt(0x00); // Handshake packet ID
 			handshakePacket.writeVarInt(options.protocolVersion); // Protocol version
@@ -58,27 +64,34 @@ const ping = (host, port = 25565, options, callback) => {
 			handshakePacket.writeVarInt(1); // Next state - status
 			socket.writeBytes(handshakePacket.finish());
 
+			// Create a new Request packet and send it to the server
 			const requestPacket = new Packet();
 			requestPacket.writeVarInt(0x00); // Request packet ID
 			socket.writeBytes(requestPacket.finish());
 
 			let result;
 
+			// Loop over each packet returned and wait until it receives a Response packet
 			while (true) {
 				const packetLength = await socket.readVarInt();
 				const packetType = await socket.readVarInt();
 
 				if (packetType !== 0) {
-					await socket.readBytes(packetLength - getVarIntSize(packetType));
+					// Packet was unexpected type, ignore the rest of the data in this packet
+					const readSize = packetLength - getVarIntSize(packetType);
+
+					if (readSize > 0) await socket.readBytes();
 
 					continue;
 				}
 
+				// Packet was expected type, read the contents of the packet for the ping data
 				result = await socket.readString();
 
 				break;
 			}
 
+			// Destroy the socket, it is no longer needed
 			socket.destroy();
 
 			let data;
@@ -89,12 +102,14 @@ const ping = (host, port = 25565, options, callback) => {
 				reject(new Error('Response from server is not valid JSON'));
 			}
 
+			// Convert the data from raw Minecraft ping payload format into a more human readable format and resolve the promise
 			resolve(formatResult(host, port, srvRecord, data));
 		} catch (e) {
 			reject(e);
 		}
 	});
 
+	// Use the callback if provided, otherwise return the promise
 	if (callback) {
 		resultPromise
 			.then((...args) => callback(null, ...args))
