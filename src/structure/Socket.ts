@@ -1,8 +1,13 @@
-const assert = require('assert');
-const net = require('net');
+import assert from 'assert';
+import { createConnection, Socket as NodeSocket } from 'net';
 
-class Socket {
-    constructor(host, port, timeout) {
+export class Socket {
+
+    private socket!: NodeSocket;
+    private buffer: number[];
+
+    protected constructor(host: string, port: number, timeout: number) {
+
         assert(typeof host === 'string', 'Expected string, got ' + (typeof host));
         assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
         assert(typeof port === 'number', 'Expected number, got ' + (typeof port));
@@ -12,56 +17,38 @@ class Socket {
         assert(typeof timeout === 'number', 'Expected number, got ' + (typeof timeout));
         assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
-        this.socket = net.createConnection({ host, port });
-        this.socket.setTimeout(timeout);
-
-        this.socket.on('data', (data) => {
-            this.buffer.push(...data);
-        });
-
-        this.isConnected = false;
         this.buffer = [];
     }
 
-    waitUntilConnected() {
-        if (this.isConnected) return Promise.resolve();
+    public static buildSocket(host: string, port: number, timeout: number): Promise<Socket> {
 
         return new Promise((resolve, reject) => {
-            let connected = false;
+            const socket = new Socket(host, port, timeout);
 
-            this.socket.on('connect', () => {
-                if (connected) return;
-
-                this.isConnected = true;
-                connected = true;
-
-                resolve();
+            socket.socket = createConnection({ host, port }, () => resolve(socket));
+    
+            socket.socket.setTimeout(timeout, () => {
+                socket.socket.end();
+                // TODO what do we do..?
+                console.log('timed out');
+            });
+    
+            socket.socket.on('data', (data) => {
+                socket.buffer.push(...data);
             });
 
-            this.socket.on('end', (error) => {
-                if (connected) return;
-
-                this.isConnected = false;
-
-                reject(error);
-            });
-
-            this.socket.on('error', (error) => {
-                if (connected) return;
-
-                this.isConnected = false;
-
-                this.socket.end();
-
+            socket.socket.on('error', (error) => {
+                socket.socket.end();
                 reject(error);
             });
         });
+        
     }
 
-    readByte() {
-        if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift());
+    public readByte(): Promise<number> {
+        if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift()!);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let read = false;
 
             this.socket.on('data', () => {
@@ -78,16 +65,17 @@ class Socket {
         });
     }
 
-    readBytes(length) {
+    public readBytes(length: number): Promise<number[]> {
         if (this.buffer.length >= length) {
             const value = this.buffer.slice(0, length);
             this.buffer.splice(0, length);
             return Promise.resolve(value);
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let read = false;
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const dataHandler = this.socket.on('data', () => {
                 if (read) return;
 
@@ -104,7 +92,7 @@ class Socket {
         });
     }
 
-    writeByte(value) {
+    public writeByte(value: number): Promise<void> {
         return new Promise((resolve, reject) => {
             this.socket.write(Buffer.from([value]), (error) => {
                 if (error) return reject(error);
@@ -114,7 +102,7 @@ class Socket {
         });
     }
 
-    writeBytes(buffer) {
+    public writeBytes(buffer: Buffer): Promise<void> {
         return new Promise((resolve, reject) => {
             this.socket.write(buffer, (error) => {
                 if (error) return reject(error);
@@ -124,31 +112,31 @@ class Socket {
         });
     }
 
-    readVarInt() {
-        return new Promise(async (resolve, reject) => {
-            let numRead = 0;
-            let result = 0;
-            let read, value;
+    public async readVarInt(): Promise<number> {
+        let numRead = 0;
+        let result = 0;
+        let read, value;
 
-            do {
-                if (numRead >= 5) return reject(new Error('VarInt exceeds data bounds'));
+        do {
+            if (numRead >= 5) {
+                throw new Error('VarInt exceeds data bounds');
+            }
 
-                read = await this.readByte();
-                value = (read & 0b01111111);
-                result |= (value << (7 * numRead));
+            read = await this.readByte();
+            value = (read & 0b01111111);
+            result |= (value << (7 * numRead));
 
-                numRead++;
+            numRead++;
 
-                if (numRead > 5) {
-                    return reject(new Error('VarInt is too big'));
-                }
-            } while ((read & 0b10000000) != 0);
+            if (numRead > 5) {
+                throw new Error('VarInt is too big');
+            }
+        } while ((read & 0b10000000) != 0);
 
-            resolve(result);
-        });
+        return result;
     }
 
-    async readString() {
+    public async readString(): Promise<string> {
         const length = await this.readVarInt();
         const data = await this.readBytes(length);
 
@@ -161,10 +149,8 @@ class Socket {
         return Promise.resolve(value);
     }
 
-    destroy() {
+    public destroy(): void {
         this.socket.removeAllListeners();
         this.socket.destroy();
     }
 }
-
-module.exports = Socket;

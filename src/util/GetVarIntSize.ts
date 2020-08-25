@@ -1,4 +1,4 @@
-module.exports = (value) => {
+export function getVarIntSize(value: number): number {
     let size = 0;
 
     do {
@@ -8,4 +8,4 @@ module.exports = (value) => {
     } while (value != 0);
 
     return size;
-};
+}

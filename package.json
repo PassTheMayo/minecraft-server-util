@@ -1,11 +1,16 @@
 {
 	"name": "minecraft-server-util",
-	"version": "1.4.2",
+	"version": "2.0.0",
 	"description": "A Node.js library that retrieves information about a Minecraft server.",
-	"main": "src/index.js",
-	"typings": "src/index.d.ts",
+	"main": "build/index.js",
+	"types": "build/index.d.ts",
 	"scripts": {
-		"test": "jest --detectOpenHandles"
+		"testOld": "jest --detectOpenHandles",
+		"clean": "rimraf build",
+		"tsc": "tsc",
+		"build": "npm run clean && npm run tsc",
+		"lint": "eslint . --ext .js,.ts",
+		"test": "mocha -r ts-node/register test/**/*.ts --timeout 10000"
 	},
 	"keywords": [
 		"minecraft",
@@ -16,8 +21,21 @@
 	"author": "Jacob Gunther",
 	"license": "MIT",
 	"devDependencies": {
+		"@types/chai": "^4.2.12",
+		"@types/chai-as-promised": "^7.1.3",
+		"@types/mocha": "^8.0.3",
+		"@types/node": "^12.12.54",
+		"@typescript-eslint/eslint-plugin": "^3.10.1",
+		"@typescript-eslint/parser": "^3.10.1",
 		"bluebird": "^3.7.2",
-		"jest": "^26.4.0"
+		"chai": "^4.2.0",
+		"chai-as-promised": "^7.1.1",
+		"eslint": "^7.7.0",
+		"jest": "^26.4.0",
+		"mocha": "^8.1.1",
+		"rimraf": "^3.0.2",
+		"ts-node": "^9.0.0",
+		"typescript": "^4.0.2"
 	},
 	"bugs": {
 		"url": "https://github.com/PassTheMayo/Minecraft-Ping"
