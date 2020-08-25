@@ -28,9 +28,8 @@ export class Socket {
             socket.socket = createConnection({ host, port }, () => resolve(socket));
     
             socket.socket.setTimeout(timeout, () => {
-                socket.socket.end();
-                // TODO what do we do..?
-                console.log('timed out');
+                socket.socket.destroy();
+                reject(new Error(`Socket timeout (${host}:${port})`));
             });
     
             socket.socket.on('data', (data) => {
