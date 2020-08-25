@@ -25,7 +25,12 @@ try {
 
 // With Options
 try {
-    const response = await ping('play.hypixel.net', { port: 25565, protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true });
+    const response = await ping('play.hypixel.net', {
+        port: 25565,
+        protocolVersion: 498,
+        connectTimeout: 1000 * 10,
+        enableSRV: true
+    });
 } catch(error) {
     console.log('Error', error);
 }
