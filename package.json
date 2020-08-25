@@ -5,7 +5,6 @@
 	"main": "build/index.js",
 	"types": "build/index.d.ts",
 	"scripts": {
-		"testOld": "jest --detectOpenHandles",
 		"clean": "rimraf build",
 		"tsc": "tsc",
 		"build": "npm run clean && npm run tsc",

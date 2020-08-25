@@ -10,20 +10,28 @@ A Node.js library that retrieves information about a Minecraft server.
 `npm i minecraft-server-util`
 
 ## Example
-```js
-const ping = require('minecraft-server-util');
-// or
-import ping from 'minecraft-server-util';
 
-// Callback
-ping('play.hypixel.net', 25565, (error, response) => {
-    if (error) throw error;
+### Using Promises
+```ts
 
-    console.log(response);
-});
+import { ping } from 'minecraft-server-util';
 
-// Promise
-ping('play.hypixel.net', 25565)
+// Async/Await
+try {
+    const response = await ping('play.hypixel.net');
+} catch(error) {
+    console.log('Error', error);
+}
+
+// With Options
+try {
+    const response = await ping('play.hypixel.net', { port: 25565, protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true });
+} catch(error) {
+    console.log('Error', error);
+}
+
+// Then/Catch
+ping('play.hypixel.net', { port: 25565 })
     .then((response) => {
         console.log(response);
     })
@@ -31,21 +39,37 @@ ping('play.hypixel.net', 25565)
         throw error;
     });
 
-// Callback - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true }, (error, response) => {
+```
+
+### Using Callbacks
+```ts
+import { pingCallback } from 'minecraft-server-util';
+
+pingCallback('play.hypixel.net', (error, response) => {
     if (error) throw error;
 
     console.log(response);
 });
 
-// Promise - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true })
-    .then((response) => {
-        console.log(response);
-    })
-    .catch((error) => {
-        throw error;
-    });
+// With Options
+pingCallback('play.hypixel.net', (error, response) => {
+    if (error) throw error;
+
+    console.log(response);
+}, { port: 25565, protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true });
+
+```
+
+## Building
+
+```
+npm run build
+```
+
+## Testing
+
+```
+npm run test
 ```
 
 ## License
