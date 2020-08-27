@@ -1,7 +1,3 @@
-const bluebird = require('bluebird');
-bluebird.config({ longStackTraces: true, warnings: true });
-global.Promise = bluebird;
-
 jest.setTimeout(1000 * 15);
 
 const ping = require('../src');

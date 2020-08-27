@@ -32,14 +32,14 @@ ping('play.hypixel.net', 25565)
     });
 
 // Callback - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true }, (error, response) => {
+ping('play.hypixel.net', 25565, { protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true }, (error, response) => {
     if (error) throw error;
 
     console.log(response);
 });
 
 // Promise - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true })
+ping('play.hypixel.net', 25565, { protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true })
     .then((response) => {
         console.log(response);
     })
@@ -47,6 +47,8 @@ ping('play.hypixel.net', 25565, { protocolVersion: 498, connectTimeout: 1000 * 1
         throw error;
     });
 ```
+
+Please note that this package is not suitable for compilation to a browser module. Raw TCP sockets are unsupported in the browser environment. This package will only work within Node.js.
 
 ## License
 [MIT License](https://github.com/PassTheMayo/Minecraft-Ping/blob/master/LICENSE)

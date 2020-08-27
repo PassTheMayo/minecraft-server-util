@@ -1,6 +1,6 @@
 {
 	"name": "minecraft-server-util",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"description": "A Node.js library that retrieves information about a Minecraft server.",
 	"main": "src/index.js",
 	"typings": "src/index.d.ts",
@@ -16,7 +16,6 @@
 	"author": "Jacob Gunther",
 	"license": "MIT",
 	"devDependencies": {
-		"bluebird": "^3.7.2",
 		"jest": "^26.4.0"
 	},
 	"bugs": {

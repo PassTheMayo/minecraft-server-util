@@ -30,6 +30,7 @@
 		{
 			"files": "test/**/*",
 			"globals": {
+				"jest": true,
 				"test": true,
 				"expect": true
 			}

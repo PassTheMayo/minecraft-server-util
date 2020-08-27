@@ -1,4 +1,3 @@
-const net = require('net');
 const assert = require('assert');
 const Packet = require('./structure/Packet');
 const Socket = require('./structure/Socket');
@@ -24,10 +23,16 @@ const ping = (host, port = 25565, options, callback) => {
 		options = {};
 	}
 
+	if (typeof options === 'object' && options !== null && options.connectTimeout) {
+		console.warn('(minecraft-server-util) deprecation warning: options.connectTimeout is deprecated and will be removed in the next major release, please use options.pingTimeout instead');
+
+		options.pingTimeout = options.connectTimeout;
+	}
+
 	// Apply the provided options on the default options
 	options = Object.assign({
 		protocolVersion: 47,
-		connectTimeout: 1000 * 5,
+		pingTimeout: 1000 * 5,
 		enableSRV: true
 	}, options);
 
@@ -40,7 +45,7 @@ const ping = (host, port = 25565, options, callback) => {
 	assert(port < 65536, 'Expected port < 65536, got ' + port);
 	assert(typeof options === 'object', 'Expected object, got ' + (typeof options));
 
-	const resultPromise = new Promise(async (resolve, reject) => {
+	const resultPromise = new Promise(async (resolve, reject) => { //eslint-disable-line no-async-promise-executor
 		try {
 			let srvRecord = null;
 
@@ -50,7 +55,7 @@ const ping = (host, port = 25565, options, callback) => {
 			}
 
 			// Create a new TCP connection to the specified address
-			const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, 1000 * 15);
+			const socket = new Socket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : port, options.pingTimeout);
 
 			// Wait until the connection is established
 			await socket.waitUntilConnected();
@@ -70,17 +75,25 @@ const ping = (host, port = 25565, options, callback) => {
 			socket.writeBytes(requestPacket.finish());
 
 			let result;
+			let iterations = 0;
 
 			// Loop over each packet returned and wait until it receives a Response packet
-			while (true) {
+			while (true) { // eslint-disable-line no-constant-condition
 				const packetLength = await socket.readVarInt();
 				const packetType = await socket.readVarInt();
 
 				if (packetType !== 0) {
+					// Server did not send correct packet within the first three packets sent
+					if (iterations >= 3) {
+						reject(new Error('Server did not send correct packet in time'));
+					}
+
 					// Packet was unexpected type, ignore the rest of the data in this packet
 					const readSize = packetLength - getVarIntSize(packetType);
 
 					if (readSize > 0) await socket.readBytes();
+
+					iterations++;
 
 					continue;
 				}
@@ -109,13 +122,21 @@ const ping = (host, port = 25565, options, callback) => {
 		}
 	});
 
+	// Creates a new promise that will automatically timeout after the specified options.pingTimeout time
+	const finalPromise = Promise.race([
+		resultPromise,
+		new Promise((resolve, reject) => {
+			setTimeout(() => reject(new Error('Failed to hear back from server within specified timeout')), options.pingTimeout);
+		})
+	]);
+
 	// Use the callback if provided, otherwise return the promise
 	if (callback) {
-		resultPromise
+		finalPromise
 			.then((...args) => callback(null, ...args))
 			.catch((error) => callback(error, null));
 	} else {
-		return resultPromise;
+		return finalPromise;
 	}
 };
 
