@@ -28,7 +28,7 @@ try {
     const response = await ping('play.hypixel.net', {
         port: 25565,
         protocolVersion: 498,
-        connectTimeout: 1000 * 10,
+        pingTimeout: 1000 * 10,
         enableSRV: true
     });
 } catch(error) {
@@ -61,7 +61,7 @@ pingCallback('play.hypixel.net', (error, response) => {
     if (error) throw error;
 
     console.log(response);
-}, { port: 25565, protocolVersion: 498, connectTimeout: 1000 * 10, enableSRV: true });
+}, { port: 25565, protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true });
 
 ```
 
