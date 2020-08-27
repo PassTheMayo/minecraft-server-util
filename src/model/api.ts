@@ -27,7 +27,7 @@ export interface Response {
 export interface PingOptions {
     port?: number
     protocolVersion?: number
-    connectTimeout?: number
+    pingTimeout?: number
     enableSRV?: boolean
 }
 

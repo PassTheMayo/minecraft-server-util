@@ -14,7 +14,7 @@ function getEffectiveOptions(options?: PingOptions): Required<PingOptions> {
         port: 25565,
         callback: undefined,
         protocolVersion: 47,
-        connectTimeout: 1000 * 5,
+        pingTimeout: 1000 * 5,
         enableSRV: true
     } as Required<PingOptions>, options);
 }
@@ -42,7 +42,7 @@ async function doServerPull(host: string, options?: PingOptions): Promise<Respon
 
     // Create a new TCP connection to the specified address
     // Wait until the connection is established
-    const socket = await Socket.buildSocket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : effectiveOptions.port, effectiveOptions.connectTimeout);
+    const socket = await Socket.buildSocket(srvRecord ? srvRecord.host : host, srvRecord ? srvRecord.port : effectiveOptions.port, effectiveOptions.pingTimeout);
 
     // Create a new Handshake packet and sent it to the server
     const handshakePacket = new Packet();
@@ -59,6 +59,7 @@ async function doServerPull(host: string, options?: PingOptions): Promise<Respon
     socket.writeBytes(requestPacket.finish());
 
     let result;
+    let iterations = 0;
 
     // Loop over each packet returned and wait until it receives a Response packet
     // TODO vvv
@@ -68,10 +69,18 @@ async function doServerPull(host: string, options?: PingOptions): Promise<Respon
         const packetType = await socket.readVarInt();
 
         if (packetType !== 0) {
+
+            // Server did not send correct packet within the first three packets sent
+            if (iterations >= 3) {
+                throw new Error('Server did not send correct packet in time');
+            }
+
             // Packet was unexpected type, ignore the rest of the data in this packet
             const readSize = packetLength - getVarIntSize(packetType);
 
             if (readSize > 0) await socket.readBytes(readSize);
+
+            ++iterations;
 
             continue;
         }

@@ -77,6 +77,8 @@ npm run build
 npm run test
 ```
 
+Please note that this package is not suitable for compilation to a browser module. Raw TCP sockets are unsupported in the browser environment. This package will only work within Node.js.
+
 ## License
 [MIT License](https://github.com/PassTheMayo/Minecraft-Ping/blob/master/LICENSE)
 
