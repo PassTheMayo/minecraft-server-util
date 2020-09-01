@@ -1,10 +1,13 @@
 {
 	"name": "minecraft-server-util",
-	"version": "1.4.3",
+	"version": "2.0.0",
 	"description": "A Node.js library that retrieves information about a Minecraft server.",
-	"main": "src/index.js",
-	"typings": "src/index.d.ts",
+	"main": "build/index.js",
+	"typings": "build/index.d.ts",
 	"scripts": {
+		"build": "tsc",
+		"clean": "rimraf ./build/",
+		"prepublish": "npm test && npm run clean && npm run build",
 		"test": "jest --detectOpenHandles"
 	},
 	"keywords": [
@@ -16,7 +19,12 @@
 	"author": "Jacob Gunther",
 	"license": "MIT",
 	"devDependencies": {
-		"jest": "^26.4.0"
+		"@typescript-eslint/eslint-plugin": "^3.10.1",
+		"@typescript-eslint/parser": "^3.10.1",
+		"eslint": "^7.7.0",
+		"jest": "^26.4.0",
+		"rimraf": "^3.0.2",
+		"typescript": "^4.0.2"
 	},
 	"bugs": {
 		"url": "https://github.com/PassTheMayo/Minecraft-Ping"

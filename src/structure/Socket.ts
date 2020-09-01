@@ -1,29 +1,27 @@
-const assert = require('assert');
-const net = require('net');
+import assert from 'assert';
+import net from 'net';
 
 class Socket {
-	constructor(host, port, timeout) {
-		assert(typeof host === 'string', 'Expected string, got ' + (typeof host));
+	public socket: net.Socket;
+	public isConnected = false;
+	private buffer: number[] = [];
+
+	constructor(host: string, port: number, timeout: number) {
 		assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
-		assert(typeof port === 'number', 'Expected number, got ' + (typeof port));
 		assert(Number.isInteger(port), 'Expected integer, got ' + port);
 		assert(port > 0, 'Expected port > 0, got ' + port);
 		assert(port < 65536, 'Expected port < 65536, got ' + port);
-		assert(typeof timeout === 'number', 'Expected number, got ' + (typeof timeout));
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
 		this.socket = net.createConnection({ host, port });
 		this.socket.setTimeout(timeout);
 
 		this.socket.on('data', (data) => {
-			this.buffer.push(...data);
+			this.buffer.push(...Array.from(data));
 		});
-
-		this.isConnected = false;
-		this.buffer = [];
 	}
 
-	waitUntilConnected() {
+	waitUntilConnected(): Promise<void> {
 		if (this.isConnected) return Promise.resolve();
 
 		return new Promise((resolve, reject) => {
@@ -38,12 +36,12 @@ class Socket {
 				resolve();
 			});
 
-			this.socket.on('end', (error) => {
+			this.socket.on('end', () => {
 				if (connected) return;
 
 				this.isConnected = false;
 
-				reject(error);
+				reject();
 			});
 
 			this.socket.on('error', (error) => {
@@ -58,8 +56,8 @@ class Socket {
 		});
 	}
 
-	readByte() {
-		if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift());
+	readByte(): Promise<number> {
+		if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift() || 0);
 
 		return new Promise((resolve) => {
 			let read = false;
@@ -78,7 +76,7 @@ class Socket {
 		});
 	}
 
-	readBytes(length) {
+	readBytes(length: number): Promise<number[]> {
 		if (this.buffer.length >= length) {
 			const value = this.buffer.slice(0, length);
 			this.buffer.splice(0, length);
@@ -104,7 +102,7 @@ class Socket {
 		});
 	}
 
-	writeByte(value) {
+	writeByte(value: number): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(Buffer.from([value]), (error) => {
 				if (error) return reject(error);
@@ -114,7 +112,7 @@ class Socket {
 		});
 	}
 
-	writeBytes(buffer) {
+	writeBytes(buffer: Buffer): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(buffer, (error) => {
 				if (error) return reject(error);
@@ -124,31 +122,29 @@ class Socket {
 		});
 	}
 
-	readVarInt() {
-		return new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
-			let numRead = 0;
-			let result = 0;
-			let read, value;
+	async readVarInt(): Promise<number> {
+		let numRead = 0;
+		let result = 0;
+		let read: number, value: number;
 
-			do {
-				if (numRead >= 5) return reject(new Error('VarInt exceeds data bounds'));
+		do {
+			if (numRead >= 5) throw new Error('VarInt exceeds data bounds');
 
-				read = await this.readByte();
-				value = (read & 0b01111111);
-				result |= (value << (7 * numRead));
+			read = await this.readByte();
+			value = (read & 0b01111111);
+			result |= (value << (7 * numRead));
 
-				numRead++;
+			numRead++;
 
-				if (numRead > 5) {
-					return reject(new Error('VarInt is too big'));
-				}
-			} while ((read & 0b10000000) != 0);
+			if (numRead > 5) {
+				throw new Error('VarInt is too big');
+			}
+		} while ((read & 0b10000000) != 0);
 
-			resolve(result);
-		});
+		return result;
 	}
 
-	async readString() {
+	async readString(): Promise<string> {
 		const length = await this.readVarInt();
 		const data = await this.readBytes(length);
 
@@ -158,13 +154,13 @@ class Socket {
 			value += String.fromCharCode(data[i]);
 		}
 
-		return Promise.resolve(value);
+		return value;
 	}
 
-	destroy() {
+	destroy(): void {
 		this.socket.removeAllListeners();
 		this.socket.destroy();
 	}
 }
 
-module.exports = Socket;
+export default Socket;

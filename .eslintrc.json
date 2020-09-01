@@ -1,21 +1,28 @@
 {
 	"env": {
-		"commonjs": true,
-		"es6": true,
+		"es2020": true,
 		"node": true
 	},
-	"extends": "eslint:recommended",
-	"globals": {
-		"Atomics": "readonly",
-		"SharedArrayBuffer": "readonly"
-	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
-		"ecmaVersion": 2018
+		"ecmaVersion": 11,
+		"sourceType": "module"
 	},
+	"plugins": [
+		"@typescript-eslint"
+	],
 	"rules": {
 		"indent": [
 			"error",
 			"tab"
+		],
+		"linebreak-style": [
+			"error",
+			"unix"
 		],
 		"quotes": [
 			"error",
@@ -24,15 +31,23 @@
 		"semi": [
 			"error",
 			"always"
+		],
+		"@typescript-eslint/ban-ts-comment": [
+			"off"
 		]
 	},
 	"overrides": [
 		{
 			"files": "test/**/*",
+			"rules": {
+				"@typescript-eslint/no-var-requires": [
+					"off"
+				]
+			},
 			"globals": {
 				"jest": true,
-				"test": true,
-				"expect": true
+				"expect": true,
+				"test": true
 			}
 		}
 	]

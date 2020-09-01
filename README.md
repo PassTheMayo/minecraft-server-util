@@ -9,21 +9,30 @@ A Node.js library that retrieves information about a Minecraft server.
 ## Installation
 `npm i minecraft-server-util`
 
+## Methods
+Use the following table to figure out what methods are compatible with what Minecraft servers. Each method is exported as a property or a module.
+
+✅ - The method can be used to ping the specified server versions.
+
+❌ - The method cannot be used to ping the specified server versions.
+
+❓ - Unknown compatability, please open a pull request.
+
+Versions          | `ping()` | `pingFE01FA()` | `pingFE01()` | `pingFE()`
+----------------- | -------- | -------------- | ------------ | -----------
+Java 1.7+         | ✅       | ❓             | ❓           | ❓
+Java 1.6          | ❌       | ✅             | ❓           | ❓
+Java 1.4-1.5      | ❌       | ❓             | ✅           | ❓
+Java Beta 1.8-1.3 | ❌       | ❌             | ❌           | ✅
+
 ## Example
 ```js
 const ping = require('minecraft-server-util');
 // or
 import ping from 'minecraft-server-util';
 
-// Callback
-ping('play.hypixel.net', 25565, (error, response) => {
-    if (error) throw error;
-
-    console.log(response);
-});
-
-// Promise
-ping('play.hypixel.net', 25565)
+// Default options
+ping('play.hypixel.net')
     .then((response) => {
         console.log(response);
     })
@@ -31,15 +40,8 @@ ping('play.hypixel.net', 25565)
         throw error;
     });
 
-// Callback - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true }, (error, response) => {
-    if (error) throw error;
-
-    console.log(response);
-});
-
-// Promise - with options
-ping('play.hypixel.net', 25565, { protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true })
+// Modified options
+ping('play.hypixel.net', { port: 25565, protocolVersion: 498, pingTimeout: 1000 * 10, enableSRV: true })
     .then((response) => {
         console.log(response);
     })
