@@ -5,6 +5,7 @@
 	"main": "build/index.js",
 	"typings": "build/index.d.ts",
 	"scripts": {
+		"prepublishOnly": "npm run clean && npm run build && npm run test",
 		"build": "tsc",
 		"clean": "rimraf ./build/",
 		"test": "jest --detectOpenHandles"
