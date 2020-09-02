@@ -39,15 +39,9 @@
 	"overrides": [
 		{
 			"files": "test/**/*",
-			"rules": {
-				"@typescript-eslint/no-var-requires": [
-					"off"
-				]
-			},
 			"globals": {
-				"jest": true,
-				"expect": true,
-				"test": true
+				"describe": true,
+				"it": true
 			}
 		}
 	]
