@@ -24,3 +24,4 @@ jobs:
     - run: npm run clean
     - run: npm run build
     - run: npm test
+    - run: npm lint
