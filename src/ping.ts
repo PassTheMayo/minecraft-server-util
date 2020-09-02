@@ -86,7 +86,9 @@ async function ping(host: string, options?: Options): Promise<Response> {
 		if (packetType !== 0) {
 			const readSize = packetLength - getVarIntSize(packetType);
 
-			if (readSize > 0) await socket.readBytes(readSize);
+			if (readSize > 0) {
+				await socket.readBytes(readSize);
+			}
 
 			continue;
 		}
@@ -100,7 +102,9 @@ async function ping(host: string, options?: Options): Promise<Response> {
 	// Destroy the socket, it is no longer needed
 	socket.destroy();
 
-	if (data === null) throw new Error('Failed to recieve correct packet within 3 attempts');
+	if (data === null) {
+		throw new Error('Failed to recieve correct packet within 3 attempts');
+	}
 
 	// Convert the raw JSON string provided by the server into a JavaScript object
 	let result: RawResponse;

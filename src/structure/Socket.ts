@@ -25,45 +25,65 @@ class Socket {
 		const socket = net.createConnection({ host, port, timeout });
 
 		return new Promise((resolve, reject) => {
-			socket.on('connect', () => {
+			const connectHandler = () => {
 				resolve(new Socket(socket));
-			});
 
-			socket.on('close', () => {
+				socket.removeListener('connect', connectHandler);
+			};
+
+			const closeHandler = () => {
 				reject();
-			});
 
-			socket.on('end', () => {
+				socket.removeListener('close', closeHandler);
+			};
+
+			const endHandler = () => {
 				reject();
-			});
 
-			socket.on('error', (error) => {
+				socket.removeListener('end', endHandler);
+			};
+
+			const errorHandler = (error: Error) => {
 				reject(error);
-			});
 
-			socket.on('timeout', () => {
+				socket.removeListener('error', errorHandler);
+			};
+
+			const timeoutHandler = () => {
 				reject();
-			});
+
+				socket.removeListener('timeout', timeoutHandler);
+			};
+
+			socket.on('connect', connectHandler);
+			socket.on('close', closeHandler);
+			socket.on('end', endHandler);
+			socket.on('error', errorHandler);
+			socket.on('timeout', timeoutHandler);
 		});
 	}
 
 	readByte(): Promise<number> {
-		if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift() || 0);
+		if (this.buffer.length > 0) { return Promise.resolve(this.buffer.shift() || 0); }
 
 		return new Promise((resolve) => {
 			let read = false;
 
-			this.socket.on('data', () => {
-				if (read) return;
+			const dataHandler = () => {
+				if (read) { return; }
 
 				process.nextTick(() => {
 					if (this.buffer.length > 0) {
 						read = true;
 
+						this.socket.removeListener('data', dataHandler);
+
 						return resolve(this.buffer.shift());
 					}
 				});
-			});
+			};
+
+			this.socket.on('data', dataHandler);
 		});
 	}
 
@@ -77,19 +97,25 @@ class Socket {
 		return new Promise((resolve) => {
 			let read = false;
 
-			this.socket.on('data', () => {
-				if (read) return;
+			const dataHandler = () => {
+				if (read) {
+					return;
+				}
 
 				process.nextTick(() => {
 					if (this.buffer.length >= length) {
 						read = true;
+
+						this.socket.removeListener('data', dataHandler);
 
 						const value = this.buffer.slice(0, length);
 						this.buffer.splice(0, length);
 						return resolve(value);
 					}
 				});
-			});
+			};
+
+			this.socket.on('data', dataHandler);
 		});
 	}
 
@@ -99,7 +125,7 @@ class Socket {
 		let read: number, value: number;
 
 		do {
-			if (numRead >= 5) throw new Error('VarInt exceeds data bounds');
+			if (numRead > 4) { throw new Error('VarInt exceeds data bounds'); }
 
 			read = await this.readByte();
 			value = (read & 0b01111111);
@@ -149,7 +175,7 @@ class Socket {
 	writeByte(value: number): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(Buffer.from([value]), (error) => {
-				if (error) return reject(error);
+				if (error) { return reject(error); }
 
 				resolve();
 			});
@@ -159,7 +185,7 @@ class Socket {
 	writeBytes(buffer: Buffer): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(buffer, (error) => {
-				if (error) return reject(error);
+				if (error) { return reject(error); }
 
 				resolve();
 			});

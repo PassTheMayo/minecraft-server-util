@@ -30,7 +30,7 @@ const formatCodes = {
 };
 
 function parseDescription(description: Chat | string): Description {
-	if (typeof description === 'string') return new Description(description);
+	if (typeof description === 'string') {return new Description(description);}
 
 	let result = '';
 
