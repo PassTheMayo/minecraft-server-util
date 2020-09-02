@@ -6,52 +6,42 @@ class Socket {
 	public isConnected = false;
 	private buffer: number[] = [];
 
-	constructor(host: string, port: number, timeout: number) {
+	constructor(socket: net.Socket) {
+		this.socket = socket;
+
+		socket.on('data', (data) => {
+			this.buffer.push(...Array.from(data));
+		});
+	}
+
+	static connect(host: string, port: number, timeout: number): Promise<Socket> {
 		assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 		assert(Number.isInteger(port), 'Expected integer, got ' + port);
 		assert(port > 0, 'Expected port > 0, got ' + port);
 		assert(port < 65536, 'Expected port < 65536, got ' + port);
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
-		this.socket = net.createConnection({ host, port });
-		this.socket.setTimeout(timeout);
-
-		this.socket.on('data', (data) => {
-			this.buffer.push(...Array.from(data));
-		});
-	}
-
-	waitUntilConnected(): Promise<void> {
-		if (this.isConnected) return Promise.resolve();
+		const socket = net.createConnection({ host, port, timeout });
 
 		return new Promise((resolve, reject) => {
-			let connected = false;
-
-			this.socket.on('connect', () => {
-				if (connected) return;
-
-				this.isConnected = true;
-				connected = true;
-
-				resolve();
+			socket.on('connect', () => {
+				resolve(new Socket(socket));
 			});
 
-			this.socket.on('end', () => {
-				if (connected) return;
-
-				this.isConnected = false;
-
+			socket.on('close', () => {
 				reject();
 			});
 
-			this.socket.on('error', (error) => {
-				if (connected) return;
+			socket.on('end', () => {
+				reject();
+			});
 
-				this.isConnected = false;
-
-				this.socket.end();
-
+			socket.on('error', (error) => {
 				reject(error);
+			});
+
+			socket.on('timeout', () => {
+				reject();
 			});
 		});
 	}

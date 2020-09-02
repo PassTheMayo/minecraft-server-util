@@ -54,10 +54,7 @@ async function ping(host: string, options?: Options): Promise<Response> {
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = new Socket(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
-
-	// Wait until the connection is established
-	await socket.waitUntilConnected();
+	const socket = await Socket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
 
 	// Create a new Handshake packet and sent it to the server
 	const handshakePacket = new Packet();
