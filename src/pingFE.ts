@@ -64,9 +64,9 @@ async function pingFE01FA(host: string, options?: Options): Promise<Response> {
 		socket.writePacket(packet, false);
 	}
 
-	let motd: string = '';
-	let playerCount: number = 0;
-	let maxPlayers: number = 0;
+	let motd = '';
+	let playerCount = 0;
+	let maxPlayers = 0;
 
 	{
 		const packetType = await socket.readByte();

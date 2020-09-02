@@ -5,10 +5,11 @@
 	"main": "build/index.js",
 	"typings": "build/index.d.ts",
 	"scripts": {
-		"prepublishOnly": "npm run clean && npm run build && npm run test",
+		"prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
 		"build": "tsc",
 		"clean": "rimraf ./build/",
-		"test": "jest --detectOpenHandles"
+		"test": "jest --detectOpenHandles",
+		"lint": "eslint ."
 	},
 	"keywords": [
 		"minecraft",
@@ -19,10 +20,10 @@
 	"author": "Jacob Gunther",
 	"license": "MIT",
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^3.10.1",
-		"@typescript-eslint/parser": "^3.10.1",
-		"eslint": "^7.7.0",
-		"jest": "^26.4.0",
+		"@typescript-eslint/eslint-plugin": "^4.0.1",
+		"@typescript-eslint/parser": "^4.0.1",
+		"eslint": "^7.8.1",
+		"jest": "^26.4.2",
 		"rimraf": "^3.0.2",
 		"typescript": "^4.0.2"
 	},
