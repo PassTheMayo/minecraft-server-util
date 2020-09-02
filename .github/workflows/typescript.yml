@@ -1,10 +1,10 @@
-name: TypeScript CI
+name: TypeScript
 
 on:
   push:
-    branches: [ typescript ]
+    branches: [ master ]
   pull_request:
-    branches: [ typescript ]
+    branches: [ master ]
 
 jobs:
   build:
