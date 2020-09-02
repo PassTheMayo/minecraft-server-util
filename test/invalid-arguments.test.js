@@ -1,6 +1,6 @@
 jest.setTimeout(8000);
 
-const ping = require('../build');
+const { ping } = require('../build');
 
 test('no arguments', (done) => {
 	ping()

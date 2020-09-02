@@ -55,8 +55,6 @@ function parseDescription(description: Chat | string): Description {
 
 	if (Object.prototype.hasOwnProperty.call(description, 'extra') && typeof description.extra !== 'undefined' && description.extra.constructor === Array) {
 		for (let i = 0; i < description.extra.length; i++) {
-			console.log(description.extra[i]);
-
 			result += parseDescription(description.extra[i]);
 		}
 	}

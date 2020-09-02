@@ -1,5 +1,6 @@
 import assert from 'assert';
 import net from 'net';
+import Packet from './Packet';
 
 class Socket {
 	public socket: net.Socket;
@@ -92,26 +93,6 @@ class Socket {
 		});
 	}
 
-	writeByte(value: number): Promise<void> {
-		return new Promise((resolve, reject) => {
-			this.socket.write(Buffer.from([value]), (error) => {
-				if (error) return reject(error);
-
-				resolve();
-			});
-		});
-	}
-
-	writeBytes(buffer: Buffer): Promise<void> {
-		return new Promise((resolve, reject) => {
-			this.socket.write(buffer, (error) => {
-				if (error) return reject(error);
-
-				resolve();
-			});
-		});
-	}
-
 	async readVarInt(): Promise<number> {
 		let numRead = 0;
 		let result = 0;
@@ -145,6 +126,56 @@ class Socket {
 		}
 
 		return value;
+	}
+
+	async readShort(): Promise<number> {
+		const data = await this.readBytes(2);
+
+		return (data[0] << 8) | data[1];
+	}
+
+	async readInt(): Promise<number> {
+		const data = await this.readBytes(4);
+
+		return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+	}
+
+	async readLong(): Promise<number> {
+		const data = await this.readBytes(8);
+
+		return (data[0] << 56) | (data[1] << 48) | (data[2] << 40) | (data[3] << 32) | (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+	}
+
+	writeByte(value: number): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.socket.write(Buffer.from([value]), (error) => {
+				if (error) return reject(error);
+
+				resolve();
+			});
+		});
+	}
+
+	writeBytes(buffer: Buffer): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.socket.write(buffer, (error) => {
+				if (error) return reject(error);
+
+				resolve();
+			});
+		});
+	}
+
+	writePacket(packet: Packet, prefixLength: boolean): Promise<void> {
+		if (prefixLength) {
+			const finalPacket = new Packet();
+			finalPacket.writeVarInt(packet.data.length);
+			finalPacket.writeByte(...packet.data);
+
+			return this.writeBytes(Buffer.from(finalPacket.data));
+		}
+
+		return this.writeBytes(Buffer.from(packet.data));
 	}
 
 	destroy(): void {

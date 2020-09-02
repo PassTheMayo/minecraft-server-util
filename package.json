@@ -1,6 +1,6 @@
 {
 	"name": "minecraft-server-util",
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"description": "A Node.js library that retrieves information about a Minecraft server.",
 	"main": "build/index.js",
 	"typings": "build/index.d.ts",

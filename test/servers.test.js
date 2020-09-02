@@ -1,6 +1,6 @@
 jest.setTimeout(1000 * 15);
 
-const ping = require('../build');
+const { ping } = require('../build');
 
 const servers = [
 	'hub.mcs.gg',
