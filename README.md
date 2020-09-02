@@ -21,12 +21,25 @@ Minecraft Version | `ping()` | `pingFE01FA()` | `pingFE01()` | `pingFE()`
 Beta 1.8 - 1.3.2  | No       | No             | No           | **Yes**
 
 ## Example
+
+### CommonJS
 ```js
 const { ping } = require('minecraft-server-util');
-// or
-import { ping } from 'minecraft-server-util';
 
 ping('play.hypixel.net', { port: 25565 }) // port is optional, defaults to 25565
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### ECMAScript Modules (ESM)
+```js
+import util from 'minecraft-server-util';
+
+util.ping('play.hypixel.net', { port: 25565 }) // port is optional, defaults to 25565
     .then((response) => {
         console.log(response);
     })
