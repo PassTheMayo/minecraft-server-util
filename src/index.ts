@@ -2,9 +2,10 @@ import assert from 'assert';
 import Packet from './structure/Packet';
 import Socket from './structure/Socket';
 import getVarIntSize from './util/getVarIntSize';
-import formatResult, { Response } from './util/formatResult';
+import formatResult from './util/formatResult';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
-import { RawResponse } from './util/parseDescription';
+import { Response } from './model/Response';
+import { RawResponse } from './model/RawResponse';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 

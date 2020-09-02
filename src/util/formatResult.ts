@@ -1,29 +1,8 @@
 import assert from 'assert';
-import Description from '../structure/Description';
-import parseDescription, { RawResponse, ModInfo } from './parseDescription';
+import parseDescription from './parseDescription';
 import { SRVRecord } from './resolveSRV';
-
-interface SamplePlayer {
-	name: string,
-	id: string
-}
-
-interface Response {
-	host: string;
-	port: number;
-	srvRecord: {
-		host: string,
-		port: number
-	} | null,
-	version: string | null;
-	protocolVersion: number | null;
-	onlinePlayers: number | null;
-	maxPlayers: number | null;
-	samplePlayers: SamplePlayer[] | null;
-	description: Description | null;
-	favicon: string | null;
-	modInfo: ModInfo | null;
-}
+import { Response } from '../model/Response';
+import { RawResponse } from '../model/RawResponse';
 
 function formatResult(host: string, port: number, srvRecord: SRVRecord | null, result: RawResponse): Response {
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
@@ -56,5 +35,4 @@ function formatResult(host: string, port: number, srvRecord: SRVRecord | null, r
 	};
 }
 
-export { Response };
 export default formatResult;
