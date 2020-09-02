@@ -7,7 +7,6 @@
 	"scripts": {
 		"build": "tsc",
 		"clean": "rimraf ./build/",
-		"prepublish": "npm test && npm run clean && npm run build",
 		"test": "jest --detectOpenHandles"
 	},
 	"keywords": [
