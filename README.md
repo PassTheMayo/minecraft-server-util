@@ -15,7 +15,7 @@ There are several protocol changes over the years of Minecraft that require diff
 
 Minecraft Version | `ping()` | `pingFE01FA()` | `pingFE01()` | `pingFE()`
 ----------------- | -------- | -------------- | ------------ | ----------
-1.7.2 - Latest    | **Yes**  | **Yes**        | **Yes**      | **Yes**
+1.7.2 - Latest    | **Yes**  | **Yes**        | **Yes**      | Maybe
 1.6.1 - 1.6.4     | No       | **Yes**        | **Yes**      | **Yes**
 1.4.2 - 1.5.2     | No       | No             | **Yes**      | **Yes**
 Beta 1.8 - 1.3.2  | No       | No             | No           | **Yes**
