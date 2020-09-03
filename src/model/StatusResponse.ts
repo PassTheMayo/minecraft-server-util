@@ -1,4 +1,4 @@
-import { ModInfo } from './RawResponse';
+import { ModInfo } from './RawStatusResponse';
 import Description from '../structure/Description';
 
 interface SamplePlayer {
@@ -6,7 +6,7 @@ interface SamplePlayer {
 	id: string
 }
 
-interface Response {
+interface StatusResponse {
 	host: string;
 	port: number;
 	srvRecord: {
@@ -23,4 +23,4 @@ interface Response {
 	modInfo: ModInfo | null;
 }
 
-export { Response, SamplePlayer };
+export { StatusResponse, SamplePlayer };

@@ -2,7 +2,7 @@ import assert from 'assert';
 import net from 'net';
 import Packet from './Packet';
 
-class Socket {
+class TCPSocket {
 	public socket: net.Socket;
 	public isConnected = false;
 	private buffer: number[] = [];
@@ -15,7 +15,7 @@ class Socket {
 		});
 	}
 
-	static connect(host: string, port: number, timeout: number): Promise<Socket> {
+	static connect(host: string, port: number, timeout: number): Promise<TCPSocket> {
 		assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 		assert(Number.isInteger(port), 'Expected integer, got ' + port);
 		assert(port > 0, 'Expected port > 0, got ' + port);
@@ -26,7 +26,7 @@ class Socket {
 
 		return new Promise((resolve, reject) => {
 			const connectHandler = () => {
-				resolve(new Socket(socket));
+				resolve(new TCPSocket(socket));
 
 				socket.removeListener('connect', connectHandler);
 			};
@@ -166,6 +166,12 @@ class Socket {
 		return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
 	}
 
+	async readIntLE(): Promise<number> {
+		const data = await this.readBytes(4);
+
+		return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
+	}
+
 	async readLong(): Promise<number> {
 		const data = await this.readBytes(8);
 
@@ -204,10 +210,16 @@ class Socket {
 		return this.writeBytes(Buffer.from(packet.data));
 	}
 
-	destroy(): void {
-		this.socket.removeAllListeners();
-		this.socket.destroy();
+	destroy(): Promise<void> {
+		return new Promise((resolve) => {
+			this.socket.removeAllListeners();
+			this.socket.end(() => {
+				resolve();
+
+				this.socket.destroy();
+			});
+		});
 	}
 }
 
-export default Socket;
+export default TCPSocket;

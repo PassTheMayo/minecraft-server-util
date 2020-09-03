@@ -1,7 +1,7 @@
 {
 	"name": "minecraft-server-util",
-	"version": "2.1.0",
-	"description": "A Node.js library that retrieves information about a Minecraft server.",
+	"version": "2.2.0",
+	"description": "A Node.js library for Minecraft servers that can ping, query, and RCON.",
 	"main": "build/index.js",
 	"typings": "build/index.d.ts",
 	"scripts": {

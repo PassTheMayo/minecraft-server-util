@@ -8,7 +8,7 @@ interface ModInfo {
 	}[]
 }
 
-interface RawResponse {
+interface RawStatusResponse {
 	version?: {
 		name?: string,
 		protocol?: number
@@ -26,4 +26,4 @@ interface RawResponse {
 	modinfo?: ModInfo
 }
 
-export { RawResponse, ModInfo };
+export { RawStatusResponse, ModInfo };

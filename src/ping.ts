@@ -1,33 +1,28 @@
 import assert from 'assert';
 import Packet from './structure/Packet';
-import Socket from './structure/Socket';
+import TCPSocket from './structure/TCPSocket';
 import getVarIntSize from './util/getVarIntSize';
 import formatResult from './util/formatResult';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
-import { Response } from './model/Response';
-import { RawResponse } from './model/RawResponse';
+import { StatusResponse } from './model/StatusResponse';
+import { RawStatusResponse } from './model/RawStatusResponse';
+import getTimeoutPromise from './util/getTimeoutPromise';
+import { PingOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
-interface Options {
-	port?: number,
-	protocolVersion?: number,
-	pingTimeout?: number,
-	enableSRV?: boolean
-}
-
-function applyDefaultOptions(options?: Options): Required<Options> {
+function applyDefaultOptions(options?: PingOptions): Required<PingOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 25565,
 		protocolVersion: 47,
 		pingTimeout: 1000 * 5,
 		enableSRV: true
-	} as Required<Options>, options);
+	} as Required<PingOptions>, options);
 }
 
 // Pings the server using the new 1.7+ ping format
-async function ping(host: string, options?: Options): Promise<Response> {
+async function ping(host: string, options?: PingOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -55,7 +50,7 @@ async function ping(host: string, options?: Options): Promise<Response> {
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await Socket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
 
 	// Create the necessary packets and send them to the server
 	{
@@ -100,14 +95,14 @@ async function ping(host: string, options?: Options): Promise<Response> {
 	}
 
 	// Destroy the socket, it is no longer needed
-	socket.destroy();
+	await socket.destroy();
 
 	if (data === null) {
 		throw new Error('Failed to recieve correct packet within 3 attempts');
 	}
 
 	// Convert the raw JSON string provided by the server into a JavaScript object
-	let result: RawResponse;
+	let result: RawStatusResponse;
 
 	try {
 		result = JSON.parse(data);
@@ -119,4 +114,11 @@ async function ping(host: string, options?: Options): Promise<Response> {
 	return formatResult(host, opts.port, srvRecord, result);
 }
 
-export default ping;
+function pingWithTimeout(host: string, options?: PingOptions): Promise<StatusResponse> {
+	return Promise.race([
+		ping(host, options),
+		getTimeoutPromise<StatusResponse>(options?.pingTimeout ?? 1000 * 15, 'Failed to ping server within time')
+	]);
+}
+
+export { pingWithTimeout as ping };

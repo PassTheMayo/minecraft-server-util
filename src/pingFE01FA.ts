@@ -1,32 +1,27 @@
 import assert from 'assert';
 import Packet from './structure/Packet';
-import Socket from './structure/Socket';
+import TCPSocket from './structure/TCPSocket';
 import formatResultFE01FA from './util/formatResultFE01FA';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
-import { Response } from './model/Response';
+import { StatusResponse } from './model/StatusResponse';
 import decodeUTF16BE from './util/decodeUTF16BE';
+import getTimeoutPromise from './util/getTimeoutPromise';
+import { PingOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
-interface Options {
-	port?: number,
-	protocolVersion?: number,
-	pingTimeout?: number,
-	enableSRV?: boolean
-}
-
-function applyDefaultOptions(options?: Options): Required<Options> {
+function applyDefaultOptions(options?: PingOptions): Required<PingOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 25565,
 		protocolVersion: 47,
 		pingTimeout: 1000 * 5,
 		enableSRV: true
-	} as Required<Options>, options);
+	} as Required<PingOptions>, options);
 }
 
 // Pings the server using the 1.6 ping format
-async function pingFE01FA(host: string, options?: Options): Promise<Response> {
+async function pingFE01FA(host: string, options?: PingOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -54,7 +49,7 @@ async function pingFE01FA(host: string, options?: Options): Promise<Response> {
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await Socket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
 
 	// Create the necessary packets and send them to the server
 	{
@@ -79,7 +74,7 @@ async function pingFE01FA(host: string, options?: Options): Promise<Response> {
 		const packetType = await socket.readByte();
 
 		// Packet was unexpected type, ignore the rest of the data in this packet
-		if (packetType !== 0xFF) {throw new Error('Packet returned from server was unexpected type');}
+		if (packetType !== 0xFF) { throw new Error('Packet returned from server was unexpected type'); }
 
 		// Read the length of the data string
 		const length = await socket.readShort();
@@ -95,16 +90,23 @@ async function pingFE01FA(host: string, options?: Options): Promise<Response> {
 		playerCount = parseInt(playerCountStr);
 		maxPlayers = parseInt(maxPlayersStr);
 
-		if (isNaN(protocolVersion)) {throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr);}
-		if (isNaN(playerCount)) {throw new Error('Server returned an invalid player count: ' + playerCountStr);}
-		if (isNaN(maxPlayers)) {throw new Error('Server returned an invalid max player count: ' + maxPlayersStr);}
+		if (isNaN(protocolVersion)) { throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr); }
+		if (isNaN(playerCount)) { throw new Error('Server returned an invalid player count: ' + playerCountStr); }
+		if (isNaN(maxPlayers)) { throw new Error('Server returned an invalid max player count: ' + maxPlayersStr); }
 	}
 
 	// Destroy the socket, it is no longer needed
-	socket.destroy();
+	await socket.destroy();
 
 	// Convert the data from raw Minecraft ping payload format into a more human readable format and resolve the promise
 	return formatResultFE01FA(host, opts.port, srvRecord, protocolVersion, serverVersion, motd, playerCount, maxPlayers);
 }
 
-export default pingFE01FA;
+function pingWithTimeout(host: string, options?: PingOptions): Promise<StatusResponse> {
+	return Promise.race([
+		pingFE01FA(host, options),
+		getTimeoutPromise<StatusResponse>(options?.pingTimeout ?? 1000 * 15, 'Failed to ping server within time')
+	]);
+}
+
+export { pingWithTimeout as pingFE01FA };

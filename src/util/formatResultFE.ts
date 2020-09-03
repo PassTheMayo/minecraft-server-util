@@ -1,9 +1,9 @@
 import assert from 'assert';
 import parseDescription from './parseDescription';
 import { SRVRecord } from './resolveSRV';
-import { Response } from '../model/Response';
+import { StatusResponse } from '../model/StatusResponse';
 
-function formatResult(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number): Response {
+function formatResult(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number): StatusResponse {
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 	assert(Number.isInteger(port), 'Expected integer, got ' + port);
 	assert(port > 0, 'Expected port > 0, got ' + port);

@@ -46,6 +46,12 @@
 				"describe": true,
 				"it": true
 			}
+		},
+		{
+			"files": "examples/**/*",
+			"rules": {
+				"@typescript-eslint/no-var-requires": "off"
+			}
 		}
 	]
 }
