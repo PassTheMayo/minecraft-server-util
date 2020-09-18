@@ -15,6 +15,7 @@ class TCPSocket {
 		});
 	}
 
+	// Connects to the server using a TCP socket
 	static connect(host: string, port: number, timeout: number): Promise<TCPSocket> {
 		assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 		assert(Number.isInteger(port), 'Expected integer, got ' + port);
@@ -63,6 +64,7 @@ class TCPSocket {
 		});
 	}
 
+	// Reads a byte (uint8) from the stream
 	readByte(): Promise<number> {
 		if (this.buffer.length > 0) { return Promise.resolve(this.buffer.shift() || 0); }
 
@@ -87,6 +89,7 @@ class TCPSocket {
 		});
 	}
 
+	// Reads multiple bytes (uint[]) from the stream
 	readBytes(length: number): Promise<number[]> {
 		if (this.buffer.length >= length) {
 			const value = this.buffer.slice(0, length);
@@ -119,6 +122,7 @@ class TCPSocket {
 		});
 	}
 
+	// Reads a varint (variable sized integer) from the stream
 	async readVarInt(): Promise<number> {
 		let numRead = 0;
 		let result = 0;
@@ -141,53 +145,21 @@ class TCPSocket {
 		return result;
 	}
 
-	async readString(): Promise<string> {
-		const length = await this.readVarInt();
-		const data = await this.readBytes(length);
-
-		let value = '';
-
-		for (let i = 0; i < data.length; i++) {
-			value += String.fromCharCode(data[i]);
-		}
-
-		return value;
-	}
-
+	// Reads a short (int16) from the stream
 	async readShort(): Promise<number> {
 		const data = await this.readBytes(2);
 
 		return (data[0] << 8) | data[1];
 	}
 
-	async readInt(): Promise<number> {
-		const data = await this.readBytes(4);
-
-		return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
-	}
-
+	// Reads a short (int16, little endian) from the stream
 	async readIntLE(): Promise<number> {
 		const data = await this.readBytes(4);
 
 		return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 	}
 
-	async readLong(): Promise<number> {
-		const data = await this.readBytes(8);
-
-		return (data[0] << 56) | (data[1] << 48) | (data[2] << 40) | (data[3] << 32) | (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
-	}
-
-	writeByte(value: number): Promise<void> {
-		return new Promise((resolve, reject) => {
-			this.socket.write(Buffer.from([value]), (error) => {
-				if (error) { return reject(error); }
-
-				resolve();
-			});
-		});
-	}
-
+	// Writes multiple bytes (uint8[]) to the stream
 	writeBytes(buffer: Buffer): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(buffer, (error) => {
@@ -198,6 +170,7 @@ class TCPSocket {
 		});
 	}
 
+	// Writes the packet to the stream
 	writePacket(packet: Packet, prefixLength: boolean): Promise<void> {
 		if (prefixLength) {
 			const finalPacket = new Packet();
@@ -210,6 +183,7 @@ class TCPSocket {
 		return this.writeBytes(Buffer.from(packet.data));
 	}
 
+	// Closes the stream and destroys all event listeners
 	destroy(): Promise<void> {
 		return new Promise((resolve) => {
 			this.socket.removeAllListeners();

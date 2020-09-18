@@ -6,22 +6,22 @@ import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
 import decodeUTF16BE from './util/decodeUTF16BE';
 import getTimeoutPromise from './util/getTimeoutPromise';
-import { PingOptions } from './model/Options';
+import { StatusOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
-function applyDefaultOptions(options?: PingOptions): Required<PingOptions> {
+function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 25565,
 		protocolVersion: 47,
-		pingTimeout: 1000 * 5,
+		timeout: 1000 * 5,
 		enableSRV: true
-	} as Required<PingOptions>, options);
+	} as Required<StatusOptions>, options);
 }
 
-// Pings the server using the 1.4-1.5 ping format
-async function pingFE01(host: string, options?: PingOptions): Promise<StatusResponse> {
+// Retrieves the status of a server using the 1.6 status format
+async function statusFE01FA(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -37,8 +37,8 @@ async function pingFE01(host: string, options?: PingOptions): Promise<StatusResp
 	assert(typeof opts.protocolVersion === 'number', `Expected 'options.protocolVersion' to be a number, got ${typeof opts.protocolVersion}`);
 	assert(opts.protocolVersion >= 0, `Expected 'options.protocolVersion' to be greater than or equal to 0, got ${opts.protocolVersion}`);
 	assert(Number.isInteger(opts.protocolVersion), `Expected 'options.protocolVersion' to be an integer, got ${opts.protocolVersion}`);
-	assert(typeof opts.pingTimeout === 'number', `Expected 'options.pingTimeout' to be a number, got ${typeof opts.pingTimeout}`);
-	assert(opts.pingTimeout > 0, `Expected 'options.pingTimeout' to be greater than 0, got ${opts.pingTimeout}`);
+	assert(typeof opts.timeout === 'number', `Expected 'options.timeout' to be a number, got ${typeof opts.timeout}`);
+	assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
 	assert(typeof opts.enableSRV === 'boolean', `Expected 'options.enableSRV' to be a boolean, got ${typeof opts.enableSRV}`);
 
 	let srvRecord: SRVRecord | null = null;
@@ -49,13 +49,18 @@ async function pingFE01(host: string, options?: PingOptions): Promise<StatusResp
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.timeout);
 
 	// Create the necessary packets and send them to the server
 	{
-		// https://wiki.vg/Server_List_Ping#1.4_to_1.5
+		// https://wiki.vg/Server_List_Ping#Client_to_server
 		const packet = new Packet();
-		packet.writeByte(0xFE, 0x01);
+		packet.writeByte(0xFE, 0x01, 0xFA, 0x00, 0x0B, 0x00, 0x4D, 0x00, 0x43, 0x00, 0x7C, 0x00, 0x50, 0x00, 0x69, 0x00, 0x6E, 0x00, 0x67, 0x00, 0x48, 0x00, 0x6F, 0x00, 0x73, 0x00, 0x74);
+		packet.writeShortBE(7 + host.length);
+		packet.writeByte(opts.protocolVersion);
+		packet.writeShortBE(host.length);
+		packet.writeString(host, false);
+		packet.writeIntBE(opts.port);
 		socket.writePacket(packet, false);
 	}
 
@@ -93,15 +98,15 @@ async function pingFE01(host: string, options?: PingOptions): Promise<StatusResp
 	// Destroy the socket, it is no longer needed
 	await socket.destroy();
 
-	// Convert the data from raw Minecraft ping payload format into a more human readable format and resolve the promise
+	// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
 	return formatResultFE01FA(host, opts.port, srvRecord, protocolVersion, serverVersion, motd, playerCount, maxPlayers);
 }
 
-function pingWithTimeout(host: string, options?: PingOptions): Promise<StatusResponse> {
+function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	return Promise.race([
-		pingFE01(host, options),
-		getTimeoutPromise<StatusResponse>(options?.pingTimeout ?? 1000 * 15, 'Failed to ping server within time')
+		statusFE01FA(host, options),
+		getTimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time')
 	]);
 }
 
-export { pingWithTimeout as pingFE01 };
+export { statusWithTimeout as statusFE01FA };

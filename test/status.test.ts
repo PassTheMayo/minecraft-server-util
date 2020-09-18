@@ -1,7 +1,7 @@
 import 'mocha';
 import { assert } from 'chai';
 
-import ping from '../src';
+import util from '../src';
 import Description from '../src/structure/Description';
 
 const servers = [
@@ -19,10 +19,10 @@ const servers = [
 	'play.simplesurvival.gg'
 ];
 
-describe('ping()', () => {
+describe('status()', () => {
 	for (let i = 0; i < servers.length; i++) {
 		it(servers[i], (done) => {
-			ping.ping(servers[i])
+			util.status(servers[i])
 				.then((result) => {
 					assert(typeof result === 'object', `Expected result to be an object, got ${typeof result}`);
 					assert(typeof result.host === 'string', `Expected 'result.host' to be a string, got ${typeof result.host}`);

@@ -21,6 +21,7 @@ class UDPSocket {
 		});
 	}
 
+	// Reads a packet from the stream
 	readPacket(): Promise<Packet> {
 		if (this.buffer.length > 0) {
 			const packet = new Packet();
@@ -53,6 +54,7 @@ class UDPSocket {
 		});
 	}
 
+	// Writes a packet to the stream
 	writePacket(packet: Packet): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.send(Buffer.from(packet.data), this.port, this.host, (error) => {
@@ -65,6 +67,7 @@ class UDPSocket {
 		});
 	}
 
+	// Destroys all event listeners and closes the connection
 	destroy(): Promise<void> {
 		return new Promise((resolve) => {
 			this.socket.removeAllListeners();

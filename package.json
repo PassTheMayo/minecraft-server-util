@@ -1,9 +1,9 @@
 {
 	"name": "minecraft-server-util",
-	"version": "2.2.0",
-	"description": "A Node.js library for Minecraft servers that can ping, query, and RCON.",
-	"main": "build/index.js",
-	"typings": "build/index.d.ts",
+	"version": "3.0.0",
+	"description": "A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
 	"scripts": {
 		"prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
 		"build": "tsc",
@@ -15,28 +15,30 @@
 		"minecraft",
 		"server",
 		"status",
-		"ping"
+		"ping",
+		"query",
+		"rcon"
 	],
 	"author": "Jacob Gunther",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/chai": "^4.2.12",
 		"@types/mocha": "^8.0.3",
-		"@types/node": "^14.6.3",
-		"@typescript-eslint/eslint-plugin": "^4.0.1",
-		"@typescript-eslint/parser": "^4.0.1",
+		"@types/node": "^14.11.1",
+		"@typescript-eslint/eslint-plugin": "^4.1.1",
+		"@typescript-eslint/parser": "^4.1.1",
 		"chai": "^4.2.0",
-		"eslint": "^7.8.1",
+		"eslint": "^7.9.0",
 		"mocha": "^8.1.3",
 		"rimraf": "^3.0.2",
 		"ts-node": "^9.0.0",
 		"typescript": "^4.0.2"
 	},
 	"bugs": {
-		"url": "https://github.com/PassTheMayo/Minecraft-Ping"
+		"url": "https://github.com/PassTheMayo/minecraft-server-util"
 	},
 	"repository": {
-		"url": "https://github.com/PassTheMayo/Minecraft-Ping",
+		"url": "https://github.com/PassTheMayo/minecraft-server-util",
 		"type": "git"
 	}
 }

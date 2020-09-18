@@ -1,22 +1,19 @@
-interface PingOptions {
+interface BaseOptions {
     port?: number,
-    protocolVersion?: number,
-    pingTimeout?: number,
-    enableSRV?: boolean
+    enableSRV?: boolean,
+    timeout?: number
 }
 
-interface QueryOptions {
-    port?: number,
-    queryTimeout?: number,
-    enableSRV?: boolean,
+interface StatusOptions extends BaseOptions {
+    protocolVersion?: number
+}
+
+interface QueryOptions extends BaseOptions {
     sessionID?: number
 }
 
-interface RCONOptions {
-    port?: number,
-    password?: string,
-    connectTimeout?: number,
-    enableSRV?: boolean
+interface RCONOptions extends BaseOptions {
+    password?: string
 }
 
-export { PingOptions, QueryOptions, RCONOptions };
+export { StatusOptions, QueryOptions, RCONOptions };

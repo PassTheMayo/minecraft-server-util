@@ -14,7 +14,7 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 25565,
-		queryTimeout: 1000 * 5,
+		timeout: 1000 * 5,
 		enableSRV: true,
 		sessionID: ++sessionCounter
 	} as Required<QueryOptions>, options);
@@ -34,8 +34,8 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 	assert(opts.port > 0, `Expected 'options.port' to be greater than 0, got ${opts.port}`);
 	assert(opts.port < 65536, `Expected 'options.port' to be less than 65536, got ${opts.port}`);
 	assert(Number.isInteger(opts.port), `Expected 'options.port' to be an integer, got ${opts.port}`);
-	assert(typeof opts.queryTimeout === 'number', `Expected 'options.queryTimeout' to be a number, got ${typeof opts.queryTimeout}`);
-	assert(opts.queryTimeout > 0, `Expected 'options.queryTimeout' to be greater than 0, got ${opts.queryTimeout}`);
+	assert(typeof opts.timeout === 'number', `Expected 'options.timeout' to be a number, got ${typeof opts.timeout}`);
+	assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
 	assert(typeof opts.sessionID === 'number', `Expected 'options.sessionID' to be a number, got ${typeof opts.sessionID}`);
 	assert(opts.sessionID > 0, `Expected 'options.sessionID' to be greater than 0, got ${opts.sessionID}`);
 	assert(opts.sessionID < 0xFFFFFFFF, `Expected 'options.sessionID' to be less than ${0xFFFFFFFF}, got ${opts.sessionID}`);
@@ -58,7 +58,7 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		// https://wiki.vg/Query#Request
 		const requestPacket = new Packet();
 		requestPacket.writeByte(0xFE, 0xFD, 0x09);
-		requestPacket.writeInt(opts.sessionID);
+		requestPacket.writeIntBE(opts.sessionID);
 		await socket.writePacket(requestPacket);
 	}
 
@@ -67,7 +67,7 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		// https://wiki.vg/Query#Response
 		const responsePacket = await socket.readPacket();
 		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readInt();
+		const sessionID = responsePacket.readIntBE();
 		challengeToken = parseInt(responsePacket.readStringNT());
 
 		if (type !== 0x09) {
@@ -88,8 +88,8 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		// https://wiki.vg/Query#Request_2
 		const requestPacket = new Packet();
 		requestPacket.writeByte(0xFE, 0xFD, 0x00);
-		requestPacket.writeInt(opts.sessionID);
-		requestPacket.writeInt(challengeToken);
+		requestPacket.writeIntBE(opts.sessionID);
+		requestPacket.writeIntBE(challengeToken);
 		await socket.writePacket(requestPacket);
 	}
 
@@ -99,7 +99,7 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		// Read the response packet for the Basic stat from the server
 		const responsePacket = await socket.readPacket();
 		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readInt();
+		const sessionID = responsePacket.readIntBE();
 		motd = responsePacket.readStringNT();
 		gameType = responsePacket.readStringNT();
 		levelName = responsePacket.readStringNT();
@@ -143,7 +143,7 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
 	return Promise.race([
 		query(host, options),
-		getTimeoutPromise<BasicQueryResponse>(options?.queryTimeout ?? 1000 * 15, 'Failed to query server within time')
+		getTimeoutPromise<BasicQueryResponse>(options?.timeout ?? 1000 * 15, 'Failed to query server within time')
 	]);
 }
 

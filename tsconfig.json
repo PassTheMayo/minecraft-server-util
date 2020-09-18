@@ -7,7 +7,7 @@
 		],
 		"allowJs": false,
 		"declaration": true,
-		"outDir": "build/",
+		"outDir": "dist/",
 		"rootDir": "src/",
 		"removeComments": true,
 		"strict": true,
@@ -24,6 +24,9 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true
 	},
+	"include": [
+		"src/**/*.ts"
+	],
 	"exclude": [
 		"test/**/*",
 		"examples/**/*"

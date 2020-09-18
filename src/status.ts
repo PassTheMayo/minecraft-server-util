@@ -1,28 +1,27 @@
 import assert from 'assert';
 import Packet from './structure/Packet';
 import TCPSocket from './structure/TCPSocket';
-import getVarIntSize from './util/getVarIntSize';
 import formatResult from './util/formatResult';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
 import { RawStatusResponse } from './model/RawStatusResponse';
 import getTimeoutPromise from './util/getTimeoutPromise';
-import { PingOptions } from './model/Options';
+import { StatusOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
-function applyDefaultOptions(options?: PingOptions): Required<PingOptions> {
+function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 25565,
 		protocolVersion: 47,
-		pingTimeout: 1000 * 5,
+		timeout: 1000 * 5,
 		enableSRV: true
-	} as Required<PingOptions>, options);
+	} as Required<StatusOptions>, options);
 }
 
-// Pings the server using the new 1.7+ ping format
-async function ping(host: string, options?: PingOptions): Promise<StatusResponse> {
+// Retrieves the status of a server using the new 1.7+ status format and returns the status
+async function status(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -38,8 +37,8 @@ async function ping(host: string, options?: PingOptions): Promise<StatusResponse
 	assert(typeof opts.protocolVersion === 'number', `Expected 'options.protocolVersion' to be a number, got ${typeof opts.protocolVersion}`);
 	assert(opts.protocolVersion >= 0, `Expected 'options.protocolVersion' to be greater than or equal to 0, got ${opts.protocolVersion}`);
 	assert(Number.isInteger(opts.protocolVersion), `Expected 'options.protocolVersion' to be an integer, got ${opts.protocolVersion}`);
-	assert(typeof opts.pingTimeout === 'number', `Expected 'options.pingTimeout' to be a number, got ${typeof opts.pingTimeout}`);
-	assert(opts.pingTimeout > 0, `Expected 'options.pingTimeout' to be greater than 0, got ${opts.pingTimeout}`);
+	assert(typeof opts.timeout === 'number', `Expected 'options.timeout' to be a number, got ${typeof opts.timeout}`);
+	assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
 	assert(typeof opts.enableSRV === 'boolean', `Expected 'options.enableSRV' to be a boolean, got ${typeof opts.enableSRV}`);
 
 	let srvRecord: SRVRecord | null = null;
@@ -50,7 +49,7 @@ async function ping(host: string, options?: PingOptions): Promise<StatusResponse
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.pingTimeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.timeout);
 
 	// Create the necessary packets and send them to the server
 	{
@@ -59,7 +58,7 @@ async function ping(host: string, options?: PingOptions): Promise<StatusResponse
 		handshakePacket.writeVarInt(0x00);
 		handshakePacket.writeVarInt(opts.protocolVersion);
 		handshakePacket.writeString(host, true);
-		handshakePacket.writeShort(opts.port);
+		handshakePacket.writeUShortBE(opts.port);
 		handshakePacket.writeVarInt(1);
 		socket.writePacket(handshakePacket, true);
 
@@ -69,56 +68,36 @@ async function ping(host: string, options?: PingOptions): Promise<StatusResponse
 		socket.writePacket(requestPacket, true);
 	}
 
-	let data: string | null = null;
-
-	// Loop over each packet returned and wait until it receives a Response packet
 	// https://wiki.vg/Server_List_Ping#Response
-	for (let i = 0; i < 3; i++) {
-		const packetLength = await socket.readVarInt();
-		const packetType = await socket.readVarInt();
+	const responsePacket = await Packet.from(socket);
+	const packetType = responsePacket.readVarInt();
 
-		// Packet was unexpected type, ignore the rest of the data in this packet
-		if (packetType !== 0) {
-			const readSize = packetLength - getVarIntSize(packetType);
-
-			if (readSize > 0) {
-				await socket.readBytes(readSize);
-			}
-
-			continue;
-		}
-
-		// Packet was expected type, read the contents of the packet for the ping data
-		data = await socket.readString();
-
-		break;
+	// Packet was unexpected type, ignore the rest of the data in this packet
+	if (packetType !== 0) {
+		throw new Error('Server sent an invalid packet type');
 	}
 
 	// Destroy the socket, it is no longer needed
 	await socket.destroy();
 
-	if (data === null) {
-		throw new Error('Failed to recieve correct packet within 3 attempts');
-	}
-
 	// Convert the raw JSON string provided by the server into a JavaScript object
 	let result: RawStatusResponse;
 
 	try {
-		result = JSON.parse(data);
+		result = JSON.parse(responsePacket.readString());
 	} catch (e) {
 		throw new Error('Response from server is not valid JSON');
 	}
 
-	// Convert the data from raw Minecraft ping payload format into a more human readable format and resolve the promise
+	// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
 	return formatResult(host, opts.port, srvRecord, result);
 }
 
-function pingWithTimeout(host: string, options?: PingOptions): Promise<StatusResponse> {
+function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	return Promise.race([
-		ping(host, options),
-		getTimeoutPromise<StatusResponse>(options?.pingTimeout ?? 1000 * 15, 'Failed to ping server within time')
+		status(host, options),
+		getTimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time')
 	]);
 }
 
-export { pingWithTimeout as ping };
+export { statusWithTimeout as status };

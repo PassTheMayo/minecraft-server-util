@@ -1,19 +1,19 @@
-# Minecraft Server Util
-A Node.js library for Minecraft servers that can ping, query, and RCON.
+# minecraft-server-util
+A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.
 
-![npm version](https://img.shields.io/npm/v/minecraft-server-util?label=version)
-![License](https://img.shields.io/npm/l/minecraft-server-util)
+[![npm version](https://img.shields.io/npm/v/minecraft-server-util?label=version)](https://www.npmjs.com/package/minecraft-server-util)
+[![License](https://img.shields.io/npm/l/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)
 ![npm weekly downloads](https://img.shields.io/npm/dw/minecraft-server-util)
-![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/Minecraft-Ping)
+[![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/issues)
 
 ## Installation
 `npm i minecraft-server-util`
 
-## Ping Methods
+## Status Methods
 
 There are several protocol changes over the years of Minecraft that require different implementations in order to get the status of the server. All of the methods below are exported from the package as a property (or module if using ESM).
 
-Minecraft Version | `ping()` | `pingFE01FA()` | `pingFE01()` | `pingFE()`
+Minecraft Version | `status()` | `statusFE01FA()` | `statusFE01()` | `statusFE()`
 ----------------- | -------- | -------------- | ------------ | ----------
 1.7.2 - Latest    | **Yes**  | **Yes**        | **Yes**      | Maybe
 1.6.1 - 1.6.4     | No       | **Yes**        | **Yes**      | **Yes**
@@ -22,11 +22,11 @@ Beta 1.8 - 1.3.2  | No       | No             | No           | **Yes**
 
 ## Examples
 
-### Ping/Status
+### Status
 ```js
 const util = require('minecraft-server-util');
 
-util.ping('play.hypixel.net', { port: 25565 }) // port is optional, defaults to 25565
+util.status('play.hypixel.net', { port: 25565 }) // port is optional, defaults to 25565
     .then((response) => {
         console.log(response);
     })
@@ -70,7 +70,7 @@ client.connect()
 There are more examples within the `examples/` folder.
 
 ## API
-The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/Minecraft-Ping/wiki).
+The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/minecraft-server-util/wiki).
 
 ## License
-[MIT License](https://github.com/PassTheMayo/Minecraft-Ping/blob/master/LICENSE)
+[MIT License](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)

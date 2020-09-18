@@ -15,7 +15,7 @@ function applyDefaultOptions(options?: RCONOptions): Required<RCONOptions> {
 	return Object.assign({
 		port: 25575,
 		password: '',
-		connectTimeout: 1000 * 15,
+		timeout: 1000 * 15,
 		enableSRV: true
 	} as Required<RCONOptions>, options);
 }
@@ -38,6 +38,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		this.requestID = 0;
 	}
 
+	// Connects to the server using TCP and sends the correct login packets
 	async connect(): Promise<void> {
 		let srvRecord: SRVRecord | null = null;
 
@@ -51,7 +52,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		}
 
 		// Create a TCP connection to the server and wait for it to connect
-		this.socket = await TCPSocket.connect(this.host, this.options.port, this.options.connectTimeout);
+		this.socket = await TCPSocket.connect(this.host, this.options.port, this.options.timeout);
 
 		{
 			// Create a login packet and send it to the server
@@ -103,6 +104,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		});
 	}
 
+	// Executes the command on the server
 	async run(command: string): Promise<void> {
 		if (this.socket === null || this.socket.socket.connecting) {
 			throw new Error('Socket has not connected yet, please run RCON#connect()');
@@ -121,6 +123,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		return this.socket.writePacket(commandPacket, false);
 	}
 
+	// Closes the connection to the server
 	close(): Promise<void> {
 		if (this.socket === null) {
 			throw new Error('Socket is already closed');

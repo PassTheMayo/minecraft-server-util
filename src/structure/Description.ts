@@ -15,7 +15,7 @@ class Description {
 		return this.descriptionText.replace(formattingCode, '');
 	}
 
-	// TODO: implement coercing to HTML string
+	// TODO implement coercing to HTML string
 }
 
 export default Description;
