@@ -16,7 +16,8 @@ const servers = [
 	'play.chaoscraft.org',
 	'play.pixelmonrealms.com',
 	'play.extremecraft.net',
-	'play.simplesurvival.gg'
+	'play.simplesurvival.gg',
+	'neonmc.tk'
 ];
 
 describe('status()', () => {
