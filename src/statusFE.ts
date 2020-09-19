@@ -49,7 +49,7 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, opts.port, opts.timeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
 
 	// Create the necessary packets and send them to the server
 	{
