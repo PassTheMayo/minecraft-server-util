@@ -5,6 +5,7 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
 [![License](https://img.shields.io/npm/l/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)
 ![npm weekly downloads](https://img.shields.io/npm/dw/minecraft-server-util)
 [![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/issues)
+[![Discord server](https://img.shields.io/discord/758533537095090206?label=discord)](https://discord.gg/e7jgDYY)
 
 ## Installation
 `npm i minecraft-server-util`
@@ -71,6 +72,9 @@ There are more examples within the `examples/` folder.
 
 ## API
 The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/minecraft-server-util/wiki).
+
+## Discord
+[https://discord.gg/e7jgDYY](https://discord.gg/e7jgDYY)
 
 ## License
 [MIT License](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)

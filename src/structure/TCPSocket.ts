@@ -2,11 +2,28 @@ import assert from 'assert';
 import net from 'net';
 import Packet from './Packet';
 
+/**
+ * A TCP socket utility class for easily interacting with remote sockets.
+ * @class
+ */
 class TCPSocket {
+	/**
+	 * The raw TCP socket provided by Node.js methods.
+	 * @type {net.Socket}
+	 */
 	public socket: net.Socket;
+	/**
+	 * A boolean that indicates whether the socket is connected or not.
+	 * @type {boolean}
+	 */
 	public isConnected = false;
 	private buffer: number[] = [];
 
+	/**
+	 * Creates a new TCP socket class from the existing connection.
+	 * @param {net.Socket} socket The existing TCP connection
+	 * @constructor
+	 */
 	constructor(socket: net.Socket) {
 		this.socket = socket;
 
@@ -15,7 +32,14 @@ class TCPSocket {
 		});
 	}
 
-	// Connects to the server using a TCP socket
+	/**
+	 * Automatically connects to the server using the host and port.
+	 * @param {string} host The host of the server
+	 * @param {number} port The port of the server
+	 * @param {number} timeout The timeout in milliseconds
+	 * @returns {Promise<TCPSocket>} A Promise that resolves to the TCP socket
+	 * @async
+	 */
 	static connect(host: string, port: number, timeout: number): Promise<TCPSocket> {
 		assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 		assert(Number.isInteger(port), 'Expected integer, got ' + port);
@@ -64,7 +88,11 @@ class TCPSocket {
 		});
 	}
 
-	// Reads a byte (uint8) from the stream
+	/**
+	 * Reads a byte from the stream.
+	 * @returns {Promise<number>} The byte read from the stream
+	 * @async
+	 */
 	readByte(): Promise<number> {
 		if (this.buffer.length > 0) { return Promise.resolve(this.buffer.shift() || 0); }
 
@@ -89,7 +117,12 @@ class TCPSocket {
 		});
 	}
 
-	// Reads multiple bytes (uint[]) from the stream
+	/**
+	 * Read bytes from the stream.
+	 * @param {number} length The amount of bytes to read
+	 * @returns {Promise<number[]>} The bytes read from the stream
+	 * @async
+	 */
 	readBytes(length: number): Promise<number[]> {
 		if (this.buffer.length >= length) {
 			const value = this.buffer.slice(0, length);
@@ -122,7 +155,11 @@ class TCPSocket {
 		});
 	}
 
-	// Reads a varint (variable sized integer) from the stream
+	/**
+	 * Read a varint from the stream.
+	 * @returns {Promise<number>} The varint read from the stream
+	 * @async
+	 */
 	async readVarInt(): Promise<number> {
 		let numRead = 0;
 		let result = 0;
@@ -145,21 +182,34 @@ class TCPSocket {
 		return result;
 	}
 
-	// Reads a short (int16) from the stream
+	/**
+	 * Reads a short (int16, big-endian) from the stream.
+	 * @returns {Promise<number>} The int16 read from the stream
+	 * @async
+	 */
 	async readShort(): Promise<number> {
 		const data = await this.readBytes(2);
 
 		return (data[0] << 8) | data[1];
 	}
 
-	// Reads a short (int16, little endian) from the stream
+	/**
+	 * Reads a short (int16, little-endian) from the stream.
+	 * @returns {Promise<number>} The int16 read from the stream
+	 * @async
+	 */
 	async readIntLE(): Promise<number> {
 		const data = await this.readBytes(4);
 
 		return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 	}
 
-	// Writes multiple bytes (uint8[]) to the stream
+	/**
+	 * Writes bytes to the stream.
+	 * @param {Buffer} buffer The buffer to write to the stream.
+	 * @returns {Promise<void>} The Promise that resolves when it has successfully written the data
+	 * @async
+	 */
 	writeBytes(buffer: Buffer): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(buffer, (error) => {
@@ -170,7 +220,13 @@ class TCPSocket {
 		});
 	}
 
-	// Writes the packet to the stream
+	/**
+	 * Writes a {@see Packet} to the stream.
+	 * @param {Packet} packet The Packet to write to the stream
+	 * @param {boolean} prefixLength Write the packet length as a prefix as a varint
+	 * @returns {Promise<void>} The Promise that resolves when the packet has been written
+	 * @async
+	 */
 	writePacket(packet: Packet, prefixLength: boolean): Promise<void> {
 		if (prefixLength) {
 			const finalPacket = new Packet();
@@ -183,7 +239,11 @@ class TCPSocket {
 		return this.writeBytes(Buffer.from(packet.data));
 	}
 
-	// Closes the stream and destroys all event listeners
+	/**
+	 * Closes the stream and cleans up data.
+	 * @returns {Promise<void>} The Promise that resolves when the connection has closed
+	 * @async
+	 */
 	destroy(): Promise<void> {
 		return new Promise((resolve) => {
 			this.socket.removeAllListeners();

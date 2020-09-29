@@ -29,8 +29,13 @@ const formatCodes = {
 	reset: 'r'
 };
 
+/**
+ * Parses the MOTD from the many formats that Minecraft uses into a {@see Description} class.
+ * @param {Chat | string} description The raw MOTD provided by the server
+ * @returns {Description} The formatted result of the description
+ */
 function parseDescription(description: Chat | string): Description {
-	if (typeof description === 'string') {return new Description(description);}
+	if (typeof description === 'string') { return new Description(description); }
 
 	let result = '';
 

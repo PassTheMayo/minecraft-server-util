@@ -20,7 +20,13 @@ function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 	} as Required<StatusOptions>, options);
 }
 
-// Retrieves the status of a server using the beta 1.8-1.3 status format and returns the status
+/**
+ * Retrieves the status of the server using the Beta 1.8 - 1.3.2 format.
+ * @param host The host of the server
+ * @param options The options to use when retrieving the status
+ * @returns {Promise<StatusResponse>} The status information of the server
+ * @async
+ */
 async function statusFE(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
@@ -92,6 +98,13 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
 	return formatResultFE(host, opts.port, srvRecord, motd, playerCount, maxPlayers);
 }
 
+/**
+ * Retrieves the status of the server using the Beta 1.8 - 1.3.2 format.
+ * @param host The host of the server
+ * @param options The options to use when retrieving the status
+ * @returns {Promise<StatusResponse>} The status information of the server
+ * @async
+ */
 function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	return Promise.race([
 		statusFE(host, options),

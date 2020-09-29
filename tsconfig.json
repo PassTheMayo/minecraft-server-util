@@ -9,7 +9,6 @@
 		"declaration": true,
 		"outDir": "dist/",
 		"rootDir": "src/",
-		"removeComments": true,
 		"strict": true,
 		"noImplicitAny": true,
 		"strictNullChecks": true,

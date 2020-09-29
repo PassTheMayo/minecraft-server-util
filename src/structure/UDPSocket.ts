@@ -1,6 +1,10 @@
 import dgram from 'dgram';
 import Packet from './Packet';
 
+/**
+ * A UDP socket class for reading and writing data to a remote socket.
+ * @class
+ */
 class UDPSocket {
 	private host: string;
 	private port: number;
@@ -10,6 +14,12 @@ class UDPSocket {
 		message: Buffer
 	}[];
 
+	/**
+	 * Creates a new UDP socket class from the host and port.
+	 * @param {string} host The host of the server
+	 * @param {port} port The port of the server
+	 * @constructor
+	 */
 	constructor(host: string, port: number) {
 		this.host = host;
 		this.port = port;
@@ -21,7 +31,11 @@ class UDPSocket {
 		});
 	}
 
-	// Reads a packet from the stream
+	/**
+	 * Reads a packet from the UDP socket.
+	 * @returns {Promise<Packet>} The packet read from the socket
+	 * @async
+	 */
 	readPacket(): Promise<Packet> {
 		if (this.buffer.length > 0) {
 			const packet = new Packet();
@@ -54,7 +68,12 @@ class UDPSocket {
 		});
 	}
 
-	// Writes a packet to the stream
+	/**
+	 * Writes a packet to the UDP connection.
+	 * @param {Packet} packet The packet to write to the connection
+	 * @returns {Promise<void>} A Promise that resolves when it has written the packet
+	 * @async
+	 */
 	writePacket(packet: Packet): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.send(Buffer.from(packet.data), this.port, this.host, (error) => {
@@ -67,7 +86,11 @@ class UDPSocket {
 		});
 	}
 
-	// Destroys all event listeners and closes the connection
+	/**
+	 * Closes the connection and cleans up data.
+	 * @returns {Promise<void>} A Promise that resolves when the client has closed
+	 * @async
+	 */
 	destroy(): Promise<void> {
 		return new Promise((resolve) => {
 			this.socket.removeAllListeners();

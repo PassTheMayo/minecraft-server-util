@@ -20,7 +20,13 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 	} as Required<QueryOptions>, options);
 }
 
-// Queries the server for basic information using the UDP socket
+/**
+ * Performs a basic query on the server using the UDP protocol.
+ * @param host The host of the server
+ * @param options The options to use when performing the query
+ * @returns {Promise<BasicQueryResponse>} The basic query response data
+ * @async
+ */
 async function query(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
@@ -140,6 +146,13 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 	};
 }
 
+/**
+ * Performs a basic query on the server using the UDP protocol.
+ * @param host The host of the server
+ * @param options The options to use when performing the query
+ * @returns {Promise<BasicQueryResponse>} The basic query response data
+ * @async
+ */
 function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
 	return Promise.race([
 		query(host, options),

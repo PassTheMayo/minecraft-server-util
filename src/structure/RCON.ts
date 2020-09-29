@@ -20,6 +20,12 @@ function applyDefaultOptions(options?: RCONOptions): Required<RCONOptions> {
 	} as Required<RCONOptions>, options);
 }
 
+/**
+ * A utility class for executing commands remotely on a Minecraft server.
+ * @class
+ * @extends {EventEmitter}
+ * @implements {RCONEvents}
+ */
 class RCON extends EventEmitter implements RCONEvents {
 	private host: string;
 	private isLoggedIn: boolean;
@@ -27,6 +33,12 @@ class RCON extends EventEmitter implements RCONEvents {
 	private socket: TCPSocket | null = null;
 	private requestID: number;
 
+	/**
+	 * Creates a new RCON class with the host and options
+	 * @param {string} host The host of the server
+	 * @param {RCONOptions} options The options for the RCON client
+	 * @constructor
+	 */
 	constructor(host: string, options?: RCONOptions) {
 		super();
 
@@ -38,7 +50,11 @@ class RCON extends EventEmitter implements RCONEvents {
 		this.requestID = 0;
 	}
 
-	// Connects to the server using TCP and sends the correct login packets
+	/**
+	 * Connects to the server using TCP and sends the correct login packets.
+	 * @returns {Promise<void>} A Promise that resolves when it has successfully logged in
+	 * @async
+	 */
 	async connect(): Promise<void> {
 		let srvRecord: SRVRecord | null = null;
 
@@ -104,7 +120,12 @@ class RCON extends EventEmitter implements RCONEvents {
 		});
 	}
 
-	// Executes the command on the server
+	/**
+	 * Executes commands on the server after it has successfully logged in
+	 * @param {string} command The command to execute
+	 * @returns {Promise<void>} The Promise that resolves whenever the command has executed
+	 * @async
+	 */
 	async run(command: string): Promise<void> {
 		if (this.socket === null || this.socket.socket.connecting) {
 			throw new Error('Socket has not connected yet, please run RCON#connect()');
@@ -123,7 +144,11 @@ class RCON extends EventEmitter implements RCONEvents {
 		return this.socket.writePacket(commandPacket, false);
 	}
 
-	// Closes the connection to the server
+	/**
+	 * Closes the connection to the server
+	 * @returns {Promise<void>} A Promise that resolves when the connection has closed
+	 * @async
+	 */
 	close(): Promise<void> {
 		if (this.socket === null) {
 			throw new Error('Socket is already closed');

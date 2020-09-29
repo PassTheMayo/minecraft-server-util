@@ -20,7 +20,13 @@ function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 	} as Required<StatusOptions>, options);
 }
 
-// Retrieves the status of a server using the new 1.7+ status format and returns the status
+/**
+ * Retrieves the status of the server using the 1.7+ format.
+ * @param host The host of the server
+ * @param options The options to use when retrieving the status
+ * @returns {Promise<StatusResponse>} The status information of the server
+ * @async
+ */
 async function status(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
@@ -93,6 +99,13 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 	return formatResult(host, opts.port, srvRecord, result);
 }
 
+/**
+ * Retrieves the status of the server using the 1.7+ format.
+ * @param host The host of the server
+ * @param options The options to use when retrieving the status
+ * @returns {Promise<StatusResponse>} The status information of the server
+ * @async
+ */
 function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	return Promise.race([
 		status(host, options),

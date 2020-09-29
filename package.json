@@ -7,7 +7,7 @@
 	"scripts": {
 		"prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
 		"build": "tsc",
-		"clean": "rimraf ./build/",
+		"clean": "rimraf build/",
 		"test": "mocha -r ts-node/register test/**/*.ts",
 		"lint": "eslint ."
 	},
