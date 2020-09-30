@@ -1,5 +1,4 @@
 # minecraft-server-util
-A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.
 
 [![npm version](https://img.shields.io/npm/v/minecraft-server-util?label=version)](https://www.npmjs.com/package/minecraft-server-util)
 [![License](https://img.shields.io/npm/l/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)
@@ -7,7 +6,26 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
 [![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/issues)
 [![Discord server](https://img.shields.io/discord/758533537095090206?label=discord)](https://discord.gg/e7jgDYY)
 
+A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers. It uses modern Minecraft protocols to support the latest servers and also includes backward compatibility for older versions.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Status Methods](#status-methods)
+- [API documentation](#api)
+- [Examples](#examples)
+    - [Get the status of a server](#get-the-status-of-a-server)
+    - [Get the status of a server with port](#get-the-status-of-a-server-with-port)
+    - [Query a server](#query-a-server)
+    - [Query a server with port](#query-a-server-with-port)
+    - [Full query a server](#full-query-a-server)
+    - [Full query a server with port](#full-query-a-server-with-port)
+    - [Execute console commands with RCON](#execute-console-commands-with-rcon)
+- [Discord server](#discord-server)
+- [License](#license)
+
 ## Installation
+
 `npm i minecraft-server-util`
 
 ## Status Methods
@@ -27,13 +45,18 @@ Beta 1.8 - 1.3.2  | :x:                | :x:                | :x:               
 
 :question: &ndash; This status method MAY work with this Minecraft version, but is not guaranteed to.
 
+## API
+
+The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/minecraft-server-util/wiki).
+
 ## Examples
 
-### Status
+### Get the status of a server
+
 ```js
 const util = require('minecraft-server-util');
 
-util.status('play.hypixel.net', { port: 25565 }) // port is optional, defaults to 25565
+util.status('play.hypixel.net') // port is default 25565
     .then((response) => {
         console.log(response);
     })
@@ -42,11 +65,12 @@ util.status('play.hypixel.net', { port: 25565 }) // port is optional, defaults t
     });
 ```
 
-### Query
+### Get the status of a server with port
+
 ```js
 const util = require('minecraft-server-util');
 
-util.query('play.hypixel.net', { port: 25565 }) // port is optional
+util.status('play.hypixel.net', { port: 12345 })
     .then((response) => {
         console.log(response);
     })
@@ -55,7 +79,74 @@ util.query('play.hypixel.net', { port: 25565 }) // port is optional
     });
 ```
 
-### RCON
+### Query a server
+
+`enable-query` needs to be enabled in the server.properties file for this to work.
+
+```js
+const util = require('minecraft-server-util');
+
+util.query('play.hypixel.net')
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Query a server with port
+
+`enable-query` needs to be enabled in the server.properties file for this to work.
+
+```js
+const util = require('minecraft-server-util');
+
+util.query('play.hypixel.net', { port: 12345 })
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Full query a server
+
+`enable-query` needs to be enabled in the server.properties file for this to work. The server will cache the result every 5 seconds.
+
+```js
+const util = require('minecraft-server-util');
+
+util.queryFull('play.hypixel.net')
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Full query a server with port
+
+`enable-query` needs to be enabled in the server.properties file for this to work. The server will cache the result every 5 seconds.
+
+```js
+const util = require('minecraft-server-util');
+
+util.queryFull('play.hypixel.net', { port: 12345 })
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Execute console commands with RCON
+
+`rcon.enable` needs to be enabled in the server.properties file and the port and password must be known for this to work.
+
 ```js
 const util = require('minecraft-server-util');
 
@@ -65,7 +156,7 @@ client.on('output', (message) => console.log(message));
 
 client.connect()
     .then(async () => {
-        await client.run('list');
+        await client.run('list'); // List all players online
 
         client.close();
     })
@@ -74,12 +165,7 @@ client.connect()
     });
 ```
 
-There are more examples within the `examples/` folder.
-
-## API
-The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/minecraft-server-util/wiki).
-
-## Discord
+## Discord Server
 [https://discord.gg/e7jgDYY](https://discord.gg/e7jgDYY)
 
 ## License
