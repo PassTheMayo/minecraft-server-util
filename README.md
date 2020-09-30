@@ -12,14 +12,20 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
 
 ## Status Methods
 
-There are several protocol changes over the years of Minecraft that require different implementations in order to get the status of the server. All of the methods below are exported from the package as a property (or module if using ESM).
+There are several protocol changes over the years of Minecraft that require different implementations in order to get the status of the server. All of the methods below are exported from the package as a property.
 
-Minecraft Version | `status()` | `statusFE01FA()` | `statusFE01()` | `statusFE()`
------------------ | -------- | -------------- | ------------ | ----------
-1.7.2 - Latest    | **Yes**  | **Yes**        | **Yes**      | Maybe
-1.6.1 - 1.6.4     | No       | **Yes**        | **Yes**      | **Yes**
-1.4.2 - 1.5.2     | No       | No             | **Yes**      | **Yes**
-Beta 1.8 - 1.3.2  | No       | No             | No           | **Yes**
+Minecraft Version | `status()`         | `statusFE01FA()`   | `statusFE01()`     | `statusFE()`
+----------------- | ------------------ | ------------------ | ------------------ | ----------
+1.7.2 - Latest    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :question:
+1.6.1 - 1.6.4     | :x:                | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:
+1.4.2 - 1.5.2     | :x:                | :x:                | :heavy_check_mark: | :heavy_check_mark:
+Beta 1.8 - 1.3.2  | :x:                | :x:                | :x:                | :heavy_check_mark:
+
+:heavy_check_mark: &ndash; This status method will work with this Minecraft version.
+
+:x: &ndash; This status method will NOT work with this Minecraft version.
+
+:question: &ndash; This status method MAY work with this Minecraft version, but is not guaranteed to.
 
 ## Examples
 
