@@ -2,13 +2,13 @@ import 'mocha';
 
 import util from '../src';
 
-const servers: string[] = [
+const servers: [string, string][] = [
 	// ['localhost', 'abc123']
 ];
 
 describe('new RCON()', () => {
 	for (let i = 0; i < servers.length; i++) {
-		it(servers[i], (done) => {
+		it(servers[i][0], (done) => {
 			const client = new util.RCON(servers[i][0], { password: servers[i][1] });
 
 			client.on('output', async () => {

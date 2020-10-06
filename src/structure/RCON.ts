@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { EventEmitter } from 'events';
 import resolveSRV, { SRVRecord } from '../util/resolveSRV';
 import TCPSocket from './TCPSocket';
@@ -43,6 +44,19 @@ class RCON extends EventEmitter implements RCONEvents {
 		super();
 
 		const opts = applyDefaultOptions(options);
+
+		assert(typeof host === 'string', `Expected 'host' to be a string, got ${typeof host}`);
+		assert(host.length > 0, `Expected host.length > 0, got ${host.length}`);
+		assert(typeof opts.port === 'number', `Expected 'options.port' to be a number, got ${typeof opts.port}`);
+		assert(opts.port > 0, `Expected 'options.port' to be greater than 0, got ${opts.port}`);
+		assert(opts.port < 65536, `Expected 'options.port' to be less than 65536, got ${opts.port}`);
+		assert(Number.isInteger(opts.port), `Expected 'options.port' to be an integer, got ${opts.port}`);
+		assert(typeof opts.enableSRV === 'boolean', `Expected 'options.enableSRV' to be a boolean, got ${typeof opts.enableSRV}`);
+		assert(typeof opts.timeout === 'number', `Expected 'options.timeout' to be a number, got ${typeof opts.timeout}`);
+		assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
+		assert(Number.isInteger(opts.timeout), `Expected 'options.timeout' to be an integer, got ${opts.timeout}`);
+		assert(typeof opts.password === 'string', `Expected 'options.password' to be a string, got ${typeof opts.password}`);
+		assert(opts.password.length > 0, `Expected options.password.length > 0, got ${opts.password.length}`);
 
 		this.host = host;
 		this.isLoggedIn = false;
