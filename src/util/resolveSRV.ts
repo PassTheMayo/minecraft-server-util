@@ -8,7 +8,7 @@ interface SRVRecord {
 
 /**
  * Performs a DNS lookup on the host for a _minecraft._tcp SRV record
- * @param host The host to perform the lookup on
+ * @param {string} host The host to perform the lookup on
  * @returns {SRVRecord | null} The result of the lookup
  * @async
  */

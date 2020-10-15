@@ -22,8 +22,8 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 
 /**
  * Performs a full query on the server using the UDP protocol.
- * @param host The host of the server
- * @param options The options to use when performing the query
+ * @param {string} host The host of the server
+ * @param {QueryOptions} [options] The options to use when performing the query
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */
@@ -169,8 +169,8 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
 
 /**
  * Performs a full query on the server using the UDP protocol.
- * @param host The host of the server
- * @param options The options to use when performing the query
+ * @param {string} host The host of the server
+ * @param {QueryOptions} [options] The options to use when performing the query
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */

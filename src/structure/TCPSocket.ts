@@ -223,11 +223,11 @@ class TCPSocket {
 	/**
 	 * Writes a {@see Packet} to the stream.
 	 * @param {Packet} packet The Packet to write to the stream
-	 * @param {boolean} prefixLength Write the packet length as a prefix as a varint
+	 * @param {boolean} [prefixLength=true] Write the packet length as a prefix as a varint
 	 * @returns {Promise<void>} The Promise that resolves when the packet has been written
 	 * @async
 	 */
-	writePacket(packet: Packet, prefixLength: boolean): Promise<void> {
+	writePacket(packet: Packet, prefixLength = true): Promise<void> {
 		if (prefixLength) {
 			const finalPacket = new Packet();
 			finalPacket.writeVarInt(packet.data.length);

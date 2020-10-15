@@ -2,7 +2,7 @@ import assert from 'assert';
 
 /**
  * Decodes a regular UTF-8 string into a UTF-16BE string
- * @param value The UTF-8 string
+ * @param {string} value The UTF-8 string
  * @returns {string} The UTF-16 string
  */
 function decodeUTF16BE(value: string): string {

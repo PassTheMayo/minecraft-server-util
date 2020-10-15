@@ -10,7 +10,7 @@ class Description {
 
 	/**
 	 * Creates a new description class from the text.
-	 * @param descriptionText The MOTD text
+	 * @param {string} descriptionText The MOTD text
 	 * @constructor
 	 */
 	constructor(descriptionText: string) {

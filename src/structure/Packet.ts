@@ -404,9 +404,9 @@ class Packet {
 	/**
 	 * Writes a short-prefixed string to the packet data
 	 * @param {string} value The string written to the packet
-	 * @param {boolean} writeLength Write the length to the packet
+	 * @param {boolean} [writeLength=true] Write the length to the packet
 	 */
-	writeString(value: string, writeLength: boolean): void {
+	writeString(value: string, writeLength = true): void {
 		if (writeLength) {
 			this.writeVarInt(value.length);
 		}

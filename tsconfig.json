@@ -7,6 +7,7 @@
 		],
 		"allowJs": false,
 		"declaration": true,
+		"inlineSourceMap": true,
 		"outDir": "dist/",
 		"rootDir": "src/",
 		"strict": true,

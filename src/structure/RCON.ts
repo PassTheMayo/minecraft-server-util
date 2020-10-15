@@ -37,7 +37,7 @@ class RCON extends EventEmitter implements RCONEvents {
 	/**
 	 * Creates a new RCON class with the host and options
 	 * @param {string} host The host of the server
-	 * @param {RCONOptions} options The options for the RCON client
+	 * @param {RCONOptions} [options] The options for the RCON client
 	 * @constructor
 	 */
 	constructor(host: string, options?: RCONOptions) {

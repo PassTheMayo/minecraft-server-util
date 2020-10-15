@@ -22,8 +22,8 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 
 /**
  * Performs a basic query on the server using the UDP protocol.
- * @param host The host of the server
- * @param options The options to use when performing the query
+ * @param {string} host The host of the server
+ * @param {QueryOptions} [options] The options to use when performing the query
  * @returns {Promise<BasicQueryResponse>} The basic query response data
  * @async
  */
@@ -148,8 +148,8 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 
 /**
  * Performs a basic query on the server using the UDP protocol.
- * @param host The host of the server
- * @param options The options to use when performing the query
+ * @param {string} host The host of the server
+ * @param {QueryOptions} [options] The options to use when performing the query
  * @returns {Promise<BasicQueryResponse>} The basic query response data
  * @async
  */

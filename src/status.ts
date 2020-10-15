@@ -22,8 +22,8 @@ function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 
 /**
  * Retrieves the status of the server using the 1.7+ format.
- * @param host The host of the server
- * @param options The options to use when retrieving the status
+ * @param {string} host The host of the server
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */
@@ -101,8 +101,8 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 
 /**
  * Retrieves the status of the server using the 1.7+ format.
- * @param host The host of the server
- * @param options The options to use when retrieving the status
+ * @param {string} host The host of the server
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */

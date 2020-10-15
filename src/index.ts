@@ -15,7 +15,7 @@ import { StatusResponse } from './model/StatusResponse';
 /**
  * Retrieves the status of the server by using the 1.7+ format.
  * @param {string} host The host of the server
- * @param {StatusOptions} options The options to use when retrieving the status
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  * @deprecated Use `{@see #status}` instead
@@ -29,7 +29,7 @@ function ping(host: string, options?: StatusOptions): Promise<StatusResponse> {
 /**
  * Retrieves the status of the server by using the 1.6.1 - 1.6.4 format.
  * @param {string} host The host of the server
- * @param {StatusOptions} options The options to use when retrieving the status
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  * @deprecated Use `statusFE01FA()` instead
@@ -43,7 +43,7 @@ function pingFE01FA(host: string, options?: StatusOptions): Promise<StatusRespon
 /**
  * Retrieves the status of the server by using the 1.4.2 - 1.5.2 format.
  * @param {string} host The host of the server
- * @param {StatusOptions} options The options to use when retrieving the status
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  * @deprecated Use `statusFE01()` instead
@@ -57,7 +57,7 @@ function pingFE01(host: string, options?: StatusOptions): Promise<StatusResponse
 /**
  * Retrieves the status of the server by using the Beta 1.8 - 1.3.2 format.
  * @param {string} host The host of the server
- * @param {StatusOptions} options The options to use when retrieving the status
+ * @param {StatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  * @deprecated Use `statusFE()` instead
