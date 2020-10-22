@@ -8,7 +8,6 @@ const servers = [
 	'hub.mcs.gg',
 	'mc.hypixel.net',
 	'mccentral.org',
-	'play.lemoncloud.net',
 	'go.primemc.org',
 	'play.mineverse.com',
 	'play.applecraft.org',

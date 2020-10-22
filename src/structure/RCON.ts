@@ -9,6 +9,7 @@ const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 interface RCONEvents {
 	on(event: 'output', listener: (output: string) => void): void;
+	on(event: 'warning', listener: (message: string) => void): void;
 }
 
 function applyDefaultOptions(options?: RCONOptions): Required<RCONOptions> {
@@ -33,6 +34,7 @@ class RCON extends EventEmitter implements RCONEvents {
 	private options: Required<RCONOptions>;
 	private socket: TCPSocket | null = null;
 	private requestID: number;
+	private interval: NodeJS.Timer | null = null;
 
 	/**
 	 * Creates a new RCON class with the host and options
@@ -75,14 +77,10 @@ class RCON extends EventEmitter implements RCONEvents {
 		// Automatically resolve a connectable address from a known address using SRV DNS records
 		if (this.options.enableSRV && !ipAddressRegEx.test(this.host)) {
 			srvRecord = await resolveSRV(this.host);
-
-			if (srvRecord) {
-				this.options.port = srvRecord.port;
-			}
 		}
 
 		// Create a TCP connection to the server and wait for it to connect
-		this.socket = await TCPSocket.connect(this.host, this.options.port, this.options.timeout);
+		this.socket = await TCPSocket.connect(srvRecord?.host ?? this.host, srvRecord?.port ?? this.options.port, this.options.timeout);
 
 		{
 			// Create a login packet and send it to the server
@@ -107,31 +105,52 @@ class RCON extends EventEmitter implements RCONEvents {
 			}
 
 			await this.socket.readBytes(length - 8);
-
-			this.isLoggedIn = true;
 		}
+
+		this.isLoggedIn = true;
 
 		process.nextTick(async () => {
 			while (this.socket !== null) {
-				const length = await this.socket.readIntLE();
-				await this.socket.readIntLE();
-				const packetType = await this.socket.readIntLE();
-
-				if (packetType === 0) {
-					let output = '';
-
-					if (length > 10) {
-						output = String.fromCodePoint(...await this.socket.readBytes(length - 10));
-					}
-
-					this.emit('output', output);
-
-					await this.socket.readBytes(2);
-				} else {
-					await this.socket.readBytes(length - 8); // Discard the rest of the unknown packet
-				}
+				await this._readPacket();
 			}
 		});
+	}
+
+	/**
+	 * Waits for the next incoming packet from the stream and parses it.
+	 * @returns {Promise<void>}
+	 * @async
+	 * @private
+	 */
+	async _readPacket(): Promise<void> {
+		if (this.socket === null) return;
+
+		const length = await this.socket.readIntLE();
+		await this.socket.readIntLE();
+		const packetType = await this.socket.readIntLE();
+
+		switch (packetType) {
+			case 0: {
+				let output = '';
+
+				if (length > 10) {
+					output = String.fromCodePoint(...await this.socket.readBytes(length - 10));
+				}
+
+				this.emit('output', output);
+
+				await this.socket.readBytes(2);
+
+				break;
+			}
+			default: {
+				await this.socket.readBytes(length - 8);
+
+				this.emit('warning', 'Received an unknown packet type: ' + packetType);
+
+				break;
+			}
+		}
 	}
 
 	/**
