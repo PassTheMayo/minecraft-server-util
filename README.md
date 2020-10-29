@@ -65,12 +65,12 @@ util.status('play.hypixel.net') // port is default 25565
     });
 ```
 
-### Get the status of a server with port
+### Get the status of a server with options
 
 ```js
 const util = require('minecraft-server-util');
 
-util.status('play.hypixel.net', { port: 12345 })
+util.status('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 15000, protocolVersion: 47 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -95,14 +95,14 @@ util.query('play.hypixel.net')
     });
 ```
 
-### Query a server with port
+### Query a server with options
 
 `enable-query` needs to be enabled in the server.properties file for this to work.
 
 ```js
 const util = require('minecraft-server-util');
 
-util.query('play.hypixel.net', { port: 12345 })
+util.query('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 15000, sessionID: 0 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -127,14 +127,14 @@ util.queryFull('play.hypixel.net')
     });
 ```
 
-### Full query a server with port
+### Full query a server with options
 
 `enable-query` needs to be enabled in the server.properties file for this to work. The server will cache the result every 5 seconds.
 
 ```js
 const util = require('minecraft-server-util');
 
-util.queryFull('play.hypixel.net', { port: 12345 })
+util.queryFull('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 15000, sessionID: 0 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -150,7 +150,7 @@ util.queryFull('play.hypixel.net', { port: 12345 })
 ```js
 const util = require('minecraft-server-util');
 
-const client = new util.RCON('play.hypixel.net', { port: 25575, password: 'abc123' });
+const client = new util.RCON('play.hypixel.net', { port: 25575, enableSRV: true, timeout: 15000, password: 'abc123' }); // These are the default options
 
 client.on('output', (message) => console.log(message));
 
