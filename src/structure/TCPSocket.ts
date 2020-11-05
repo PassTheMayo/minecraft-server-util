@@ -48,6 +48,7 @@ class TCPSocket {
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
 		const socket = net.createConnection({ host, port, timeout });
+		socket.setTimeout(timeout);
 
 		return new Promise((resolve, reject) => {
 			const connectHandler = () => {

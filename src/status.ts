@@ -55,7 +55,7 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 	}
 
 	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout - 250);
 
 	// Create the necessary packets and send them to the server
 	{
