@@ -2,29 +2,29 @@ import ansi from 'ansi-styles';
 
 const formattingCode = /\u00C2?\u00A7([a-fklmnor0-9])/g;
 
-const chalkMap = new Map<string, ansi.CSPair>();
-chalkMap.set('0', ansi.black);
-chalkMap.set('1', ansi.blue);
-chalkMap.set('2', ansi.green);
-chalkMap.set('3', ansi.cyan);
-chalkMap.set('4', ansi.red);
-chalkMap.set('5', ansi.magenta);
-chalkMap.set('6', ansi.yellow);
-chalkMap.set('7', ansi.gray);
-chalkMap.set('8', ansi.blackBright);
-chalkMap.set('9', ansi.blueBright);
-chalkMap.set('a', ansi.greenBright);
-chalkMap.set('b', ansi.cyanBright);
-chalkMap.set('c', ansi.redBright);
-chalkMap.set('d', ansi.magentaBright);
-chalkMap.set('e', ansi.yellowBright);
-chalkMap.set('f', ansi.whiteBright);
-chalkMap.set('k', ansi.reset);
-chalkMap.set('l', ansi.bold);
-chalkMap.set('m', ansi.strikethrough);
-chalkMap.set('n', ansi.underline);
-chalkMap.set('o', ansi.italic);
-chalkMap.set('r', ansi.reset);
+const ansiMap = new Map<string, ansi.CSPair>();
+ansiMap.set('0', ansi.black);
+ansiMap.set('1', ansi.blue);
+ansiMap.set('2', ansi.green);
+ansiMap.set('3', ansi.cyan);
+ansiMap.set('4', ansi.red);
+ansiMap.set('5', ansi.magenta);
+ansiMap.set('6', ansi.yellow);
+ansiMap.set('7', ansi.gray);
+ansiMap.set('8', ansi.blackBright);
+ansiMap.set('9', ansi.blueBright);
+ansiMap.set('a', ansi.greenBright);
+ansiMap.set('b', ansi.cyanBright);
+ansiMap.set('c', ansi.redBright);
+ansiMap.set('d', ansi.magentaBright);
+ansiMap.set('e', ansi.yellowBright);
+ansiMap.set('f', ansi.whiteBright);
+ansiMap.set('k', ansi.reset);
+ansiMap.set('l', ansi.bold);
+ansiMap.set('m', ansi.strikethrough);
+ansiMap.set('n', ansi.underline);
+ansiMap.set('o', ansi.italic);
+ansiMap.set('r', ansi.reset);
 
 /**
  * The result of the formatted description of the server.
@@ -65,15 +65,13 @@ class Description {
 	 */
 	toANSI(): string {
 		return this.descriptionText.replace(formattingCode, (match: string, p1: string): string => {
-			const value = chalkMap.get(p1);
+			const value = ansiMap.get(p1);
 
 			if (!value) return ansi.reset.open;
 
 			return value.open;
 		}) + ansi.reset.open;
 	}
-
-	// TODO implement coercing to HTML string
 }
 
 export default Description;
