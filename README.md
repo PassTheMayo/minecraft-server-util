@@ -14,8 +14,8 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
 - [Java Edition status methods](#java-edition-status-methods)
 - [API documentation](#api-documentation)
 - [Examples](#examples)
-    - [Get the status of a server](#get-the-status-of-a-server)
-    - [Get the status of a server with options](#get-the-status-of-a-server-with-options)
+    - [Get the status of a Java server](#get-the-status-of-a-java-server)
+    - [Get the status of a Java server with options](#get-the-status-of-a-java-server-with-options)
     - [Get the status of a Bedrock server](#get-the-status-of-a-bedrock-server)
     - [Get the status of a Bedrock server with options](#get-the-status-of-a-bedrock-server-with-options)
     - [Query a server](#query-a-server)
@@ -53,7 +53,7 @@ The entire API of this library is documented within the [wiki](https://github.co
 
 ## Examples
 
-### Get the status of a server
+### Get the status of a Java server
 
 ```js
 const util = require('minecraft-server-util');
@@ -67,7 +67,7 @@ util.status('play.hypixel.net') // port is default 25565
     });
 ```
 
-### Get the status of a server with options
+### Get the status of a Java server with options
 
 ```js
 const util = require('minecraft-server-util');
