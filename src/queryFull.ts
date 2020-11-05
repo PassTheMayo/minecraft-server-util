@@ -76,17 +76,9 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
 		const sessionID = responsePacket.readIntBE();
 		challengeToken = parseInt(responsePacket.readStringNT());
 
-		if (type !== 0x09) {
-			throw new Error('Server sent an invalid payload type');
-		}
-
-		if (sessionID !== opts.sessionID) {
-			throw new Error('Session ID in response did not match client session ID');
-		}
-
-		if (isNaN(challengeToken)) {
-			throw new Error('Server sent an invalid challenge token');
-		}
+		if (type !== 0x09) throw new Error('Server sent an invalid payload type');
+		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+		if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
 	}
 
 	{
@@ -112,13 +104,8 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
 		const type = responsePacket.readByte();
 		const sessionID = responsePacket.readIntBE();
 
-		if (type !== 0x00) {
-			throw new Error('Server sent an invalid payload type');
-		}
-
-		if (sessionID !== opts.sessionID) {
-			throw new Error('Session ID in response did not match client session ID');
-		}
+		if (type !== 0x00) throw new Error('Server sent an invalid payload type');
+		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
 
 		responsePacket.readBytes(11);
 

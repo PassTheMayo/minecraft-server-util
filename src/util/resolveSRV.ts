@@ -15,7 +15,8 @@ interface SRVRecord {
 async function resolveSRV(host: string): Promise<SRVRecord | null> {
 	try {
 		const records = await promisify(dns.resolveSrv)('_minecraft._tcp.' + host);
-		if (records.length < 1) { return null; }
+
+		if (records.length < 1) return null;
 
 		return {
 			host: records[0].name,

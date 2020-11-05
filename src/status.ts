@@ -79,9 +79,7 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 	const packetType = responsePacket.readVarInt();
 
 	// Packet was unexpected type, ignore the rest of the data in this packet
-	if (packetType !== 0) {
-		throw new Error('Server sent an invalid packet type');
-	}
+	if (packetType !== 0) throw new Error('Server sent an invalid packet type');
 
 	// Destroy the socket, it is no longer needed
 	await socket.destroy();

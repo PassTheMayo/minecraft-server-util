@@ -48,7 +48,7 @@ class UDPSocket {
 			let read = false;
 
 			const messageHandler = () => {
-				if (read) { return; }
+				if (read) return;
 
 				process.nextTick(() => {
 					if (this.buffer.length > 0) {
@@ -77,9 +77,7 @@ class UDPSocket {
 	writePacket(packet: Packet): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.send(Buffer.from(packet.data), this.port, this.host, (error) => {
-				if (error) {
-					return reject(error);
-				}
+				if (error) return reject(error);
 
 				resolve();
 			});

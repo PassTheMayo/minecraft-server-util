@@ -75,7 +75,7 @@ async function statusFE01(host: string, options?: StatusOptions): Promise<Status
 		const packetType = await socket.readByte();
 
 		// Packet was unexpected type, ignore the rest of the data in this packet
-		if (packetType !== 0xFF) { throw new Error('Packet returned from server was unexpected type'); }
+		if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type');
 
 		// Read the length of the data string
 		const length = await socket.readShort();
@@ -91,9 +91,9 @@ async function statusFE01(host: string, options?: StatusOptions): Promise<Status
 		playerCount = parseInt(playerCountStr);
 		maxPlayers = parseInt(maxPlayersStr);
 
-		if (isNaN(protocolVersion)) { throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr); }
-		if (isNaN(playerCount)) { throw new Error('Server returned an invalid player count: ' + playerCountStr); }
-		if (isNaN(maxPlayers)) { throw new Error('Server returned an invalid max player count: ' + maxPlayersStr); }
+		if (isNaN(protocolVersion)) throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr);
+		if (isNaN(playerCount)) throw new Error('Server returned an invalid player count: ' + playerCountStr);
+		if (isNaN(maxPlayers)) throw new Error('Server returned an invalid max player count: ' + maxPlayersStr);
 	}
 
 	// Destroy the socket, it is no longer needed

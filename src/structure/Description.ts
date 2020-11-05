@@ -67,9 +67,7 @@ class Description {
 		return this.descriptionText.replace(formattingCode, (match: string, p1: string): string => {
 			const value = chalkMap.get(p1);
 
-			if (!value) {
-				return ansi.reset.open;
-			}
+			if (!value) return ansi.reset.open;
 
 			return value.open;
 		}) + ansi.reset.open;

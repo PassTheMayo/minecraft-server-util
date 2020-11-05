@@ -100,9 +100,7 @@ class RCON extends EventEmitter implements RCONEvents {
 			const requestID = await this.socket.readIntLE();
 			await this.socket.readIntLE();
 
-			if (requestID === -1) {
-				throw new Error('Failed to connect to RCON, invalid password');
-			}
+			if (requestID === -1) throw new Error('Failed to connect to RCON, invalid password');
 
 			await this.socket.readBytes(length - 8);
 		}
@@ -160,13 +158,9 @@ class RCON extends EventEmitter implements RCONEvents {
 	 * @async
 	 */
 	async run(command: string): Promise<void> {
-		if (this.socket === null || this.socket.socket.connecting) {
-			throw new Error('Socket has not connected yet, please run RCON#connect()');
-		}
+		if (this.socket === null || this.socket.socket.connecting) throw new Error('Socket has not connected yet, please run RCON#connect()');
 
-		if (!this.isLoggedIn) {
-			throw new Error('Client is not logged in or login was unsuccessful, please run RCON#connect()');
-		}
+		if (!this.isLoggedIn) throw new Error('Client is not logged in or login was unsuccessful, please run RCON#connect()');
 
 		const commandPacket = new Packet();
 		commandPacket.writeIntLE(10 + command.length);
@@ -183,9 +177,7 @@ class RCON extends EventEmitter implements RCONEvents {
 	 * @async
 	 */
 	close(): Promise<void> {
-		if (this.socket === null) {
-			throw new Error('Socket is already closed');
-		}
+		if (this.socket === null) throw new Error('Socket is already closed');
 
 		return this.socket.destroy();
 	}

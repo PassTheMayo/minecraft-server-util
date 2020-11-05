@@ -72,9 +72,7 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	const packetType = pongPacket.readByte(); // Packet type
 
 	// Packet was unexpected type, ignore the rest of the data in this packet
-	if (packetType !== 0x1C) {
-		throw new Error('Server sent an invalid packet type');
-	}
+	if (packetType !== 0x1C) throw new Error('Server sent an invalid packet type');
 
 	// Finish reading the data out of the packet
 	pongPacket.readLongBE(); // Time

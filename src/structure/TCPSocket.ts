@@ -95,13 +95,13 @@ class TCPSocket {
 	 * @async
 	 */
 	readByte(): Promise<number> {
-		if (this.buffer.length > 0) { return Promise.resolve(this.buffer.shift() || 0); }
+		if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift() || 0);
 
 		return new Promise((resolve) => {
 			let read = false;
 
 			const dataHandler = () => {
-				if (read) { return; }
+				if (read) return;
 
 				process.nextTick(() => {
 					if (this.buffer.length > 0) {
@@ -135,9 +135,7 @@ class TCPSocket {
 			let read = false;
 
 			const dataHandler = () => {
-				if (read) {
-					return;
-				}
+				if (read) return;
 
 				process.nextTick(() => {
 					if (this.buffer.length >= length) {
@@ -167,7 +165,7 @@ class TCPSocket {
 		let read: number, value: number;
 
 		do {
-			if (numRead > 4) { throw new Error('VarInt exceeds data bounds'); }
+			if (numRead > 4) throw new Error('VarInt exceeds data bounds');
 
 			read = await this.readByte();
 			value = (read & 0b01111111);
@@ -175,9 +173,7 @@ class TCPSocket {
 
 			numRead++;
 
-			if (numRead > 5) {
-				throw new Error('VarInt is too big');
-			}
+			if (numRead > 5) throw new Error('VarInt is too big');
 		} while ((read & 0b10000000) != 0);
 
 		return result;
@@ -214,7 +210,7 @@ class TCPSocket {
 	writeBytes(buffer: Buffer): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.socket.write(buffer, (error) => {
-				if (error) { return reject(error); }
+				if (error) return reject(error);
 
 				resolve();
 			});

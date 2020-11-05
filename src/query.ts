@@ -76,17 +76,9 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		const sessionID = responsePacket.readIntBE();
 		challengeToken = parseInt(responsePacket.readStringNT());
 
-		if (type !== 0x09) {
-			throw new Error('Server sent an invalid payload type');
-		}
-
-		if (sessionID !== opts.sessionID) {
-			throw new Error('Session ID in response did not match client session ID');
-		}
-
-		if (isNaN(challengeToken)) {
-			throw new Error('Server sent an invalid challenge token');
-		}
+		if (type !== 0x09) throw new Error('Server sent an invalid payload type');
+		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+		if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
 	}
 
 	{
@@ -112,23 +104,15 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 		const onlinePlayersStr = responsePacket.readStringNT();
 		const maxPlayersStr = responsePacket.readStringNT();
 
-		if (type !== 0x00) {
-			throw new Error('Server sent an invalid payload type');
-		}
+		if (type !== 0x00) throw new Error('Server sent an invalid payload type');
 
-		if (sessionID !== opts.sessionID) {
-			throw new Error('Session ID in response did not match client session ID');
-		}
+		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
 
 		onlinePlayers = parseInt(onlinePlayersStr);
-		if (isNaN(onlinePlayers)) {
-			throw new Error('Server sent an invalid player count');
-		}
+		if (isNaN(onlinePlayers)) throw new Error('Server sent an invalid player count');
 
 		maxPlayers = parseInt(maxPlayersStr);
-		if (isNaN(maxPlayers)) {
-			throw new Error('Server sent an invalid max player count');
-		}
+		if (isNaN(maxPlayers)) throw new Error('Server sent an invalid max player count');
 	}
 
 	// Destroy the socket, it is no longer needed
