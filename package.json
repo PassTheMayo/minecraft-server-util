@@ -47,6 +47,6 @@
 		"type": "git"
 	},
 	"dependencies": {
-		"ansi-styles": "^4.3.0"
+		"ansi-styles": "^5.0.0"
 	}
 }
