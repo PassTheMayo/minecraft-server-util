@@ -39,7 +39,12 @@ class UDPSocket {
 	readPacket(): Promise<Packet> {
 		if (this.buffer.length > 0) {
 			const packet = new Packet();
-			packet.data = [...(this.buffer.shift()?.message ?? [])];
+
+			if (this.buffer.length > 0) {
+				const value = this.buffer.shift();
+
+				packet.buffer = value?.message ?? Buffer.alloc(0);
+			}
 
 			return Promise.resolve(packet);
 		}
@@ -57,7 +62,12 @@ class UDPSocket {
 						this.socket.removeListener('message', messageHandler);
 
 						const packet = new Packet();
-						packet.data = [...(this.buffer.shift()?.message ?? [])];
+
+						if (this.buffer.length > 0) {
+							const value = this.buffer.shift();
+
+							packet.buffer = value?.message ?? Buffer.alloc(0);
+						}
 
 						resolve(packet);
 					}
@@ -76,7 +86,7 @@ class UDPSocket {
 	 */
 	writePacket(packet: Packet): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.socket.send(Buffer.from(packet.data), this.port, this.host, (error) => {
+			this.socket.send(Buffer.from(packet.buffer), this.port, this.host, (error) => {
 				if (error) return reject(error);
 
 				resolve();

@@ -1,11 +1,11 @@
 import assert from 'assert';
 import Packet from './structure/Packet';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
-import getTimeoutPromise from './util/getTimeoutPromise';
 import { FullQueryResponse } from './model/QueryResponse';
 import UDPSocket from './structure/UDPSocket';
 import parseDescription from './util/parseDescription';
 import { QueryOptions } from './model/Options';
+import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 let sessionCounter = 0;
@@ -161,11 +161,19 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */
-function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
-	return Promise.race([
-		queryFull(host, options),
-		getTimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, 'Failed to query server within time')
-	]);
+async function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
+	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, 'Failed to query server within time');
+
+	try {
+		const value = await Promise.race([
+			queryFull(host, options),
+			timeoutPromise.promise
+		]);
+
+		return value;
+	} finally {
+		timeoutPromise.cancel();
+	}
 }
 
 export { queryWithTimeout as queryFull };

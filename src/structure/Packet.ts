@@ -6,7 +6,7 @@ import TCPSocket from './TCPSocket';
  */
 class Packet {
 	/** The buffered data in the packet. */
-	public data: number[] = [];
+	public buffer: Buffer = Buffer.alloc(0);
 
 	/**
 	 * Automatically read a packet from a stream using the Minecraft 1.7+ format.
@@ -22,7 +22,9 @@ class Packet {
 		const data = await socket.readBytes(length);
 
 		const packet = new Packet();
-		packet.data = data;
+
+		packet.buffer = data;
+
 		return packet;
 	}
 
@@ -31,27 +33,43 @@ class Packet {
 	 * @returns {number} The byte read from the packet
 	 */
 	readByte(): number {
-		if (this.data.length < 1) throw new Error('Cannot readByte() as buffer is empty');
+		if (this.buffer.byteLength < 1) throw new Error('Cannot readByte() as buffer is empty');
 
-		return this.data.shift() || 0;
+		const value = this.buffer[0];
+
+		this.buffer = this.buffer.slice(1);
+
+		return value;
 	}
 
 	/**
 	 * Reads bytes from the packet data
-	 * @returns {number[]} The bytes read from the packet
+	 * @returns {Buffer} The bytes read from the packet
 	 */
-	readBytes(length: number): number[] {
-		if (this.data.length < 1) throw new Error('Cannot readByte() as buffer is empty');
+	readBytes(length: number): Buffer {
+		if (this.buffer.byteLength < 1) throw new Error('Cannot readByte() as buffer is empty');
 
-		return this.data.splice(0, length);
+		const value = this.buffer.slice(0, length);
+
+		this.buffer = this.buffer.slice(length);
+
+		return value;
 	}
 
 	/**
 	* Write bytes to the packet data
-	* @param {...number[]} values The bytes to write to the packet
+	* @param {...number} values The bytes to write to the packet
 	*/
 	writeByte(...values: number[]): void {
-		this.data.push(...values);
+		this.buffer = Buffer.concat([this.buffer, Uint8Array.from(values)]);
+	}
+
+	/**
+	* Write bytes to the packet data
+	* @param {Buffer} data The bytes to write to the packet
+	*/
+	writeBuffer(data: Buffer): void {
+		this.buffer = Buffer.concat([this.buffer, data]);
 	}
 
 	/**
@@ -59,11 +77,13 @@ class Packet {
 	 * @returns {number} The int16 read from the packet
 	 */
 	readShortBE(): number {
-		if (this.data.length < 2) throw new Error('Cannot readShort() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 2) throw new Error('Cannot readShort() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(2));
+		const value = this.buffer.readInt16BE();
 
-		return buf.readInt16BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -72,8 +92,10 @@ class Packet {
 	 */
 	writeShortBE(value: number): void {
 		const buf = Buffer.alloc(2);
+
 		buf.writeInt16BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -81,11 +103,13 @@ class Packet {
 	 * @returns {number} The int16 read from the packet
 	 */
 	readShortLE(): number {
-		if (this.data.length < 2) throw new Error('Cannot readShortLE() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 2) throw new Error('Cannot readShortLE() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(2));
+		const value = this.buffer.readInt16LE();
 
-		return buf.readInt16LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -94,8 +118,10 @@ class Packet {
 	 */
 	writeShortLE(value: number): void {
 		const buf = Buffer.alloc(2);
+
 		buf.writeInt16LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -103,11 +129,13 @@ class Packet {
 	 * @returns {number} The uint16 read from the packet
 	 */
 	readUShortBE(): number {
-		if (this.data.length < 2) throw new Error('Cannot readShort() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 2) throw new Error('Cannot readShort() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(2));
+		const value = this.buffer.readUInt16BE();
 
-		return buf.readUInt16BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -116,8 +144,10 @@ class Packet {
 	 */
 	writeUShortBE(value: number): void {
 		const buf = Buffer.alloc(2);
+
 		buf.writeUInt16BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -125,11 +155,13 @@ class Packet {
 	 * @returns {number} The uint16 read from the packet
 	 */
 	readUShortLE(): number {
-		if (this.data.length < 2) throw new Error('Cannot readUShortLE() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 2) throw new Error('Cannot readUShortLE() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(2));
+		const value = this.buffer.readUInt16LE();
 
-		return buf.readUInt16LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -138,8 +170,10 @@ class Packet {
 	 */
 	writeUShortLE(value: number): void {
 		const buf = Buffer.alloc(2);
+
 		buf.writeUInt16LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -147,11 +181,13 @@ class Packet {
 	 * @returns {number} The int32 read from the packet
 	 */
 	readIntBE(): number {
-		if (this.data.length < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(4));
+		const value = this.buffer.readInt32BE();
 
-		return buf.readInt32BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -160,8 +196,10 @@ class Packet {
 	 */
 	writeIntBE(value: number): void {
 		const buf = Buffer.alloc(4);
+
 		buf.writeInt32BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -169,11 +207,13 @@ class Packet {
 	 * @returns {number} The int32 read from the packet
 	 */
 	readIntLE(): number {
-		if (this.data.length < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(4));
+		const value = this.buffer.readInt32LE();
 
-		return buf.readInt32LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -182,8 +222,10 @@ class Packet {
 	 */
 	writeIntLE(value: number): void {
 		const buf = Buffer.alloc(4);
+
 		buf.writeInt32LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -191,11 +233,13 @@ class Packet {
 	 * @returns {number} The uint32 read from the packet
 	 */
 	readUIntBE(): number {
-		if (this.data.length < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(4));
+		const value = this.buffer.readUInt32BE();
 
-		return buf.readUInt32BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -204,8 +248,10 @@ class Packet {
 	 */
 	writeUIntBE(value: number): void {
 		const buf = Buffer.alloc(4);
+
 		buf.writeUInt32BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -213,11 +259,13 @@ class Packet {
 	 * @returns {number} The uint32 read from the packet
 	 */
 	readUIntLE(): number {
-		if (this.data.length < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 4) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(4));
+		const value = this.buffer.readUInt32LE();
 
-		return buf.readUInt32LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -226,8 +274,10 @@ class Packet {
 	 */
 	writeUIntLE(value: number): void {
 		const buf = Buffer.alloc(4);
+
 		buf.writeUInt32LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -235,11 +285,13 @@ class Packet {
 	 * @returns {number} The int64 read from the packet
 	 */
 	readLongBE(): bigint {
-		if (this.data.length < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(8));
+		const value = this.buffer.readBigInt64BE();
 
-		return buf.readBigInt64BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -248,8 +300,10 @@ class Packet {
 	 */
 	writeLongBE(value: bigint): void {
 		const buf = Buffer.alloc(8);
+
 		buf.writeBigInt64BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -257,11 +311,13 @@ class Packet {
 	 * @returns {number} The int64 read from the packet
 	 */
 	readLongLE(): bigint {
-		if (this.data.length < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(8));
+		const value = this.buffer.readBigInt64LE();
 
-		return buf.readBigInt64LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -270,8 +326,10 @@ class Packet {
 	 */
 	writeLongLE(value: bigint): void {
 		const buf = Buffer.alloc(8);
+
 		buf.writeBigInt64LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -279,11 +337,13 @@ class Packet {
 	 * @returns {number} The uint64 read from the packet
 	 */
 	readULongBE(): bigint {
-		if (this.data.length < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(8));
+		const value = this.buffer.readBigUInt64BE();
 
-		return buf.readBigUInt64BE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -292,8 +352,10 @@ class Packet {
 	 */
 	writeULongBE(value: bigint): void {
 		const buf = Buffer.alloc(8);
+
 		buf.writeBigUInt64BE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -301,11 +363,13 @@ class Packet {
 	 * @returns {number} The uint64 read from the packet
 	 */
 	readULongLE(): bigint {
-		if (this.data.length < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
+		if (this.buffer.byteLength < 8) throw new Error('Cannot readInt() as buffer is empty or too small for type');
 
-		const buf = Buffer.from(this.readBytes(8));
+		const value = this.buffer.readBigUInt64LE();
 
-		return buf.readBigUInt64LE();
+		this.buffer = this.buffer.slice(2);
+
+		return value;
 	}
 
 	/**
@@ -314,8 +378,10 @@ class Packet {
 	 */
 	writeULongLE(value: bigint): void {
 		const buf = Buffer.alloc(8);
+
 		buf.writeBigUInt64LE(value);
-		this.writeByte(...buf);
+
+		this.writeBuffer(buf);
 	}
 
 	/**
@@ -367,7 +433,9 @@ class Packet {
 	readString(): string {
 		const length = this.readVarInt();
 
-		return String.fromCodePoint(...this.data.splice(0, length));
+		const value = this.readBytes(length);
+
+		return String.fromCodePoint(...value);
 	}
 
 	/**

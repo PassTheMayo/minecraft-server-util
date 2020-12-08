@@ -10,6 +10,7 @@ import Packet from './structure/Packet';
 import { RCON } from './structure/RCON';
 import TCPSocket from './structure/TCPSocket';
 import UDPSocket from './structure/UDPSocket';
+import TimeoutPromise from './structure/TimeoutPromise';
 import { StatusOptions } from './model/Options';
 import { StatusResponse } from './model/StatusResponse';
 
@@ -69,4 +70,4 @@ function pingFE(host: string, options?: StatusOptions): Promise<StatusResponse> 
 	return statusFE(host, options);
 }
 
-export = { ping, pingFE01FA, pingFE01, pingFE, status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, Description, Packet, RCON, TCPSocket, UDPSocket };
+export = { ping, pingFE01FA, pingFE01, pingFE, status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, Description, Packet, RCON, TCPSocket, UDPSocket, TimeoutPromise };

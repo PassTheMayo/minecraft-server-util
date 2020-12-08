@@ -5,9 +5,9 @@ import Packet from './structure/Packet';
 import UDPSocket from './structure/UDPSocket';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { BedrockStatusResponse } from './model/StatusResponse';
-import getTimeoutPromise from './util/getTimeoutPromise';
 import { BedrockStatusOptions } from './model/Options';
 import parseDescription from './util/parseDescription';
+import TimeoutPromise from './structure/TimeoutPromise';
 
 const magic = [0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78];
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
@@ -115,15 +115,23 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 /**
  * Retrieves the status of the Bedrock edition server
  * @param {string} host The host of the server
- * @param {StatusOptions} [options] The options to use when retrieving the status
+ * @param {BedrockStatusOptions} [options] The options to use when retrieving the status
  * @returns {Promise<BedrockStatusResponse>} The status information of the server
  * @async
  */
-function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
-	return Promise.race([
-		statusBedrock(host, options),
-		getTimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time')
-	]);
+async function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time');
+
+	try {
+		const value = await Promise.race([
+			statusBedrock(host, options),
+			timeoutPromise.promise
+		]);
+
+		return value;
+	} finally {
+		timeoutPromise.cancel();
+	}
 }
 
 export { statusWithTimeout as statusBedrock };

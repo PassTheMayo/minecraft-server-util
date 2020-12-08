@@ -5,8 +5,8 @@ import formatResultFE from './util/formatResultFE';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
 import decodeUTF16BE from './util/decodeUTF16BE';
-import getTimeoutPromise from './util/getTimeoutPromise';
 import { StatusOptions } from './model/Options';
+import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
@@ -105,11 +105,19 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */
-function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
-	return Promise.race([
-		statusFE(host, options),
-		getTimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time')
-	]);
+async function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
+	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time');
+
+	try {
+		const value = await Promise.race([
+			statusFE(host, options),
+			timeoutPromise.promise
+		]);
+
+		return value;
+	} finally {
+		timeoutPromise.cancel();
+	}
 }
 
 export { statusWithTimeout as statusFE };

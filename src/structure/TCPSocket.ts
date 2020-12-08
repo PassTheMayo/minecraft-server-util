@@ -17,7 +17,7 @@ class TCPSocket {
 	 * @type {boolean}
 	 */
 	public isConnected = false;
-	private buffer: number[] = [];
+	private buffer: Buffer;
 
 	/**
 	 * Creates a new TCP socket class from the existing connection.
@@ -26,9 +26,10 @@ class TCPSocket {
 	 */
 	constructor(socket: net.Socket) {
 		this.socket = socket;
+		this.buffer = Buffer.alloc(0);
 
 		socket.on('data', (data) => {
-			this.buffer.push(...Array.from(data));
+			this.buffer = Buffer.concat([this.buffer, data]);
 		});
 	}
 
@@ -95,7 +96,13 @@ class TCPSocket {
 	 * @async
 	 */
 	readByte(): Promise<number> {
-		if (this.buffer.length > 0) return Promise.resolve(this.buffer.shift() || 0);
+		if (this.buffer.byteLength > 0) {
+			const value = this.buffer[0];
+
+			this.buffer = this.buffer.slice(1);
+
+			return Promise.resolve(value);
+		}
 
 		return new Promise((resolve) => {
 			let read = false;
@@ -109,7 +116,11 @@ class TCPSocket {
 
 						this.socket.removeListener('data', dataHandler);
 
-						return resolve(this.buffer.shift() || 0);
+						const value = this.buffer[0];
+
+						this.buffer = this.buffer.slice(1);
+
+						return resolve(value);
 					}
 				});
 			};
@@ -121,13 +132,15 @@ class TCPSocket {
 	/**
 	 * Read bytes from the stream.
 	 * @param {number} length The amount of bytes to read
-	 * @returns {Promise<number[]>} The bytes read from the stream
+	 * @returns {Promise<Buffer>} The bytes read from the stream
 	 * @async
 	 */
-	readBytes(length: number): Promise<number[]> {
+	readBytes(length: number): Promise<Buffer> {
 		if (this.buffer.length >= length) {
 			const value = this.buffer.slice(0, length);
-			this.buffer.splice(0, length);
+
+			this.buffer = this.buffer.slice(length);
+
 			return Promise.resolve(value);
 		}
 
@@ -144,7 +157,9 @@ class TCPSocket {
 						this.socket.removeListener('data', dataHandler);
 
 						const value = this.buffer.slice(0, length);
-						this.buffer.splice(0, length);
+
+						this.buffer = this.buffer.slice(length);
+
 						return resolve(value);
 					}
 				});
@@ -227,13 +242,13 @@ class TCPSocket {
 	writePacket(packet: Packet, prefixLength = true): Promise<void> {
 		if (prefixLength) {
 			const finalPacket = new Packet();
-			finalPacket.writeVarInt(packet.data.length);
-			finalPacket.writeByte(...packet.data);
+			finalPacket.writeVarInt(packet.buffer.length);
+			finalPacket.writeBuffer(packet.buffer);
 
-			return this.writeBytes(Buffer.from(finalPacket.data));
+			return this.writeBytes(Buffer.from(finalPacket.buffer));
 		}
 
-		return this.writeBytes(Buffer.from(packet.data));
+		return this.writeBytes(Buffer.from(packet.buffer));
 	}
 
 	/**
