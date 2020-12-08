@@ -23,6 +23,11 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
     - [Full query a server](#full-query-a-server)
     - [Full query a server with options](#full-query-a-server-with-options)
     - [Execute console commands with RCON](#execute-console-commands-with-rcon)
+- [Frequently Asked Questions](#frequently-asked-questions)
+    - [How do I check if the server is up/down?](#how-do-i-check-if-the-server-is-updown)
+    - [Why am I getting weird values?](#why-am-i-getting-weird-values)
+    - [Why is the sample players array empty?](#why-is-the-sample-players-array-empty)
+    - [I'm getting the error `util is not a function`](#im-getting-the-error-util-is-not-a-function)
 - [Discord server](#discord-server)
 - [License](#license)
 
@@ -198,6 +203,26 @@ client.connect()
         throw error;
     });
 ```
+
+## Frequently Asked Questions
+
+These questions below discuss frequently asked questions asked in our Discord server. Please do not ask any basic JavaScript questions that could have been easily answered if you just decided to learn the language first.
+
+### How do I check if the server is up/down?
+
+All of the status methods for both Java and Bedrock edition return a promise which resolves to the response. If the promise returned resolves, then the server is online. If the promise rejects, then it was unable to connect to the server, meaning it was likely offline.
+
+### Why am I getting weird values?
+
+The values in the response are all provided by the server that you're requesting it from. This library has no control over what values it receives, thus meaning that it can be any value. If you're getting weird information back, ask the server owner why they're running a plugin that modifies these values.
+
+### Why is the sample players array empty?
+
+The sample players array is another value that is controlled entirely by the server, just like the question above. Most vanilla servers have a threshold of how many players can be online before it stops sending any sample players in the status response. If you want a reliable method of getting players, use `queryFull()` instead.
+
+### I'm getting the error `util is not a function`
+
+This is most likely due to running an old version of this package. Updating your packages without updating code can result in a lot of unexpected errors, which is why you should have read the change log. Look at the examples above.
 
 ## Discord Server
 [https://discord.gg/e7jgDYY](https://discord.gg/e7jgDYY)
