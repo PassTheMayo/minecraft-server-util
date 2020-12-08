@@ -109,7 +109,7 @@ class TCPSocket {
 
 						this.socket.removeListener('data', dataHandler);
 
-						return resolve(this.buffer.shift());
+						return resolve(this.buffer.shift() || 0);
 					}
 				});
 			};
