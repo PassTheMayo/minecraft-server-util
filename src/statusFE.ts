@@ -1,14 +1,15 @@
 import assert from 'assert';
+import { TextDecoder } from 'util';
 import Packet from './structure/Packet';
 import TCPSocket from './structure/TCPSocket';
 import formatResultFE from './util/formatResultFE';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
-import decodeUTF16BE from './util/decodeUTF16BE';
 import { StatusOptions } from './model/Options';
 import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
+const decoder = new TextDecoder('utf-16be');
 
 function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
 	// Apply the provided options on the default options
@@ -79,7 +80,7 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
 		const length = await socket.readShort();
 
 		// Read all of the data string and convert to a UTF-8 string
-		const data = decodeUTF16BE(String.fromCodePoint(...await socket.readBytes(length * 2)));
+		const data = decoder.decode(await socket.readBytes(length * 2));
 
 		const [motdStr, playerCountStr, maxPlayersStr] = data.split('§');
 

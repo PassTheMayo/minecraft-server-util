@@ -1,3 +1,4 @@
+import { TextEncoder, TextDecoder } from 'util';
 import TCPSocket from './TCPSocket';
 
 /**
@@ -7,6 +8,8 @@ import TCPSocket from './TCPSocket';
 class Packet {
 	/** The buffered data in the packet. */
 	public buffer: Buffer = Buffer.alloc(0);
+	private encoder: TextEncoder = new TextEncoder();
+	private decoder: TextDecoder = new TextDecoder('utf-8');
 
 	/**
 	 * Automatically read a packet from a stream using the Minecraft 1.7+ format.
@@ -68,7 +71,7 @@ class Packet {
 	* Write bytes to the packet data
 	* @param {Buffer} data The bytes to write to the packet
 	*/
-	writeBuffer(data: Buffer): void {
+	writeBuffer(data: Buffer | Uint8Array): void {
 		this.buffer = Buffer.concat([this.buffer, data]);
 	}
 
@@ -435,7 +438,7 @@ class Packet {
 
 		const value = this.readBytes(length);
 
-		return String.fromCodePoint(...value);
+		return this.decoder.decode(value);
 	}
 
 	/**
@@ -446,9 +449,7 @@ class Packet {
 	writeString(value: string, writeLength = true): void {
 		if (writeLength) this.writeVarInt(value.length);
 
-		for (let i = 0; i < value.length; i++) {
-			this.writeByte(value.codePointAt(i) || 0);
-		}
+		this.writeBuffer(this.encoder.encode(value));
 	}
 
 	/**
@@ -456,13 +457,13 @@ class Packet {
 	 * @returns {string} The string read from the packet
 	 */
 	readStringNT(): string {
-		let read, result = '';
+		let read, bytes = new Uint8Array();
 
 		while ((read = this.readByte()) !== 0) {
-			result += String.fromCodePoint(read);
+			bytes = Uint8Array.from([...bytes, read]);
 		}
 
-		return result;
+		return this.decoder.decode(bytes);
 	}
 
 	/**
@@ -470,10 +471,7 @@ class Packet {
 	 * @param {string} value The string to write to the packet
 	 */
 	writeStringNT(value: string): void {
-		for (let i = 0; i < value.length; i++) {
-			this.writeByte(value.codePointAt(i) || 0);
-		}
-
+		this.writeBuffer(this.encoder.encode(value));
 		this.writeByte(0);
 	}
 }

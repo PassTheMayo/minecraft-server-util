@@ -4,6 +4,7 @@ import resolveSRV, { SRVRecord } from '../util/resolveSRV';
 import TCPSocket from './TCPSocket';
 import Packet from './Packet';
 import { RCONOptions } from '../model/Options';
+import { TextDecoder } from 'util';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
@@ -34,7 +35,7 @@ class RCON extends EventEmitter implements RCONEvents {
 	private options: Required<RCONOptions>;
 	private socket: TCPSocket | null = null;
 	private requestID: number;
-	private interval: NodeJS.Timer | null = null;
+	private decoder: TextDecoder;
 
 	/**
 	 * Creates a new RCON class with the host and options
@@ -64,6 +65,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		this.isLoggedIn = false;
 		this.options = opts;
 		this.requestID = 0;
+		this.decoder = new TextDecoder('utf-8');
 	}
 
 	/**
@@ -132,7 +134,7 @@ class RCON extends EventEmitter implements RCONEvents {
 				let output = '';
 
 				if (length > 10) {
-					output = String.fromCodePoint(...await this.socket.readBytes(length - 10));
+					output = this.decoder.decode(await this.socket.readBytes(length - 10));
 				}
 
 				this.emit('output', output);
