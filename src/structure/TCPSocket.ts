@@ -111,7 +111,7 @@ class TCPSocket {
 				if (read) return;
 
 				process.nextTick(() => {
-					if (this.buffer.length > 0) {
+					if (this.buffer.byteLength > 0) {
 						read = true;
 
 						this.socket.removeListener('data', dataHandler);
@@ -136,7 +136,7 @@ class TCPSocket {
 	 * @async
 	 */
 	readBytes(length: number): Promise<Buffer> {
-		if (this.buffer.length >= length) {
+		if (this.buffer.byteLength >= length) {
 			const value = this.buffer.slice(0, length);
 
 			this.buffer = this.buffer.slice(length);
@@ -151,7 +151,7 @@ class TCPSocket {
 				if (read) return;
 
 				process.nextTick(() => {
-					if (this.buffer.length >= length) {
+					if (this.buffer.byteLength >= length) {
 						read = true;
 
 						this.socket.removeListener('data', dataHandler);
@@ -242,7 +242,7 @@ class TCPSocket {
 	writePacket(packet: Packet, prefixLength = true): Promise<void> {
 		if (prefixLength) {
 			const finalPacket = new Packet();
-			finalPacket.writeVarInt(packet.buffer.length);
+			finalPacket.writeVarInt(packet.buffer.byteLength);
 			finalPacket.writeBuffer(packet.buffer);
 
 			return this.writeBytes(Buffer.from(finalPacket.buffer));

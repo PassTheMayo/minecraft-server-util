@@ -81,7 +81,7 @@ async function statusFE01FA(host: string, options?: StatusOptions): Promise<Stat
 		const packetType = await socket.readByte();
 
 		// Packet was unexpected type, ignore the rest of the data in this packet
-		if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type');
+		if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type: 0x' + packetType.toString(16).toUpperCase());
 
 		// Read the length of the data string
 		const length = await socket.readShort();

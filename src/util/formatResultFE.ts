@@ -13,7 +13,7 @@ import { StatusResponse } from '../model/StatusResponse';
  * @param {number} maxPlayers The maximum amount of players
  * @returns {StatusResponse} The formatted result
  */
-function formatResult(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number): StatusResponse {
+function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number): StatusResponse {
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
 	assert(Number.isInteger(port), 'Expected integer, got ' + port);
 	assert(port > 0, 'Expected port > 0, got ' + port);
@@ -38,4 +38,4 @@ function formatResult(host: string, port: number, srvRecord: SRVRecord | null, m
 	};
 }
 
-export default formatResult;
+export default formatResultFE;

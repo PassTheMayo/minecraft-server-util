@@ -1,6 +1,6 @@
 {
 	"name": "minecraft-server-util",
-	"version": "3.3.0",
+	"version": "3.3.1",
 	"description": "A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -9,6 +9,7 @@
 		"build": "tsc",
 		"clean": "rimraf build/",
 		"test": "mocha --require ts-node/register test/**/*.ts --timeout 30000",
+		"coverage": "nyc npm test",
 		"lint": "eslint ."
 	},
 	"keywords": [
@@ -32,6 +33,7 @@
 		"chai": "^4.2.0",
 		"eslint": "^7.15.0",
 		"mocha": "^8.2.1",
+		"nyc": "^15.1.0",
 		"rimraf": "^3.0.2",
 		"ts-node": "^9.1.1",
 		"typescript": "^4.1.2"

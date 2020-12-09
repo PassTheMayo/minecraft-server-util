@@ -188,7 +188,7 @@ class Packet {
 
 		const value = this.buffer.readInt32BE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(4);
 
 		return value;
 	}
@@ -214,7 +214,7 @@ class Packet {
 
 		const value = this.buffer.readInt32LE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(4);
 
 		return value;
 	}
@@ -240,7 +240,7 @@ class Packet {
 
 		const value = this.buffer.readUInt32BE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(4);
 
 		return value;
 	}
@@ -266,7 +266,7 @@ class Packet {
 
 		const value = this.buffer.readUInt32LE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(4);
 
 		return value;
 	}
@@ -292,7 +292,7 @@ class Packet {
 
 		const value = this.buffer.readBigInt64BE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(8);
 
 		return value;
 	}
@@ -318,7 +318,7 @@ class Packet {
 
 		const value = this.buffer.readBigInt64LE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(8);
 
 		return value;
 	}
@@ -344,7 +344,7 @@ class Packet {
 
 		const value = this.buffer.readBigUInt64BE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(8);
 
 		return value;
 	}
@@ -370,7 +370,7 @@ class Packet {
 
 		const value = this.buffer.readBigUInt64LE();
 
-		this.buffer = this.buffer.slice(2);
+		this.buffer = this.buffer.slice(8);
 
 		return value;
 	}

@@ -4,3 +4,4 @@ package-lock.json
 dist/
 tsconfig.tsbuildinfo
 .vscode/
+.nyc_output/

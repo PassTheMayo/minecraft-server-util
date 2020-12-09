@@ -4,19 +4,19 @@ import { assert } from 'chai';
 import util from '../src';
 import Description from '../src/structure/Description';
 
-const servers = [
-	'hub.mcs.gg',
-	'mc.hypixel.net',
-	'mccentral.org',
-	'go.primemc.org',
-	'play.mineverse.com',
-	'play.applecraft.org',
-	'mc.mineville.org',
-	'play.chaoscraft.org',
-	'play.pixelmonrealms.com',
-	'play.extremecraft.net',
-	'play.simplesurvival.gg',
-	'neonmc.tk'
+const servers: [string, number][] = [
+	['hub.mcs.gg', 25565],
+	['mc.hypixel.net', 25565],
+	['mccentral.org', 25565],
+	['go.primemc.org', 25565],
+	['play.mineverse.com', 25565],
+	['play.applecraft.org', 25565],
+	['mc.mineville.org', 25565],
+	['play.chaoscraft.org', 25565],
+	['play.pixelmonrealms.com', 25565],
+	['play.extremecraft.net', 25565],
+	['play.simplesurvival.gg', 25565],
+	['neonmc.tk', 25565]
 ];
 
 const bedrockServers = [
@@ -28,17 +28,18 @@ const bedrockServers = [
 
 describe('status()', () => {
 	for (let i = 0; i < servers.length; i++) {
-		it(servers[i], (done) => {
-			util.status(servers[i])
+		it(servers[i][0], (done) => {
+			util.status(servers[i][0], { port: servers[i][1] })
 				.then((result) => {
 					assert(typeof result === 'object', `Expected result to be an object, got ${typeof result}`);
 					assert(typeof result.host === 'string', `Expected 'result.host' to be a string, got ${typeof result.host}`);
 					assert(result.host.length > 0, `Expected 'result.host' to have a length greater than 0, got ${result.host.length}`);
-					assert(result.host === servers[i], `Expected 'result.host' to match input, expected ${servers[i]}, got ${result.host}`);
+					assert(result.host === servers[i][0], `Expected 'result.host' to match input, expected ${servers[i][0]}, got ${result.host}`);
 					assert(typeof result.port === 'number', `Expected 'result.port' to be a number, got ${typeof result.port}`);
 					assert(result.port > 0, `Expected 'result.port' to be greater than 0, got ${result.port}`);
 					assert(result.port < 65536, `Expected 'result.port' to be less than 65536, got ${result.port}`);
 					assert(result.port === 25565, `Expected 'result.port' to match input, expected 25565, got ${result.port}`);
+					assert(result.port === servers[i][1], `Expected 'result.port' to match input, expected ${servers[i][1]}, got ${result.port}`);
 					assert(typeof result.srvRecord === 'object', `Expected 'result.srvRecord' to be an object, got ${typeof result.srvRecord}`);
 					assert(typeof result.version === 'string' || result.version === null, `Expected 'result.version' to be a string or null, got ${typeof result.version}`);
 
