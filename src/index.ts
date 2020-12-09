@@ -5,6 +5,7 @@ import { statusFE } from './statusFE';
 import { statusBedrock } from './statusBedrock';
 import { query } from './query';
 import { queryFull } from './queryFull';
+import scanLAN from './scanLAN';
 import Description from './structure/Description';
 import Packet from './structure/Packet';
 import { RCON } from './structure/RCON';
@@ -70,4 +71,4 @@ function pingFE(host: string, options?: StatusOptions): Promise<StatusResponse> 
 	return statusFE(host, options);
 }
 
-export = { ping, pingFE01FA, pingFE01, pingFE, status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, Description, Packet, RCON, TCPSocket, UDPSocket, TimeoutPromise };
+export = { ping, pingFE01FA, pingFE01, pingFE, status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, scanLAN, Description, Packet, RCON, TCPSocket, UDPSocket, TimeoutPromise };

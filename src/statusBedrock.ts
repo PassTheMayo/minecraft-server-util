@@ -120,7 +120,7 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
  * @async
  */
 async function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
-	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time');
+	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to retrieve the status of the server within time'));
 
 	try {
 		const value = await Promise.race([

@@ -20,5 +20,9 @@ interface RCONOptions extends BaseOptions {
     password?: string
 }
 
+interface ScanLANOptions {
+    scanTime?: number
+}
+
 // BedrockStatusOptions is an alias because it has no additional properties
-export { StatusOptions, BedrockStatusOptions, QueryOptions, RCONOptions, BaseOptions };
+export { StatusOptions, BedrockStatusOptions, QueryOptions, RCONOptions, ScanLANOptions, BaseOptions };

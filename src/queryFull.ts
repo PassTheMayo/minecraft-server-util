@@ -162,7 +162,7 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
  * @async
  */
 async function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
-	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, 'Failed to query server within time');
+	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to query server within time'));
 
 	try {
 		const value = await Promise.race([

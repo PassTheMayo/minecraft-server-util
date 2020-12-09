@@ -1,43 +1,36 @@
+type PromiseCallbackResolve<T> = (value: T | PromiseLike<T>) => void;
+type PromiseCallbackReject = (reason?: string) => void;
+type PromiseCallback<T> = (resolve: PromiseCallbackResolve<T>, reject: PromiseCallbackReject) => void;
+
 /**
- * This timeout promise is meant to automatically reject after the specified timeout, with the ability to cancel it prematurely
+ * This timeout promise is meant to automatically resolve/reject after the specified timeout, with the ability to cancel it prematurely
  * @class
  */
 class TimeoutPromise<T> {
-	/**
-	 * The timeout in milliseconds
-	 * @type {number}
-	 */
-	public timeout: number;
-	/**
-	 * The reason for the timeout rejection
-	 * @type {string}
-	 */
-	public reason: string;
 	/**
 	 * The promise that will be executed on
 	 * @type {Promise<T>}
 	 */
 	public promise: Promise<T>;
 	private timer: NodeJS.Timeout;
-	private rejectCallback: (reason: string) => void;
 
 	/**
 	 * Creates a new timeout promise
 	 * @param {number} timeout The timeout in milliseconds
 	 * @param {string} reason The reason for the rejection when it times out
 	 */
-	constructor(timeout: number, reason: string) {
-		this.timeout = timeout;
-		this.reason = reason;
-		this.rejectCallback = () => { return; };
+	constructor(timeout: number, callback: PromiseCallback<T>) {
+		let resolve: PromiseCallbackResolve<T> = () => undefined;
+		let reject: PromiseCallbackReject = () => undefined;
 
-		this.promise = new Promise((resolve, reject) => {
-			this.rejectCallback = reject;
+		this.promise = new Promise<T>((res, rej) => {
+			resolve = res;
+			reject = rej;
 		});
 
 		this.timer = setTimeout(() => {
-			this.rejectCallback(this.reason);
-		}, this.timeout);
+			callback(resolve, reject);
+		}, timeout);
 	}
 
 	/**

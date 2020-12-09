@@ -107,7 +107,7 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
  * @async
  */
 async function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
-	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, 'Failed to retrieve the status of the server within time');
+	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to retrieve the status of the server within time'));
 
 	try {
 		const value = await Promise.race([
