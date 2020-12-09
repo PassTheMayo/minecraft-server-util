@@ -22,6 +22,8 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
     - [Query a server with options](#query-a-server-with-options)
     - [Full query a server](#full-query-a-server)
     - [Full query a server with options](#full-query-a-server-with-options)
+    - [Scan for LAN games](#scan-for-lan-games)
+    - [Scan for LAN games with options](#scan-for-lan-games-with-options)
     - [Execute console commands with RCON](#execute-console-commands-with-rcon)
 - [Frequently Asked Questions](#frequently-asked-questions)
     - [How do I check if the server is up/down?](#how-do-i-check-if-the-server-is-updown)
@@ -174,6 +176,34 @@ util.queryFull('play.hypixel.net')
 const util = require('minecraft-server-util');
 
 util.queryFull('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, sessionID: 0 }) // These are the default options
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Scan for LAN games
+
+```js
+const util = require('minecraft-server-util');
+
+util.scanLAN() // Scans for 5 seconds by default
+    .then((response) => {
+        console.log(response);
+    })
+    .catch((error) => {
+        throw error;
+    });
+```
+
+### Scan for LAN games with options
+
+```js
+const util = require('minecraft-server-util');
+
+util.scanLAN({ scanTime: 5000 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
