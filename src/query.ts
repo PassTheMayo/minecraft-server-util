@@ -137,7 +137,7 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
  * @returns {Promise<BasicQueryResponse>} The basic query response data
  * @async
  */
-async function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
+export default async function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
 	const timeoutPromise = new TimeoutPromise<BasicQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to query server within time'));
 
 	try {
@@ -151,5 +151,3 @@ async function queryWithTimeout(host: string, options?: QueryOptions): Promise<B
 		timeoutPromise.cancel();
 	}
 }
-
-export { queryWithTimeout as query };

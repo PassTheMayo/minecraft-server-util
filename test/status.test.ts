@@ -23,7 +23,8 @@ const bedrockServers = [
 	'mco.mineplex.com',
 	'play.nethergames.org',
 	'play.hyperlandsmc.net',
-	'play.fallentech.io'
+	'play.fallentech.io',
+	'2b2e.org'
 ];
 
 describe('status()', () => {
@@ -138,16 +139,6 @@ describe('statusBedrock()', () => {
 					assert(result.port < 65536, `Expected 'result.port' to be less than 65536, got ${result.port}`);
 					assert(Number.isInteger(result.port), `Expected 'result.port' to be an integer, got ${result.port}`);
 					assert(result.port === 19132, `Expected 'result.port' to match input port, got ${result.port}`);
-					assert(typeof result.srvRecord === 'object' || result.srvRecord === null, `Expected 'result.srvRecord' to be an object or null, got ${typeof result.srvRecord}`);
-
-					if (typeof result.srvRecord === 'object' && result.srvRecord !== null) {
-						assert(typeof result.srvRecord.host === 'string', `Expected 'result.srvRecord.host' to be a string, got ${typeof result.srvRecord.host}`);
-						assert(result.srvRecord.host.length > 0, `Expected 'result.srvRecord.host' to have a length greater than 0, got ${result.srvRecord.host.length}`);
-						assert(typeof result.srvRecord.port === 'number', `Expected 'result.srvRecord.port' to be a number, got ${typeof result.srvRecord.port}`);
-						assert(result.srvRecord.port > 0, `Expected 'result.srvRecord.port' to be greater than 0, got ${result.srvRecord.port}`);
-						assert(result.srvRecord.port < 65536, `Expected 'result.srvRecord.port' to be less than 65536, got ${result.srvRecord.port}`);
-						assert(Number.isInteger(result.srvRecord.port), `Expected 'result.srvRecord.port' to be an integer, got ${result.srvRecord.port}`);
-					}
 
 					assert(typeof result.edition === 'string' || result.edition === null, `Expected 'result.edition' to be a string or null, got ${typeof result.edition}`);
 

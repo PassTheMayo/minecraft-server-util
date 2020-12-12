@@ -26,10 +26,6 @@ interface StatusResponse {
 interface BedrockStatusResponse {
 	host: string,
 	port: number,
-	srvRecord: {
-		host: string,
-		port: number
-	} | null,
 	edition: string | null,
 	serverGUID: bigint,
 	motdLine1: Description | null,

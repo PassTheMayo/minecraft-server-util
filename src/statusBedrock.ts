@@ -3,21 +3,18 @@ import crypto from 'crypto';
 import { TextDecoder } from 'util';
 import Packet from './structure/Packet';
 import UDPSocket from './structure/UDPSocket';
-import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { BedrockStatusResponse } from './model/StatusResponse';
 import { BedrockStatusOptions } from './model/Options';
 import parseDescription from './util/parseDescription';
 import TimeoutPromise from './structure/TimeoutPromise';
 
 const magic = [0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78];
-const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 function applyDefaultOptions(options?: BedrockStatusOptions): Required<BedrockStatusOptions> {
 	// Apply the provided options on the default options
 	return Object.assign({
 		port: 19132,
 		timeout: 1000 * 5,
-		enableSRV: true,
 		clientGUID: crypto.randomBytes(4).readUInt32BE()
 	} as Required<BedrockStatusOptions>, options);
 }
@@ -44,18 +41,10 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	assert(Number.isInteger(opts.port), `Expected 'options.port' to be an integer, got ${opts.port}`);
 	assert(typeof opts.timeout === 'number', `Expected 'options.timeout' to be a number, got ${typeof opts.timeout}`);
 	assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
-	assert(typeof opts.enableSRV === 'boolean', `Expected 'options.enableSRV' to be a boolean, got ${typeof opts.enableSRV}`);
 	assert(typeof opts.clientGUID === 'number', `Expected 'options.clientGUID' to be a number, got ${typeof opts.clientGUID}`);
 
-	let srvRecord: SRVRecord | null = null;
-
-	// Automatically resolve from host (e.g. play.hypixel.net) into a connect-able address
-	if (opts.enableSRV && !ipAddressRegEx.test(host)) {
-		srvRecord = await resolveSRV(host);
-	}
-
 	// Create a new UDP connection to the specified address
-	const socket = new UDPSocket(srvRecord?.host ?? host, srvRecord?.port ?? opts.port);
+	const socket = new UDPSocket(host, opts.port);
 
 	// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
 	const pingPacket = new Packet();
@@ -95,7 +84,6 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	return {
 		host,
 		port: opts.port,
-		srvRecord,
 		edition: edition && edition.length > 0 ? edition : null,
 		serverGUID,
 		motdLine1: motdLine1 && motdLine1.length > 0 ? parseDescription(motdLine1) : null,
@@ -119,7 +107,7 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
  * @returns {Promise<BedrockStatusResponse>} The status information of the server
  * @async
  */
-async function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+export default async function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
 	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to retrieve the status of the server within time'));
 
 	try {
@@ -133,5 +121,3 @@ async function statusWithTimeout(host: string, options?: BedrockStatusOptions): 
 		timeoutPromise.cancel();
 	}
 }
-
-export { statusWithTimeout as statusBedrock };

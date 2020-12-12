@@ -161,7 +161,7 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */
-async function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
+export default async function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
 	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to query server within time'));
 
 	try {
@@ -175,5 +175,3 @@ async function queryWithTimeout(host: string, options?: QueryOptions): Promise<F
 		timeoutPromise.cancel();
 	}
 }
-
-export { queryWithTimeout as queryFull };

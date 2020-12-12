@@ -185,4 +185,4 @@ class RCON extends EventEmitter implements RCONEvents {
 	}
 }
 
-export { RCON };
+export default RCON;
