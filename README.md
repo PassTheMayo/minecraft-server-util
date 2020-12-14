@@ -27,6 +27,7 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
     - [Execute console commands with RCON](#execute-console-commands-with-rcon)
 - [Frequently Asked Questions](#frequently-asked-questions)
     - [How do I check if the server is up/down?](#how-do-i-check-if-the-server-is-updown)
+    - [How do I browserify/webpack this module?](#how-do-i-browserifywebpack-this-module)
     - [Why am I getting weird values?](#why-am-i-getting-weird-values)
     - [Why is the sample players array empty?](#why-is-the-sample-players-array-empty)
     - [I'm getting the error `util is not a function`](#im-getting-the-error-util-is-not-a-function)
@@ -241,6 +242,10 @@ These questions below discuss frequently asked questions asked in our Discord se
 ### How do I check if the server is up/down?
 
 All of the status methods for both Java and Bedrock edition return a promise which resolves to the response. If the promise returned resolves, then the server is online. If the promise rejects, then it was unable to connect to the server, meaning it was likely offline.
+
+### How do I browserify/webpack this module?
+
+This module cannot be used in a browser environment because the TCP/UDP protocol has not been implemented. Sure, you could bundle this module successfully but you would run into an error such as `Cannot find module 'net'` or `Cannot find module 'dgram'`. The only way of using this module on the browser is to create an API server that proxies the information between a server and the client.
 
 ### Why am I getting weird values?
 
