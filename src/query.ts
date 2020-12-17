@@ -16,7 +16,7 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 		port: 25565,
 		timeout: 1000 * 5,
 		enableSRV: true,
-		sessionID: ++sessionCounter
+		sessionID: ++sessionCounter & 0x0F0F0F0F
 	} as Required<QueryOptions>, options);
 }
 
@@ -47,6 +47,9 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 	assert(opts.sessionID < 0xFFFFFFFF, `Expected 'options.sessionID' to be less than ${0xFFFFFFFF}, got ${opts.sessionID}`);
 	assert(Number.isInteger(opts.sessionID), `Expected 'options.sessionID' to be an integer, got ${opts.sessionID}`);
 	assert(typeof opts.enableSRV === 'boolean', `Expected 'options.enableSRV' to be a boolean, got ${typeof opts.enableSRV}`);
+
+	// Only the last 4 bits of each byte is used when sending a session ID
+	opts.sessionID &= 0x0F0F0F0F;
 
 	let challengeToken: number;
 	let srvRecord: SRVRecord | null = null;
