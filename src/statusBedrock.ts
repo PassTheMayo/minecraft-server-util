@@ -52,7 +52,7 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	pingPacket.writeLongBE(BigInt(Date.now())); // Time
 	pingPacket.writeByte(...magic); // Magic
 	pingPacket.writeLongBE(BigInt(opts.clientGUID)); // Client GUID
-	socket.writePacket(pingPacket);
+	await socket.writePacket(pingPacket);
 
 	// https://wiki.vg/Raknet_Protocol#Unconnected_Pong
 	const pongPacket = await socket.readPacket();

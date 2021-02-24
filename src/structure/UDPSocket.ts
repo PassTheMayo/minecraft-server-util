@@ -26,6 +26,8 @@ class UDPSocket {
 		this.socket = dgram.createSocket('udp4');
 		this.buffer = [];
 
+		this.socket.unref();
+
 		this.socket.on('message', (message, info) => {
 			this.buffer.push({ info, message });
 		});

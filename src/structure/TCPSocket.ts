@@ -25,6 +25,8 @@ class TCPSocket {
 	 * @constructor
 	 */
 	constructor(socket: net.Socket) {
+		socket.unref();
+
 		this.socket = socket;
 		this.buffer = Buffer.alloc(0);
 
