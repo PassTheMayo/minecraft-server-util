@@ -71,7 +71,7 @@ util.status('play.hypixel.net') // port is default 25565
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -85,7 +85,7 @@ util.status('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, p
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -101,7 +101,7 @@ util.statusBedrock('play.hypixel.net') // port is default 19132
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -117,7 +117,7 @@ util.statusBedrock('play.hypixel.net', { port: 19132, enableSRV: true, timeout: 
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -133,7 +133,7 @@ util.query('play.hypixel.net')
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -149,7 +149,7 @@ util.query('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, se
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -165,7 +165,7 @@ util.queryFull('play.hypixel.net')
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -181,7 +181,7 @@ util.queryFull('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -195,7 +195,7 @@ util.scanLAN() // Scans for 5 seconds by default
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -209,7 +209,7 @@ util.scanLAN({ scanTime: 5000 }) // These are the default options
         console.log(response);
     })
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
@@ -225,13 +225,10 @@ const client = new util.RCON('play.hypixel.net', { port: 25575, enableSRV: true,
 client.on('output', (message) => console.log(message));
 
 client.connect()
-    .then(async () => {
-        await client.run('list'); // List all players online
-
-        client.close();
-    })
+    .then(() => client.run('list')) // List all players online
+    .then(() => client.close())
     .catch((error) => {
-        throw error;
+        console.error(error);
     });
 ```
 
