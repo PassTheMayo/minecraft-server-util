@@ -16,7 +16,7 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 		port: 25565,
 		timeout: 1000 * 5,
 		enableSRV: true,
-		sessionID: ++sessionCounter & 0x0F0F0F0F
+		sessionID: (++sessionCounter) & 0x0F0F0F0F
 	} as Required<QueryOptions>, options);
 }
 
@@ -62,75 +62,77 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port);
 
-	{
-		// Create a Handshake packet and send it to the server
-		// https://wiki.vg/Query#Request
-		const requestPacket = new Packet();
-		requestPacket.writeByte(0xFE, 0xFD, 0x09);
-		requestPacket.writeIntBE(opts.sessionID);
-		await socket.writePacket(requestPacket);
+	try {
+		{
+			// Create a Handshake packet and send it to the server
+			// https://wiki.vg/Query#Request
+			const requestPacket = new Packet();
+			requestPacket.writeByte(0xFE, 0xFD, 0x09);
+			requestPacket.writeIntBE(opts.sessionID);
+			await socket.writePacket(requestPacket);
+		}
+
+		{
+			// Read the response packet for the Handshake from the server
+			// https://wiki.vg/Query#Response
+			const responsePacket = await socket.readPacket();
+			const type = responsePacket.readByte();
+			const sessionID = responsePacket.readIntBE();
+			challengeToken = parseInt(responsePacket.readStringNT());
+
+			if (type !== 0x09) throw new Error('Server sent an invalid payload type');
+			if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+			if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
+		}
+
+		{
+			// Create a Basic Stat Request packet and send it to the server
+			// https://wiki.vg/Query#Request_2
+			const requestPacket = new Packet();
+			requestPacket.writeByte(0xFE, 0xFD, 0x00);
+			requestPacket.writeIntBE(opts.sessionID);
+			requestPacket.writeIntBE(challengeToken);
+			await socket.writePacket(requestPacket);
+		}
+
+		let motd, gameType, levelName, onlinePlayers, maxPlayers;
+
+		{
+			// Read the response packet for the Basic stat from the server
+			const responsePacket = await socket.readPacket();
+			const type = responsePacket.readByte();
+			const sessionID = responsePacket.readIntBE();
+			motd = responsePacket.readStringNT();
+			gameType = responsePacket.readStringNT();
+			levelName = responsePacket.readStringNT();
+			const onlinePlayersStr = responsePacket.readStringNT();
+			const maxPlayersStr = responsePacket.readStringNT();
+
+			if (type !== 0x00) throw new Error('Server sent an invalid payload type');
+
+			if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+
+			onlinePlayers = parseInt(onlinePlayersStr);
+			if (isNaN(onlinePlayers)) throw new Error('Server sent an invalid player count');
+
+			maxPlayers = parseInt(maxPlayersStr);
+			if (isNaN(maxPlayers)) throw new Error('Server sent an invalid max player count');
+		}
+
+		return {
+			host,
+			port: opts.port,
+			srvRecord,
+			gameType,
+			levelName,
+			onlinePlayers,
+			maxPlayers,
+			description: parseDescription(motd)
+		};
+	} finally {
+		// Destroy the socket, it is no longer needed
+		await socket.destroy();
 	}
-
-	{
-		// Read the response packet for the Handshake from the server
-		// https://wiki.vg/Query#Response
-		const responsePacket = await socket.readPacket();
-		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readIntBE();
-		challengeToken = parseInt(responsePacket.readStringNT());
-
-		if (type !== 0x09) throw new Error('Server sent an invalid payload type');
-		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
-		if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
-	}
-
-	{
-		// Create a Basic Stat Request packet and send it to the server
-		// https://wiki.vg/Query#Request_2
-		const requestPacket = new Packet();
-		requestPacket.writeByte(0xFE, 0xFD, 0x00);
-		requestPacket.writeIntBE(opts.sessionID);
-		requestPacket.writeIntBE(challengeToken);
-		await socket.writePacket(requestPacket);
-	}
-
-	let motd, gameType, levelName, onlinePlayers, maxPlayers;
-
-	{
-		// Read the response packet for the Basic stat from the server
-		const responsePacket = await socket.readPacket();
-		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readIntBE();
-		motd = responsePacket.readStringNT();
-		gameType = responsePacket.readStringNT();
-		levelName = responsePacket.readStringNT();
-		const onlinePlayersStr = responsePacket.readStringNT();
-		const maxPlayersStr = responsePacket.readStringNT();
-
-		if (type !== 0x00) throw new Error('Server sent an invalid payload type');
-
-		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
-
-		onlinePlayers = parseInt(onlinePlayersStr);
-		if (isNaN(onlinePlayers)) throw new Error('Server sent an invalid player count');
-
-		maxPlayers = parseInt(maxPlayersStr);
-		if (isNaN(maxPlayers)) throw new Error('Server sent an invalid max player count');
-	}
-
-	// Destroy the socket, it is no longer needed
-	await socket.destroy();
-
-	return {
-		host,
-		port: opts.port,
-		srvRecord,
-		gameType,
-		levelName,
-		onlinePlayers,
-		maxPlayers,
-		description: parseDescription(motd)
-	};
 }
 
 /**
@@ -140,17 +142,11 @@ async function query(host: string, options?: QueryOptions): Promise<BasicQueryRe
  * @returns {Promise<BasicQueryResponse>} The basic query response data
  * @async
  */
-export default async function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
-	const timeoutPromise = new TimeoutPromise<BasicQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to query server within time'));
+export default function queryWithTimeout(host: string, options?: QueryOptions): Promise<BasicQueryResponse> {
+	const timeoutPromise = new TimeoutPromise<BasicQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to query server within time')));
 
-	try {
-		const value = await Promise.race([
-			query(host, options),
-			timeoutPromise.promise
-		]);
-
-		return value;
-	} finally {
-		timeoutPromise.cancel();
-	}
+	return Promise.race([
+		query(host, options),
+		timeoutPromise.promise
+	]);
 }

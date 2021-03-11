@@ -62,99 +62,101 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port);
 
-	{
-		// Create a Handshake packet and send it to the server
-		// https://wiki.vg/Query#Request
-		const requestPacket = new Packet();
-		requestPacket.writeByte(0xFE, 0xFD, 0x09);
-		requestPacket.writeIntBE(opts.sessionID);
-		await socket.writePacket(requestPacket);
-	}
-
-	{
-		// Read the response packet for the Handshake from the server
-		// https://wiki.vg/Query#Response
-		const responsePacket = await socket.readPacket();
-		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readIntBE();
-		challengeToken = parseInt(responsePacket.readStringNT());
-
-		if (type !== 0x09) throw new Error('Server sent an invalid payload type');
-		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
-		if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
-	}
-
-	{
-		// Create a Full Stat Request packet and send it to the server
-		// https://wiki.vg/Query#Request_3
-		const requestPacket = new Packet();
-		requestPacket.writeByte(0xFE, 0xFD, 0x00);
-		requestPacket.writeIntBE(opts.sessionID);
-		requestPacket.writeIntBE(challengeToken);
-		requestPacket.writeByte(0x00, 0x00, 0x00, 0x00);
-		await socket.writePacket(requestPacket);
-	}
-
-	const players = [];
-	let gameType, version, software, levelName, plugins, onlinePlayers, maxPlayers, description;
-
-	{
-		// Create an empty map of key,value pairs for the response
-		const map = new Map<string, string>();
-
-		// Read the response packet for the Full stat from the server
-		const responsePacket = await socket.readPacket();
-		const type = responsePacket.readByte();
-		const sessionID = responsePacket.readIntBE();
-
-		if (type !== 0x00) throw new Error('Server sent an invalid payload type');
-		if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
-
-		responsePacket.readBytes(11);
-
-		let key;
-
-		while ((key = responsePacket.readStringNT()) !== '') {
-			map.set(key, responsePacket.readStringNT());
+	try {
+		{
+			// Create a Handshake packet and send it to the server
+			// https://wiki.vg/Query#Request
+			const requestPacket = new Packet();
+			requestPacket.writeByte(0xFE, 0xFD, 0x09);
+			requestPacket.writeIntBE(opts.sessionID);
+			await socket.writePacket(requestPacket);
 		}
 
-		responsePacket.readBytes(10);
+		{
+			// Read the response packet for the Handshake from the server
+			// https://wiki.vg/Query#Response
+			const responsePacket = await socket.readPacket();
+			const type = responsePacket.readByte();
+			const sessionID = responsePacket.readIntBE();
+			challengeToken = parseInt(responsePacket.readStringNT());
 
-		let player;
-
-		while ((player = responsePacket.readStringNT()) !== '') {
-			players.push(player);
+			if (type !== 0x09) throw new Error('Server sent an invalid payload type');
+			if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+			if (isNaN(challengeToken)) throw new Error('Server sent an invalid challenge token');
 		}
 
-		const pluginsRaw = (map.get('plugins') || '').split(';');
+		{
+			// Create a Full Stat Request packet and send it to the server
+			// https://wiki.vg/Query#Request_3
+			const requestPacket = new Packet();
+			requestPacket.writeByte(0xFE, 0xFD, 0x00);
+			requestPacket.writeIntBE(opts.sessionID);
+			requestPacket.writeIntBE(challengeToken);
+			requestPacket.writeByte(0x00, 0x00, 0x00, 0x00);
+			await socket.writePacket(requestPacket);
+		}
 
-		gameType = map.get('gametype') ?? null;
-		version = map.get('version') ?? null;
-		software = pluginsRaw[0] ?? null;
-		plugins = pluginsRaw.slice(1);
-		levelName = map.get('map') ?? null;
-		onlinePlayers = parseInt(map.get('numplayers') || '') ?? null;
-		maxPlayers = parseInt(map.get('maxplayers') || '') ?? null;
-		description = parseDescription(map.get('motd') ?? '');
+		const players = [];
+		let gameType, version, software, levelName, plugins, onlinePlayers, maxPlayers, description;
+
+		{
+			// Create an empty map of key,value pairs for the response
+			const map = new Map<string, string>();
+
+			// Read the response packet for the Full stat from the server
+			const responsePacket = await socket.readPacket();
+			const type = responsePacket.readByte();
+			const sessionID = responsePacket.readIntBE();
+
+			if (type !== 0x00) throw new Error('Server sent an invalid payload type');
+			if (sessionID !== opts.sessionID) throw new Error('Session ID in response did not match client session ID');
+
+			responsePacket.readBytes(11);
+
+			let key;
+
+			while ((key = responsePacket.readStringNT()) !== '') {
+				map.set(key, responsePacket.readStringNT());
+			}
+
+			responsePacket.readBytes(10);
+
+			let player;
+
+			while ((player = responsePacket.readStringNT()) !== '') {
+				players.push(player);
+			}
+
+			const pluginsRaw = (map.get('plugins') || '').split(';');
+
+			gameType = map.get('gametype') ?? null;
+			version = map.get('version') ?? null;
+			software = pluginsRaw[0] ?? null;
+			plugins = pluginsRaw.slice(1);
+			levelName = map.get('map') ?? null;
+			onlinePlayers = parseInt(map.get('numplayers') || '') ?? null;
+			maxPlayers = parseInt(map.get('maxplayers') || '') ?? null;
+			description = parseDescription(map.get('motd') ?? '');
+		}
+
+		return {
+			host,
+			port: opts.port,
+			srvRecord,
+			gameType,
+			version,
+			software,
+			plugins,
+			levelName,
+			onlinePlayers,
+			maxPlayers,
+			players,
+			description
+		};
+	} finally {
+		// Destroy the socket, it is no longer needed
+		await socket.destroy();
 	}
-
-	// Destroy the socket, it is no longer needed
-	await socket.destroy();
-
-	return {
-		host,
-		port: opts.port,
-		srvRecord,
-		gameType,
-		version,
-		software,
-		plugins,
-		levelName,
-		onlinePlayers,
-		maxPlayers,
-		players,
-		description
-	};
 }
 
 /**
@@ -164,17 +166,11 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */
-export default async function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
-	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to query server within time'));
+export default function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
+	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to query server within time')));
 
-	try {
-		const value = await Promise.race([
-			queryFull(host, options),
-			timeoutPromise.promise
-		]);
-
-		return value;
-	} finally {
-		timeoutPromise.cancel();
-	}
+	return Promise.race([
+		queryFull(host, options),
+		timeoutPromise.promise
+	]);
 }

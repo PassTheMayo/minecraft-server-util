@@ -46,58 +46,59 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(host, opts.port);
 
-	// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
-	const pingPacket = new Packet();
-	pingPacket.writeByte(0x01); // Packet ID
-	pingPacket.writeLongBE(BigInt(Date.now())); // Time
-	pingPacket.writeByte(...magic); // Magic
-	pingPacket.writeLongBE(BigInt(opts.clientGUID)); // Client GUID
-	await socket.writePacket(pingPacket);
+	try {// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
+		const pingPacket = new Packet();
+		pingPacket.writeByte(0x01); // Packet ID
+		pingPacket.writeLongBE(BigInt(Date.now())); // Time
+		pingPacket.writeByte(...magic); // Magic
+		pingPacket.writeLongBE(BigInt(opts.clientGUID)); // Client GUID
+		await socket.writePacket(pingPacket);
 
-	// https://wiki.vg/Raknet_Protocol#Unconnected_Pong
-	const pongPacket = await socket.readPacket();
+		// https://wiki.vg/Raknet_Protocol#Unconnected_Pong
+		const pongPacket = await socket.readPacket();
 
-	// Begin reading the data out of the packet
-	const packetType = pongPacket.readByte(); // Packet type
+		// Begin reading the data out of the packet
+		const packetType = pongPacket.readByte(); // Packet type
 
-	// Packet was unexpected type, ignore the rest of the data in this packet
-	if (packetType !== 0x1C) throw new Error('Server sent an invalid packet type');
+		// Packet was unexpected type, ignore the rest of the data in this packet
+		if (packetType !== 0x1C) throw new Error('Server sent an invalid packet type');
 
-	// Finish reading the data out of the packet
-	pongPacket.readLongBE(); // Time
-	const serverGUID = pongPacket.readLongBE(); // Server GUID
-	pongPacket.readBytes(16); // Magic
-	const serverIDBytes = pongPacket.readBytes(pongPacket.readUShortBE()); // Server ID
+		// Finish reading the data out of the packet
+		pongPacket.readLongBE(); // Time
+		const serverGUID = pongPacket.readLongBE(); // Server GUID
+		pongPacket.readBytes(16); // Magic
+		const serverIDBytes = pongPacket.readBytes(pongPacket.readUShortBE()); // Server ID
 
-	// Property decode the server ID bytes into a response string
-	const response = new TextDecoder().decode(Uint8Array.from(serverIDBytes));
+		// Property decode the server ID bytes into a response string
+		const response = new TextDecoder().decode(Uint8Array.from(serverIDBytes));
 
-	// Split the response string into multiple tokens, where each is a status item
-	const splitResponse = response.split(';');
+		// Split the response string into multiple tokens, where each is a status item
+		const splitResponse = response.split(';');
 
-	// Grab each element out of the split response string, they may be missing which we'll fix later in the code
-	const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = splitResponse;
+		// Grab each element out of the split response string, they may be missing which we'll fix later in the code
+		const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = splitResponse;
 
-	// Destroy the socket, it is no longer needed
-	await socket.destroy();
-
-	return {
-		host,
-		port: opts.port,
-		edition: edition && edition.length > 0 ? edition : null,
-		serverGUID,
-		motdLine1: motdLine1 && motdLine1.length > 0 ? parseDescription(motdLine1) : null,
-		motdLine2: motdLine2 && motdLine1.length > 0 ? parseDescription(motdLine2) : null,
-		version: version && version.length > 0 ? version : null,
-		protocolVersion: isNaN(parseInt(protocolVersion)) ? null : parseInt(protocolVersion),
-		maxPlayers: isNaN(parseInt(maxPlayers)) ? null : parseInt(maxPlayers),
-		onlinePlayers: isNaN(parseInt(onlinePlayers)) ? null : parseInt(onlinePlayers),
-		serverID: serverID && serverID.length > 0 ? serverID : null,
-		gameMode: gameMode && gameMode.length > 0 ? gameMode : null,
-		gameModeID: isNaN(parseInt(gameModeID)) ? null : parseInt(gameModeID),
-		portIPv4: isNaN(parseInt(portIPv4)) ? null : parseInt(portIPv4),
-		portIPv6: isNaN(parseInt(portIPv6)) ? null : parseInt(portIPv6)
-	};
+		return {
+			host,
+			port: opts.port,
+			edition: edition && edition.length > 0 ? edition : null,
+			serverGUID,
+			motdLine1: motdLine1 && motdLine1.length > 0 ? parseDescription(motdLine1) : null,
+			motdLine2: motdLine2 && motdLine1.length > 0 ? parseDescription(motdLine2) : null,
+			version: version && version.length > 0 ? version : null,
+			protocolVersion: isNaN(parseInt(protocolVersion)) ? null : parseInt(protocolVersion),
+			maxPlayers: isNaN(parseInt(maxPlayers)) ? null : parseInt(maxPlayers),
+			onlinePlayers: isNaN(parseInt(onlinePlayers)) ? null : parseInt(onlinePlayers),
+			serverID: serverID && serverID.length > 0 ? serverID : null,
+			gameMode: gameMode && gameMode.length > 0 ? gameMode : null,
+			gameModeID: isNaN(parseInt(gameModeID)) ? null : parseInt(gameModeID),
+			portIPv4: isNaN(parseInt(portIPv4)) ? null : parseInt(portIPv4),
+			portIPv6: isNaN(parseInt(portIPv6)) ? null : parseInt(portIPv6)
+		};
+	} finally {
+		// Destroy the socket, it is no longer needed
+		await socket.destroy();
+	}
 }
 
 /**
@@ -107,17 +108,11 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
  * @returns {Promise<BedrockStatusResponse>} The status information of the server
  * @async
  */
-export default async function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
-	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to retrieve the status of the server within time'));
+export default function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to retrieve the status of the server within time')));
 
-	try {
-		const value = await Promise.race([
-			statusBedrock(host, options),
-			timeoutPromise.promise
-		]);
-
-		return value;
-	} finally {
-		timeoutPromise.cancel();
-	}
+	return Promise.race([
+		statusBedrock(host, options),
+		timeoutPromise.promise
+	]);
 }

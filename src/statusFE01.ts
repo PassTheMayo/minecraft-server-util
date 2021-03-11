@@ -58,50 +58,51 @@ async function statusFE01(host: string, options?: StatusOptions): Promise<Status
 	// Create a new TCP connection to the specified address
 	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
 
-	// Create the necessary packets and send them to the server
-	{
-		// https://wiki.vg/Server_List_Ping#1.4_to_1.5
-		const packet = new Packet();
-		packet.writeByte(0xFE, 0x01);
-		socket.writePacket(packet, false);
+	try {// Create the necessary packets and send them to the server
+		{
+			// https://wiki.vg/Server_List_Ping#1.4_to_1.5
+			const packet = new Packet();
+			packet.writeByte(0xFE, 0x01);
+			socket.writePacket(packet, false);
+		}
+
+		let protocolVersion = 0;
+		let serverVersion = '';
+		let motd = '';
+		let playerCount = 0;
+		let maxPlayers = 0;
+
+		{
+			const packetType = await socket.readByte();
+
+			// Packet was unexpected type, ignore the rest of the data in this packet
+			if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type');
+
+			// Read the length of the data string
+			const length = await socket.readShort();
+
+			// Read all of the data string and convert to a UTF-8 string
+			const data = decoder.decode((await socket.readBytes(length * 2)).slice(6));
+
+			const [protocolVersionStr, serverVersionStr, motdStr, playerCountStr, maxPlayersStr] = data.split('\0');
+
+			protocolVersion = parseInt(protocolVersionStr);
+			serverVersion = serverVersionStr;
+			motd = motdStr;
+			playerCount = parseInt(playerCountStr);
+			maxPlayers = parseInt(maxPlayersStr);
+
+			if (isNaN(protocolVersion)) throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr);
+			if (isNaN(playerCount)) throw new Error('Server returned an invalid player count: ' + playerCountStr);
+			if (isNaN(maxPlayers)) throw new Error('Server returned an invalid max player count: ' + maxPlayersStr);
+		}
+
+		// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
+		return formatResultFE01FA(host, opts.port, srvRecord, protocolVersion, serverVersion, motd, playerCount, maxPlayers);
+	} finally {
+		// Destroy the socket, it is no longer needed
+		await socket.destroy();
 	}
-
-	let protocolVersion = 0;
-	let serverVersion = '';
-	let motd = '';
-	let playerCount = 0;
-	let maxPlayers = 0;
-
-	{
-		const packetType = await socket.readByte();
-
-		// Packet was unexpected type, ignore the rest of the data in this packet
-		if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type');
-
-		// Read the length of the data string
-		const length = await socket.readShort();
-
-		// Read all of the data string and convert to a UTF-8 string
-		const data = decoder.decode((await socket.readBytes(length * 2)).slice(6));
-
-		const [protocolVersionStr, serverVersionStr, motdStr, playerCountStr, maxPlayersStr] = data.split('\0');
-
-		protocolVersion = parseInt(protocolVersionStr);
-		serverVersion = serverVersionStr;
-		motd = motdStr;
-		playerCount = parseInt(playerCountStr);
-		maxPlayers = parseInt(maxPlayersStr);
-
-		if (isNaN(protocolVersion)) throw new Error('Server returned an invalid protocol version: ' + protocolVersionStr);
-		if (isNaN(playerCount)) throw new Error('Server returned an invalid player count: ' + playerCountStr);
-		if (isNaN(maxPlayers)) throw new Error('Server returned an invalid max player count: ' + maxPlayersStr);
-	}
-
-	// Destroy the socket, it is no longer needed
-	await socket.destroy();
-
-	// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
-	return formatResultFE01FA(host, opts.port, srvRecord, protocolVersion, serverVersion, motd, playerCount, maxPlayers);
 }
 
 /**
@@ -111,17 +112,11 @@ async function statusFE01(host: string, options?: StatusOptions): Promise<Status
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */
-export default async function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
-	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject('Failed to retrieve the status of the server within time'));
+export default function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
+	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to retrieve the status of the server within time')));
 
-	try {
-		const value = await Promise.race([
-			statusFE01(host, options),
-			timeoutPromise.promise
-		]);
-
-		return value;
-	} finally {
-		timeoutPromise.cancel();
-	}
+	return Promise.race([
+		statusFE01(host, options),
+		timeoutPromise.promise
+	]);
 }

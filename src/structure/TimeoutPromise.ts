@@ -1,5 +1,5 @@
 type PromiseCallbackResolve<T> = (value: T | PromiseLike<T>) => void;
-type PromiseCallbackReject = (reason?: string) => void;
+type PromiseCallbackReject = (reason?: Error) => void;
 type PromiseCallback<T> = (resolve: PromiseCallbackResolve<T>, reject: PromiseCallbackReject) => void;
 
 /**
@@ -17,7 +17,7 @@ class TimeoutPromise<T> {
 	/**
 	 * Creates a new timeout promise
 	 * @param {number} timeout The timeout in milliseconds
-	 * @param {string} reason The reason for the rejection when it times out
+	 * @param {Error} reason The reason for the rejection when it times out
 	 */
 	constructor(timeout: number, callback: PromiseCallback<T>) {
 		let resolve: PromiseCallbackResolve<T> = () => undefined;
@@ -31,6 +31,8 @@ class TimeoutPromise<T> {
 		this.timer = setTimeout(() => {
 			callback(resolve, reject);
 		}, timeout);
+
+		this.timer.unref();
 	}
 
 	/**
