@@ -58,6 +58,8 @@ export default async function queryFull(host: string, options?: QueryOptions): P
 		srvRecord = await resolveSRV(host);
 	}
 
+	const startTime = Date.now();
+
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port);
 
@@ -150,7 +152,8 @@ export default async function queryFull(host: string, options?: QueryOptions): P
 			onlinePlayers,
 			maxPlayers,
 			players,
-			description
+			description,
+			roundTripLatency: Date.now() - startTime
 		};
 	} finally {
 		// Destroy the socket, it is no longer needed

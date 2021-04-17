@@ -48,6 +48,8 @@ describe('queryBasic()', () => {
 					assert(typeof result.description.toANSI() === 'string', `Expected 'result.description.toANSI()' to be a string, got ${typeof result.description.toANSI()}`);
 					assert(typeof result.description.toString === 'function', `Expected 'result.description.toString' to be a function, got ${typeof result.description.toString}`);
 					assert(typeof result.description.toString() === 'string', `Expected 'result.description.toString()' to be a string, got ${typeof result.description.toString()}`);
+					assert(typeof result.roundTripLatency === 'number', `Expected 'result.roundTripLatency' to be a number, got ${typeof result.roundTripLatency}`);
+					assert(result.roundTripLatency >= 0, `Expected 'result.roundTripLatency' to be greater than or equal to 0, got ${result.roundTripLatency}`);
 
 					done();
 				})
@@ -140,6 +142,8 @@ describe('queryFull()', () => {
 					assert(typeof result.description.toANSI() === 'string', `Expected 'result.description.toANSI()' to be a string, got ${typeof result.description.toANSI()}`);
 					assert(typeof result.description.toString === 'function', `Expected 'result.description.toString' to be a function, got ${typeof result.description.toString}`);
 					assert(typeof result.description.toString() === 'string', `Expected 'result.description.toString()' to be a string, got ${typeof result.description.toString()}`);
+					assert(typeof result.roundTripLatency === 'number', `Expected 'result.roundTripLatency' to be a number, got ${typeof result.roundTripLatency}`);
+					assert(result.roundTripLatency >= 0, `Expected 'result.roundTripLatency' to be greater than or equal to 0, got ${result.roundTripLatency}`);
 
 					done();
 				})

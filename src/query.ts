@@ -58,6 +58,8 @@ export default async function query(host: string, options?: QueryOptions): Promi
 		srvRecord = await resolveSRV(host);
 	}
 
+	const startTime = Date.now();
+
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port);
 
@@ -126,7 +128,8 @@ export default async function query(host: string, options?: QueryOptions): Promi
 			levelName,
 			onlinePlayers,
 			maxPlayers,
-			description: parseDescription(motd)
+			description: parseDescription(motd),
+			roundTripLatency: Date.now() - startTime
 		};
 	} finally {
 		// Destroy the socket, it is no longer needed

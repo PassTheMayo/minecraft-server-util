@@ -9,7 +9,8 @@ interface BasicQueryResponse {
     levelName: string,
     onlinePlayers: number,
     maxPlayers: number,
-    description: Description
+    description: Description,
+    roundTripLatency: number
 }
 
 interface FullQueryResponse {
@@ -24,7 +25,8 @@ interface FullQueryResponse {
     onlinePlayers: number | null,
     maxPlayers: number | null,
     players: string[],
-    description: Description
+    description: Description,
+    roundTripLatency: number
 }
 
 export { BasicQueryResponse, FullQueryResponse };
