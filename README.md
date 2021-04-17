@@ -222,11 +222,17 @@ const util = require('minecraft-server-util');
 
 const client = new util.RCON('play.hypixel.net', { port: 25575, enableSRV: true, timeout: 5000, password: 'abc123' }); // These are the default options
 
-client.on('output', (message) => console.log(message));
+client.on('output', (message) => {
+    console.log(message);
+
+    // The client must be closed AFTER receiving the message.
+    // Closing too early will cause the client to never output
+    // any message.
+    client.close();
+});
 
 client.connect()
     .then(() => client.run('list')) // List all players online
-    .then(() => client.close())
     .catch((error) => {
         console.error(error);
     });
