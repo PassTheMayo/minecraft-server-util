@@ -3,7 +3,7 @@ import 'mocha';
 import util from '../src';
 
 const servers: [string, string][] = [
-	['localhost', 'abc123']
+	// ['localhost', 'abc123']
 ];
 
 describe('new RCON()', () => {
