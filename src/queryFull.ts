@@ -5,7 +5,6 @@ import { FullQueryResponse } from './model/QueryResponse';
 import UDPSocket from './structure/UDPSocket';
 import parseDescription from './util/parseDescription';
 import { QueryOptions } from './model/Options';
-import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 let sessionCounter = 0;
@@ -27,7 +26,7 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
  * @returns {Promise<FullQueryResponse>} The full query response data
  * @async
  */
-async function queryFull(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
+export default async function queryFull(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -157,20 +156,4 @@ async function queryFull(host: string, options?: QueryOptions): Promise<FullQuer
 		// Destroy the socket, it is no longer needed
 		await socket.destroy();
 	}
-}
-
-/**
- * Performs a full query on the server using the UDP protocol.
- * @param {string} host The host of the server
- * @param {QueryOptions} [options] The options to use when performing the query
- * @returns {Promise<FullQueryResponse>} The full query response data
- * @async
- */
-export default function queryWithTimeout(host: string, options?: QueryOptions): Promise<FullQueryResponse> {
-	const timeoutPromise = new TimeoutPromise<FullQueryResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to query server within time')));
-
-	return Promise.race([
-		queryFull(host, options),
-		timeoutPromise.promise
-	]);
 }

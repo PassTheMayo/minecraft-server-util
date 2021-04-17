@@ -1,4 +1,4 @@
-import { ModInfo } from './RawStatusResponse';
+import { ModInfo, RawStatusResponse } from './RawStatusResponse';
 import Description from '../structure/Description';
 
 interface SamplePlayer {
@@ -20,7 +20,9 @@ interface StatusResponse {
 	samplePlayers: SamplePlayer[] | null,
 	description: Description | null,
 	favicon: string | null,
-	modInfo: ModInfo | null
+	modInfo: ModInfo | null,
+	rawResponse: RawStatusResponse | null,
+	roundTripLatency: number
 }
 
 interface BedrockStatusResponse {
@@ -38,7 +40,8 @@ interface BedrockStatusResponse {
 	gameMode: string | null,
 	gameModeID: number | null,
 	portIPv4: number | null,
-	portIPv6: number | null
+	portIPv6: number | null,
+	roundTripLatency: number
 }
 
 export { StatusResponse, BedrockStatusResponse, SamplePlayer };

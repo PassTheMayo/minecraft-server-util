@@ -6,7 +6,6 @@ import UDPSocket from './structure/UDPSocket';
 import { BedrockStatusResponse } from './model/StatusResponse';
 import { BedrockStatusOptions } from './model/Options';
 import parseDescription from './util/parseDescription';
-import TimeoutPromise from './structure/TimeoutPromise';
 
 const magic = [0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78];
 
@@ -26,7 +25,7 @@ function applyDefaultOptions(options?: BedrockStatusOptions): Required<BedrockSt
  * @returns {Promise<BedrockStatusResponse>} The status information of the server
  * @async
  */
-async function statusBedrock(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+export default async function statusBedrock(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -43,10 +42,13 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 	assert(opts.timeout > 0, `Expected 'options.timeout' to be greater than 0, got ${opts.timeout}`);
 	assert(typeof opts.clientGUID === 'number', `Expected 'options.clientGUID' to be a number, got ${typeof opts.clientGUID}`);
 
+	const startTime = Date.now();
+
 	// Create a new UDP connection to the specified address
 	const socket = new UDPSocket(host, opts.port);
 
-	try {// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
+	try {
+		// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
 		const pingPacket = new Packet();
 		pingPacket.writeByte(0x01); // Packet ID
 		pingPacket.writeLongBE(BigInt(Date.now())); // Time
@@ -93,26 +95,11 @@ async function statusBedrock(host: string, options?: BedrockStatusOptions): Prom
 			gameMode: gameMode && gameMode.length > 0 ? gameMode : null,
 			gameModeID: isNaN(parseInt(gameModeID)) ? null : parseInt(gameModeID),
 			portIPv4: isNaN(parseInt(portIPv4)) ? null : parseInt(portIPv4),
-			portIPv6: isNaN(parseInt(portIPv6)) ? null : parseInt(portIPv6)
+			portIPv6: isNaN(parseInt(portIPv6)) ? null : parseInt(portIPv6),
+			roundTripLatency: Date.now() - startTime
 		};
 	} finally {
 		// Destroy the socket, it is no longer needed
 		await socket.destroy();
 	}
-}
-
-/**
- * Retrieves the status of the Bedrock edition server
- * @param {string} host The host of the server
- * @param {BedrockStatusOptions} [options] The options to use when retrieving the status
- * @returns {Promise<BedrockStatusResponse>} The status information of the server
- * @async
- */
-export default function statusWithTimeout(host: string, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
-	const timeoutPromise = new TimeoutPromise<BedrockStatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to retrieve the status of the server within time')));
-
-	return Promise.race([
-		statusBedrock(host, options),
-		timeoutPromise.promise
-	]);
 }

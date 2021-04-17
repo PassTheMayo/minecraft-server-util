@@ -21,7 +21,7 @@ function applyDefaultOptions(options?: ScanLANOptions): Required<ScanLANOptions>
  * @returns {Promise<ScanLANResponse>} The response of the scan
  * @async
  */
-async function scanLAN(options?: ScanLANOptions): Promise<ScanLANResponse> {
+export default async function scanLAN(options?: ScanLANOptions): Promise<ScanLANResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -89,5 +89,3 @@ async function scanLAN(options?: ScanLANOptions): Promise<ScanLANResponse> {
 		socket.close();
 	}, opts.scanTime));
 }
-
-export default scanLAN;

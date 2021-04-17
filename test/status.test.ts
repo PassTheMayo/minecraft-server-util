@@ -116,6 +116,12 @@ describe('status()', () => {
 						}
 					}
 
+					assert(typeof result.rawResponse === 'object' || result.rawResponse === null, `Expected 'result.rawResponse' to be an object or null, got ${typeof result.rawResponse}`);
+
+					assert(typeof result.roundTripLatency === 'number', `Expected 'result.roundTripLatency' to be a number, got ${typeof result.roundTripLatency}`);
+					assert(Number.isInteger(result.roundTripLatency), `Expected 'result.roundTripLatency' to be an integer, got ${result.roundTripLatency}`);
+					assert(result.roundTripLatency >= 0, `Expected 'result.roundTripLatency' to be greater than or equal to 0, got ${result.roundTripLatency}`);
+
 					done();
 				})
 				.catch((error) => {

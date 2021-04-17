@@ -6,7 +6,6 @@ import formatResultFE from './util/formatResultFE';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
 import { StatusOptions } from './model/Options';
-import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 const decoder = new TextDecoder('utf-16be');
@@ -28,7 +27,7 @@ function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */
-async function statusFE(host: string, options?: StatusOptions): Promise<StatusResponse> {
+export default async function statusFE(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -54,6 +53,8 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
 	if (opts.enableSRV && !ipAddressRegEx.test(host)) {
 		srvRecord = await resolveSRV(host);
 	}
+
+	const startTime = Date.now();
 
 	// Create a new TCP connection to the specified address
 	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
@@ -90,25 +91,9 @@ async function statusFE(host: string, options?: StatusOptions): Promise<StatusRe
 		if (isNaN(maxPlayers)) throw new Error('Server returned an invalid max player count: ' + maxPlayersStr);
 
 		// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
-		return formatResultFE(host, opts.port, srvRecord, motd, playerCount, maxPlayers);
+		return formatResultFE(host, opts.port, srvRecord, motd, playerCount, maxPlayers, Date.now() - startTime);
 	} finally {
 		// Destroy the socket, it is no longer needed
 		await socket.destroy();
 	}
-}
-
-/**
- * Retrieves the status of the server using the Beta 1.8 - 1.3.2 format.
- * @param {string} host The host of the server
- * @param {StatusOptions} [options] The options to use when retrieving the status
- * @returns {Promise<StatusResponse>} The status information of the server
- * @async
- */
-export default function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
-	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to retrieve the status of the server within time')));
-
-	return Promise.race([
-		statusFE(host, options),
-		timeoutPromise.promise
-	]);
 }

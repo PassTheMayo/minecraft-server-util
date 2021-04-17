@@ -11,6 +11,5 @@ import Packet from './structure/Packet';
 import RCON from './structure/RCON';
 import TCPSocket from './structure/TCPSocket';
 import UDPSocket from './structure/UDPSocket';
-import TimeoutPromise from './structure/TimeoutPromise';
 
-export = { status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, scanLAN, Description, Packet, RCON, TCPSocket, UDPSocket, TimeoutPromise };
+export = { status, statusFE01FA, statusFE01, statusFE, statusBedrock, query, queryFull, scanLAN, Description, Packet, RCON, TCPSocket, UDPSocket };

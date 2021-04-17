@@ -5,7 +5,7 @@ import util from '../src';
 import Description from '../src/structure/Description';
 
 const servers: [string, number][] = [
-	// ['localhost', 25565]
+	['localhost', 25565]
 ];
 
 describe('queryBasic()', () => {

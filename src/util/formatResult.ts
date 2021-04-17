@@ -12,12 +12,17 @@ import { RawStatusResponse } from '../model/RawStatusResponse';
  * @param {RawStatusResponse} result The raw JSON data returned from the server
  * @returns {StatusResponse} The formatted result
  */
-function formatResult(host: string, port: number, srvRecord: SRVRecord | null, result: RawStatusResponse): StatusResponse {
+function formatResult(host: string, port: number, srvRecord: SRVRecord | null, result: RawStatusResponse, roundTripLatency: number): StatusResponse {
+	assert(typeof host === 'string', 'Expected host to be a string, got ' + typeof host);
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
+	assert(typeof port === 'number', 'Expected port to be a number, got ' + typeof port);
 	assert(Number.isInteger(port), 'Expected integer, got ' + port);
 	assert(port > 0, 'Expected port > 0, got ' + port);
 	assert(port < 65536, 'Expected port < 65536, got ' + port);
 	assert(typeof result === 'object', 'Expected object, got ' + (typeof result));
+	assert(typeof roundTripLatency === 'number', 'Expected roundTripLatency to be a number, got ' + typeof roundTripLatency);
+	assert(Number.isInteger(roundTripLatency), 'Expected roundTripLatency to be an integer, got ' + roundTripLatency);
+	assert(roundTripLatency >= 0, 'Expected roundTripLatency >= 0, got ' + roundTripLatency);
 
 	const version = result?.version?.name ?? null;
 	const protocolVersion = result?.version?.protocol ?? null;
@@ -39,7 +44,9 @@ function formatResult(host: string, port: number, srvRecord: SRVRecord | null, r
 		samplePlayers,
 		description,
 		favicon,
-		modInfo
+		modInfo,
+		rawResponse: result,
+		roundTripLatency
 	};
 }
 

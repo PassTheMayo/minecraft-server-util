@@ -13,13 +13,20 @@ import { StatusResponse } from '../model/StatusResponse';
  * @param {number} maxPlayers The maximum amount of players
  * @returns {StatusResponse} The formatted result
  */
-function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number): StatusResponse {
+function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null, motd: string, onlinePlayers: number, maxPlayers: number, roundTripLatency: number): StatusResponse {
+	assert(typeof host === 'string', 'Expected host to be a string, got ' + typeof host);
 	assert(host.length > 0, 'Expected host.length > 0, got ' + host.length);
-	assert(Number.isInteger(port), 'Expected integer, got ' + port);
+	assert(typeof port === 'number', 'Expected port to be a number, got ' + typeof port);
+	assert(Number.isInteger(port), 'Expected port to be an integer, got ' + port);
 	assert(port > 0, 'Expected port > 0, got ' + port);
 	assert(port < 65536, 'Expected port < 65536, got ' + port);
-	assert(Number.isInteger(onlinePlayers), 'Expected integer, got ' + onlinePlayers);
-	assert(Number.isInteger(maxPlayers), 'Expected integer, got ' + maxPlayers);
+	assert(typeof onlinePlayers === 'number', 'Expected onlinePlayers to be a number, got ' + typeof onlinePlayers);
+	assert(Number.isInteger(onlinePlayers), 'Expected onlinePlayers to be an integer, got ' + onlinePlayers);
+	assert(typeof maxPlayers === 'number', 'Expected maxPlayers to be a number, got ' + typeof maxPlayers);
+	assert(Number.isInteger(maxPlayers), 'Expected maxPlayers to be an integer, got ' + maxPlayers);
+	assert(typeof roundTripLatency === 'number', 'Expected roundTripLatency to be a number, got ' + typeof roundTripLatency);
+	assert(Number.isInteger(roundTripLatency), 'Expected roundTripLatency to be an integer, got ' + roundTripLatency);
+	assert(roundTripLatency >= 0, 'Expected roundTripLatency >= 0, got ' + port);
 
 	const description = parseDescription(motd);
 
@@ -34,7 +41,9 @@ function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null,
 		samplePlayers: null,
 		description,
 		favicon: null,
-		modInfo: null
+		modInfo: null,
+		rawResponse: null,
+		roundTripLatency
 	};
 }
 

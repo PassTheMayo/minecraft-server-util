@@ -6,7 +6,6 @@ import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { StatusResponse } from './model/StatusResponse';
 import { RawStatusResponse } from './model/RawStatusResponse';
 import { StatusOptions } from './model/Options';
-import TimeoutPromise from './structure/TimeoutPromise';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
@@ -27,7 +26,7 @@ function applyDefaultOptions(options?: StatusOptions): Required<StatusOptions> {
  * @returns {Promise<StatusResponse>} The status information of the server
  * @async
  */
-async function status(host: string, options?: StatusOptions): Promise<StatusResponse> {
+export default async function status(host: string, options?: StatusOptions): Promise<StatusResponse> {
 	// Applies the provided options on top of the default options
 	const opts = applyDefaultOptions(options);
 
@@ -54,10 +53,13 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 		srvRecord = await resolveSRV(host);
 	}
 
-	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout - 250);
+	const startTime = Date.now();
 
-	try {// Create the necessary packets and send them to the server
+	// Create a new TCP connection to the specified address
+	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+
+	try {
+		// Create the necessary packets and send them to the server
 		{
 			// https://wiki.vg/Server_List_Ping#Handshake
 			const handshakePacket = new Packet();
@@ -91,25 +93,9 @@ async function status(host: string, options?: StatusOptions): Promise<StatusResp
 		}
 
 		// Convert the data from raw Minecraft status payload format into a more human readable format and resolve the promise
-		return formatResult(host, opts.port, srvRecord, result);
+		return formatResult(host, opts.port, srvRecord, result, Date.now() - startTime);
 	} finally {
 		// Destroy the socket, it is no longer needed
 		await socket.destroy();
 	}
-}
-
-/**
- * Retrieves the status of the server using the 1.7+ format.
- * @param {string} host The host of the server
- * @param {StatusOptions} [options] The options to use when retrieving the status
- * @returns {Promise<StatusResponse>} The status information of the server
- * @async
- */
-export default function statusWithTimeout(host: string, options?: StatusOptions): Promise<StatusResponse> {
-	const timeoutPromise = new TimeoutPromise<StatusResponse>(options?.timeout ?? 1000 * 15, (resolve, reject) => reject(new Error('Failed to retrieve the status of the server within time')));
-
-	return Promise.race([
-		status(host, options),
-		timeoutPromise.promise
-	]);
 }
