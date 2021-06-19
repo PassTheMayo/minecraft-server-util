@@ -70,7 +70,7 @@ export default async function statusFE01FA(host: string, options?: StatusOptions
 			packet.writeShortBE(host.length);
 			packet.writeString(host, false);
 			packet.writeIntBE(opts.port);
-			socket.writePacket(packet, false);
+			await socket.writePacket(packet, false);
 		}
 
 		let protocolVersion = 0;

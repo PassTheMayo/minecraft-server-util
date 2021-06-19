@@ -68,12 +68,12 @@ export default async function status(host: string, options?: StatusOptions): Pro
 			handshakePacket.writeString(host, true);
 			handshakePacket.writeUShortBE(opts.port);
 			handshakePacket.writeVarInt(1);
-			socket.writePacket(handshakePacket, true);
+			await socket.writePacket(handshakePacket, true);
 
 			// https://wiki.vg/Server_List_Ping#Request
 			const requestPacket = new Packet();
 			requestPacket.writeVarInt(0x00);
-			socket.writePacket(requestPacket, true);
+			await socket.writePacket(requestPacket, true);
 		}
 
 		// https://wiki.vg/Server_List_Ping#Response

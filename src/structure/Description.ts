@@ -1,8 +1,8 @@
-import ansi from 'ansi-styles';
+import ansi, { CSPair } from 'ansi-styles';
 
 const formattingCode = /\u00C2?\u00A7([a-fklmnor0-9])/g;
 
-const ansiMap = new Map<string, ansi.CSPair>();
+const ansiMap = new Map<string, CSPair>();
 ansiMap.set('0', ansi.black);
 ansiMap.set('1', ansi.blue);
 ansiMap.set('2', ansi.green);

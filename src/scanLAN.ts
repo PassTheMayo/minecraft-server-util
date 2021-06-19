@@ -42,38 +42,32 @@ export default async function scanLAN(options?: ScanLANOptions): Promise<ScanLAN
 		const text = decoder.decode(message);
 
 		// Ensure that the text sent to the scan port matches the "Open to LAN" format
-		if (pattern.test(text)) {
-			const match = text.match(pattern);
-			if (!match) return;
+		if (!pattern.test(text)) return;
 
-			// Parse the port out of the matched text
-			const port = parseInt(match[2]);
-			if (isNaN(port)) return;
+		const match = text.match(pattern);
+		if (!match) return;
 
-			if (servers.length > 0) {
-				// Check if the server is already in the servers list to prevent duplicates for long scan times
-				for (let i = 0, j = servers.length; i < j; i++) {
-					// If the server already exists in the list, exit the loop
-					if (servers[i].host === info.address && servers[i].port === port) break;
+		// Parse the port out of the matched text
+		const port = parseInt(match[2]);
+		if (isNaN(port)) return;
 
-					// Wait until the last value has been scanned
-					if (i + 1 !== j) continue;
+		if (servers.length > 0) {
+			// Check if the server already exists in the list of servers for long scan times
+			const server = servers.find((server) => server.host === info.address && server.port === port);
+			if (server) return;
 
-					// Add the server to the server list
-					servers.push({
-						host: info.address,
-						port,
-						description: new Description(match[1] ?? '')
-					});
-				}
-			} else {
-				// Add the server to the servers list
-				servers.push({
-					host: info.address,
-					port,
-					description: new Description(match[1] ?? '')
-				});
-			}
+			servers.push({
+				host: info.address,
+				port,
+				description: new Description(match[1] ?? '')
+			});
+		} else {
+			// Add the server to the servers list
+			servers.push({
+				host: info.address,
+				port,
+				description: new Description(match[1] ?? '')
+			});
 		}
 	});
 

@@ -39,21 +39,6 @@
 			"off"
 		]
 	},
-	"overrides": [
-		{
-			"files": "test/**/*",
-			"globals": {
-				"describe": true,
-				"it": true
-			}
-		},
-		{
-			"files": "examples/**/*",
-			"rules": {
-				"@typescript-eslint/no-var-requires": "off"
-			}
-		}
-	],
 	"ignorePatterns": [
 		"dist/**/*"
 	]

@@ -15,7 +15,7 @@ function applyDefaultOptions(options?: QueryOptions): Required<QueryOptions> {
 		port: 25565,
 		timeout: 1000 * 5,
 		enableSRV: true,
-		sessionID: (++sessionCounter) & 0x0F0F0F0F
+		sessionID: ++sessionCounter
 	} as Required<QueryOptions>, options);
 }
 

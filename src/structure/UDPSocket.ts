@@ -49,32 +49,50 @@ class UDPSocket {
 			return Promise.resolve(packet);
 		}
 
-		return new Promise((resolve) => {
+		return new Promise((resolve, reject) => {
 			let read = false;
+
+			const cleanupHandlers = () => {
+				this.socket.removeListener('message', messageHandler);
+				this.socket.removeListener('error', errorHandler);
+				this.socket.removeListener('close', closeHandler);
+			};
 
 			const messageHandler = () => {
 				if (read) return;
 
-				process.nextTick(() => {
+				if (this.buffer.length > 0) {
+					read = true;
+
+					cleanupHandlers();
+
+					const packet = new Packet();
+
 					if (this.buffer.length > 0) {
-						read = true;
+						const value = this.buffer.shift();
 
-						this.socket.removeListener('message', messageHandler);
-
-						const packet = new Packet();
-
-						if (this.buffer.length > 0) {
-							const value = this.buffer.shift();
-
-							packet.buffer = value?.message ?? Buffer.alloc(0);
-						}
-
-						resolve(packet);
+						packet.buffer = value?.message ?? Buffer.alloc(0);
 					}
-				});
+
+					resolve(packet);
+				}
+			};
+
+			const errorHandler = (error: Error) => {
+				cleanupHandlers();
+
+				reject(error);
+			};
+
+			const closeHandler = () => {
+				cleanupHandlers();
+
+				reject(new Error('Socket ended without sending any data back'));
 			};
 
 			this.socket.on('message', messageHandler);
+			this.socket.on('error', errorHandler);
+			this.socket.on('close', closeHandler);
 		});
 	}
 

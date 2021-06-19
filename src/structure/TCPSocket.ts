@@ -52,34 +52,42 @@ class TCPSocket {
 		socket.setTimeout(timeout);
 
 		return new Promise((resolve, reject) => {
-			const connectHandler = () => {
-				resolve(new TCPSocket(socket));
-
+			const cleanupHandlers = () => {
 				socket.removeListener('connect', connectHandler);
+				socket.removeListener('close', closeHandler);
+				socket.removeListener('end', endHandler);
+				socket.removeListener('error', errorHandler);
+				socket.removeListener('timeout', timeoutHandler);
+			};
+
+			const connectHandler = () => {
+				cleanupHandlers();
+
+				resolve(new TCPSocket(socket));
 			};
 
 			const closeHandler = () => {
-				reject();
+				cleanupHandlers();
 
-				socket.removeListener('close', closeHandler);
+				reject();
 			};
 
 			const endHandler = () => {
-				reject();
+				cleanupHandlers();
 
-				socket.removeListener('end', endHandler);
+				reject();
 			};
 
 			const errorHandler = (error: Error) => {
-				reject(error);
+				cleanupHandlers();
 
-				socket.removeListener('error', errorHandler);
+				reject(error);
 			};
 
 			const timeoutHandler = () => {
-				reject();
+				cleanupHandlers();
 
-				socket.removeListener('timeout', timeoutHandler);
+				reject();
 			};
 
 			socket.on('connect', connectHandler);
@@ -104,28 +112,48 @@ class TCPSocket {
 			return Promise.resolve(value);
 		}
 
-		return new Promise((resolve) => {
+		return new Promise((resolve, reject) => {
 			let read = false;
+
+			const cleanupHandlers = () => {
+				this.socket.removeListener('data', dataHandler);
+				this.socket.removeListener('error', errorHandler);
+				this.socket.removeListener('end', endHandler);
+			};
 
 			const dataHandler = () => {
 				if (read) return;
 
-				process.nextTick(() => {
-					if (this.buffer.byteLength > 0) {
-						read = true;
+				if (this.buffer.byteLength > 0) {
+					read = true;
 
-						this.socket.removeListener('data', dataHandler);
+					cleanupHandlers();
 
-						const value = this.buffer[0];
+					const value = this.buffer[0];
 
-						this.buffer = this.buffer.slice(1);
+					this.buffer = this.buffer.slice(1);
 
-						return resolve(value);
-					}
-				});
+					return resolve(value);
+				}
+			};
+
+			const errorHandler = (error: Error) => {
+				console.log(error);
+
+				cleanupHandlers();
+
+				reject(error);
+			};
+
+			const endHandler = () => {
+				cleanupHandlers();
+
+				reject(new Error('Socket ended without sending any data back'));
 			};
 
 			this.socket.on('data', dataHandler);
+			this.socket.on('error', errorHandler);
+			this.socket.on('end', endHandler);
 		});
 	}
 
@@ -260,9 +288,9 @@ class TCPSocket {
 		return new Promise((resolve) => {
 			this.socket.removeAllListeners();
 			this.socket.end(() => {
-				resolve();
-
 				this.socket.destroy();
+
+				resolve();
 			});
 		});
 	}
