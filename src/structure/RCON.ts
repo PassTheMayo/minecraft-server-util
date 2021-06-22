@@ -126,7 +126,7 @@ class RCON extends EventEmitter implements RCONEvents {
 		if (this.socket === null) return;
 
 		const length = await this.socket.readIntLE();
-		await this.socket.readIntLE();
+		const requestID = await this.socket.readIntLE();
 		const packetType = await this.socket.readIntLE();
 
 		switch (packetType) {
@@ -138,6 +138,7 @@ class RCON extends EventEmitter implements RCONEvents {
 				}
 
 				this.emit('output', output);
+				this.emit(`output_${requestID}`, output);
 
 				await this.socket.readBytes(2);
 
@@ -171,6 +172,52 @@ class RCON extends EventEmitter implements RCONEvents {
 		commandPacket.writeString(command, false);
 		commandPacket.writeByte(0x00, 0x00);
 		return this.socket.writePacket(commandPacket, false);
+	}
+
+	/**
+	 * Executes commands on the server after it has successfully logged in and waits for the result of command execution
+	 * @param command The command to execute
+	 * @param timeout Maximum waiting time. Default: 5000
+	 * @returns 
+	 */
+	async exec(command: string, timeout = 5000): Promise<string> {
+		if (this.socket === null || this.socket.socket.connecting) throw new Error('Socket has not connected yet, please run RCON#connect()');
+
+		if (!this.isLoggedIn) throw new Error('Client is not logged in or login was unsuccessful, please run RCON#connect()');
+
+		const requestID = ++this.requestID;
+
+		const commandPacket = new Packet();
+		commandPacket.writeIntLE(10 + command.length);
+		commandPacket.writeIntLE(requestID);
+		commandPacket.writeIntLE(2);
+		commandPacket.writeString(command, false);
+		commandPacket.writeByte(0x00, 0x00);
+		
+		await this.socket.writePacket(commandPacket, false);
+		
+		return new Promise((resolve, reject) => {
+			const EVT_KEY = `output_${requestID}`;
+			let complete = false;
+
+			const timer = setTimeout(() => {
+				if (!complete) {
+					complete = true;
+					this.off(EVT_KEY, onResponse);
+					reject(new Error('RCON exec timeout'));
+				}
+			}, timeout);
+
+			const onResponse = (output: string) => {
+				if (!complete) {
+					clearTimeout(timer);
+					complete = true;
+					return resolve(output);
+				}
+			};
+
+			this.once(EVT_KEY, onResponse);
+		});
 	}
 
 	/**
