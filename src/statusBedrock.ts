@@ -45,7 +45,7 @@ export default async function statusBedrock(host: string, options?: BedrockStatu
 	const startTime = Date.now();
 
 	// Create a new UDP connection to the specified address
-	const socket = new UDPSocket(host, opts.port);
+	const socket = new UDPSocket(host, opts.port, opts.timeout);
 
 	try {
 		// https://wiki.vg/Raknet_Protocol#Unconnected_Ping

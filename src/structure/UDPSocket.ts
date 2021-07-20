@@ -8,6 +8,7 @@ import Packet from './Packet';
 class UDPSocket {
 	private host: string;
 	private port: number;
+	private timeout: number;
 	private socket: dgram.Socket;
 	private buffer: {
 		info: dgram.RemoteInfo,
@@ -20,9 +21,10 @@ class UDPSocket {
 	 * @param {port} port The port of the server
 	 * @constructor
 	 */
-	constructor(host: string, port: number) {
+	constructor(host: string, port: number, timeout:number = 0) {
 		this.host = host;
 		this.port = port;
+		this.timeout = timeout;
 		this.socket = dgram.createSocket('udp4');
 		this.buffer = [];
 
@@ -93,6 +95,15 @@ class UDPSocket {
 			this.socket.on('message', messageHandler);
 			this.socket.on('error', errorHandler);
 			this.socket.on('close', closeHandler);
+
+			if(this.timeout != 0)
+			{
+				setTimeout(() => {
+					cleanupHandlers();
+					
+					reject(new Error("Socket response timeout reached"));
+				}, this.timeout);
+			}
 		});
 	}
 
