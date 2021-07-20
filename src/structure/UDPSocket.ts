@@ -21,7 +21,7 @@ class UDPSocket {
 	 * @param {port} port The port of the server
 	 * @constructor
 	 */
-	constructor(host: string, port: number, timeout:number = 0) {
+	constructor(host: string, port: number, timeout = 0) {
 		this.host = host;
 		this.port = port;
 		this.timeout = timeout;
@@ -101,7 +101,7 @@ class UDPSocket {
 				setTimeout(() => {
 					cleanupHandlers();
 					
-					reject(new Error("Socket response timeout reached"));
+					reject(new Error('Socket response timeout reached'));
 				}, this.timeout);
 			}
 		});
