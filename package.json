@@ -1,6 +1,6 @@
 {
 	"name": "minecraft-server-util",
-	"version": "3.5.2",
+	"version": "3.5.3",
 	"description": "A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",

@@ -48,10 +48,10 @@ class TCPSocket {
 		assert(port < 65536, 'Expected port < 65536, got ' + port);
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
-		const socket = net.createConnection({ host, port, timeout });
-		socket.setTimeout(timeout);
-
 		return new Promise((resolve, reject) => {
+			const socket = net.createConnection({ host, port, timeout });
+			socket.setTimeout(timeout);
+
 			const cleanupHandlers = () => {
 				socket.removeListener('connect', connectHandler);
 				socket.removeListener('close', closeHandler);
