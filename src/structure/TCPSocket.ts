@@ -50,6 +50,11 @@ class TCPSocket {
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
 		return new Promise((resolve, reject) => {
+			// Using the 'domain' package here is not ideal but it is the only working
+			// solution to fix this severe error with the limited time I have. Node
+			// seems to be ignoring my `error` handler entirely, whether it's in this
+			// method or `readByte()`, I am unsure. The error is being tracked at
+			// https://github.com/PassTheMayo/minecraft-server-util/issues/50
 			const d = domain.create();
 
 			d.on('error', (error) => {
