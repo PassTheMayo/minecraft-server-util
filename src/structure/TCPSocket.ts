@@ -1,3 +1,4 @@
+import domain from 'domain';
 import assert from 'assert';
 import net from 'net';
 import Packet from './Packet';
@@ -49,52 +50,59 @@ class TCPSocket {
 		assert(timeout > 0, 'Expected timeout > 0, got ' + timeout);
 
 		return new Promise((resolve, reject) => {
-			const socket = net.createConnection({ host, port, timeout });
-			socket.setTimeout(timeout);
+			const d = domain.create();
 
-			const cleanupHandlers = () => {
-				socket.removeListener('connect', connectHandler);
-				socket.removeListener('close', closeHandler);
-				socket.removeListener('end', endHandler);
-				socket.removeListener('error', errorHandler);
-				socket.removeListener('timeout', timeoutHandler);
-			};
-
-			const connectHandler = () => {
-				cleanupHandlers();
-
-				resolve(new TCPSocket(socket));
-			};
-
-			const closeHandler = () => {
-				cleanupHandlers();
-
-				reject();
-			};
-
-			const endHandler = () => {
-				cleanupHandlers();
-
-				reject();
-			};
-
-			const errorHandler = (error: Error) => {
-				cleanupHandlers();
-
+			d.on('error', (error) => {
 				reject(error);
-			};
+			});
 
-			const timeoutHandler = () => {
-				cleanupHandlers();
+			d.run(() => {
+				const cleanupHandlers = () => {
+					socket.removeListener('connect', connectHandler);
+					socket.removeListener('close', closeHandler);
+					socket.removeListener('end', endHandler);
+					socket.removeListener('error', errorHandler);
+					socket.removeListener('timeout', timeoutHandler);
+				};
 
-				reject();
-			};
+				const connectHandler = () => {
+					cleanupHandlers();
 
-			socket.on('connect', connectHandler);
-			socket.on('close', closeHandler);
-			socket.on('end', endHandler);
-			socket.on('error', errorHandler);
-			socket.on('timeout', timeoutHandler);
+					resolve(new TCPSocket(socket));
+				};
+
+				const closeHandler = () => {
+					cleanupHandlers();
+
+					reject();
+				};
+
+				const endHandler = () => {
+					cleanupHandlers();
+
+					reject();
+				};
+
+				const errorHandler = (error: Error) => {
+					cleanupHandlers();
+
+					reject(error);
+				};
+
+				const timeoutHandler = () => {
+					cleanupHandlers();
+
+					reject();
+				};
+
+				const socket = net.createConnection({ host, port, timeout });
+				socket.on('connect', connectHandler);
+				socket.on('close', closeHandler);
+				socket.on('end', endHandler);
+				socket.on('error', errorHandler);
+				socket.on('timeout', timeoutHandler);
+				socket.setTimeout(timeout);
+			});
 		});
 	}
 
@@ -138,8 +146,6 @@ class TCPSocket {
 			};
 
 			const errorHandler = (error: Error) => {
-				console.log(error);
-
 				cleanupHandlers();
 
 				reject(error);
@@ -151,9 +157,17 @@ class TCPSocket {
 				reject(new Error('Socket ended without sending any data back'));
 			};
 
+			const timeoutHandler = () => {
+				cleanupHandlers();
+
+				reject(new Error('Socket timed out while waiting for data'));
+			};
+
 			this.socket.on('data', dataHandler);
 			this.socket.on('error', errorHandler);
 			this.socket.on('end', endHandler);
+			this.socket.on('close', endHandler);
+			this.socket.on('timeout', timeoutHandler);
 		});
 	}
 

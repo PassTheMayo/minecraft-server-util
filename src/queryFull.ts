@@ -61,7 +61,7 @@ export default async function queryFull(host: string, options?: QueryOptions): P
 	const startTime = Date.now();
 
 	// Create a new UDP connection to the specified address
-	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port);
+	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port, opts.timeout);
 
 	try {
 		{

@@ -1,5 +1,6 @@
 import dgram from 'dgram';
 import Packet from './Packet';
+import TimeoutPromise from './TimeoutPromise';
 
 /**
  * A UDP socket class for reading and writing data to a remote socket.
@@ -8,6 +9,7 @@ import Packet from './Packet';
 class UDPSocket {
 	private host: string;
 	private port: number;
+	private timeout: number;
 	private socket: dgram.Socket;
 	private buffer: {
 		info: dgram.RemoteInfo,
@@ -17,12 +19,14 @@ class UDPSocket {
 	/**
 	 * Creates a new UDP socket class from the host and port.
 	 * @param {string} host The host of the server
-	 * @param {port} port The port of the server
+	 * @param {number} port The port of the server
+	 * @param {number} timeout The timeout in milliseconds
 	 * @constructor
 	 */
-	constructor(host: string, port: number) {
+	constructor(host: string, port: number, timeout: number) {
 		this.host = host;
 		this.port = port;
+		this.timeout = timeout;
 		this.socket = dgram.createSocket('udp4');
 		this.buffer = [];
 
@@ -49,7 +53,9 @@ class UDPSocket {
 			return Promise.resolve(packet);
 		}
 
-		return new Promise((resolve, reject) => {
+		const timeoutPromise = new TimeoutPromise<Packet>(this.timeout, new Error('Timed out while waiting for server response'));
+
+		const actualPromise = new Promise<Packet>((resolve, reject) => {
 			let read = false;
 
 			const cleanupHandlers = () => {
@@ -94,6 +100,11 @@ class UDPSocket {
 			this.socket.on('error', errorHandler);
 			this.socket.on('close', closeHandler);
 		});
+
+		return Promise.race<Packet>([
+			timeoutPromise.promise,
+			actualPromise
+		]);
 	}
 
 	/**
