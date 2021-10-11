@@ -4,8 +4,10 @@ import resolveSRV, { SRVRecord } from '../util/resolveSRV';
 import TCPSocket from './TCPSocket';
 import Packet from './Packet';
 import { RCONOptions } from '../model/Options';
-import { TextDecoder } from 'util';
+import { TextDecoder, TextEncoder } from 'util';
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder('utf-8');
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 interface RCONEvents {
@@ -35,7 +37,6 @@ class RCON extends EventEmitter implements RCONEvents {
 	private options: Required<RCONOptions>;
 	private socket: TCPSocket | null = null;
 	private requestID: number;
-	private decoder: TextDecoder;
 
 	/**
 	 * Creates a new RCON class with the host and options
@@ -65,7 +66,6 @@ class RCON extends EventEmitter implements RCONEvents {
 		this.isLoggedIn = false;
 		this.options = opts;
 		this.requestID = 0;
-		this.decoder = new TextDecoder('utf-8');
 	}
 
 	/**
@@ -134,7 +134,7 @@ class RCON extends EventEmitter implements RCONEvents {
 				let output = '';
 
 				if (length > 10) {
-					output = this.decoder.decode(await this.socket.readBytes(length - 10));
+					output = decoder.decode(await this.socket.readBytes(length - 10));
 				}
 
 				this.emit('output', output);
@@ -165,11 +165,13 @@ class RCON extends EventEmitter implements RCONEvents {
 
 		if (!this.isLoggedIn) throw new Error('Client is not logged in or login was unsuccessful, please run RCON#connect()');
 
+		const commandBytes = encoder.encode(command);
+
 		const commandPacket = new Packet();
-		commandPacket.writeIntLE(10 + command.length);
+		commandPacket.writeIntLE(10 + commandBytes.length);
 		commandPacket.writeIntLE(++this.requestID);
 		commandPacket.writeIntLE(2);
-		commandPacket.writeString(command, false);
+		commandPacket.writeBuffer(commandBytes);
 		commandPacket.writeByte(0x00, 0x00);
 		return this.socket.writePacket(commandPacket, false);
 	}
@@ -180,22 +182,23 @@ class RCON extends EventEmitter implements RCONEvents {
 	 * @param timeout Maximum waiting time. Default: 5000
 	 * @returns 
 	 */
-	async exec(command: string, timeout = 5000): Promise<string> {
+	async execute(command: string, timeout = 5000): Promise<string> {
 		if (this.socket === null || this.socket.socket.connecting) throw new Error('Socket has not connected yet, please run RCON#connect()');
 
 		if (!this.isLoggedIn) throw new Error('Client is not logged in or login was unsuccessful, please run RCON#connect()');
 
+		const commandBytes = encoder.encode(command);
 		const requestID = ++this.requestID;
 
 		const commandPacket = new Packet();
-		commandPacket.writeIntLE(10 + command.length);
+		commandPacket.writeIntLE(10 + commandBytes.length);
 		commandPacket.writeIntLE(requestID);
 		commandPacket.writeIntLE(2);
-		commandPacket.writeString(command, false);
+		commandPacket.writeBuffer(commandBytes);
 		commandPacket.writeByte(0x00, 0x00);
-		
+
 		await this.socket.writePacket(commandPacket, false);
-		
+
 		return new Promise((resolve, reject) => {
 			const EVT_KEY = `output_${requestID}`;
 			let complete = false;
@@ -218,6 +221,10 @@ class RCON extends EventEmitter implements RCONEvents {
 
 			this.once(EVT_KEY, onResponse);
 		});
+	}
+
+	exec(command: string, timeout = 5000): Promise<string> {
+		return this.execute(command, timeout);
 	}
 
 	/**
