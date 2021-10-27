@@ -111,7 +111,7 @@ class Description {
 			const char = description.charAt(0);
 
 			if (char == '\u00A7') {
-				const charCode = description.charAt(1);
+				const charCode = description.charAt(1).toLowerCase();
 
 				description = description.substr(2);
 
