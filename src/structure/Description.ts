@@ -181,11 +181,17 @@ class Description {
 					default: {
 						if (color === charCode) continue;
 
-						if (tagsOpen > 1) {
+						while (tagsOpen > 1) {
 							result += '</span>';
 
 							tagsOpen--;
 						}
+
+						obfuscated = false;
+						bold = false;
+						underline = false;
+						strikethrough = false;
+						italics = false;
 
 						result += element;
 						color = charCode;
