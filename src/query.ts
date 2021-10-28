@@ -1,9 +1,9 @@
 import assert from 'assert';
+import { parse, format, clean, toHTML } from 'minecraft-motd-util';
 import Packet from './structure/Packet';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { BasicQueryResponse } from './model/QueryResponse';
 import UDPSocket from './structure/UDPSocket';
-import parseDescription from './util/parseDescription';
 import { QueryOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
@@ -120,6 +120,8 @@ export default async function query(host: string, options?: QueryOptions): Promi
 			if (isNaN(maxPlayers)) throw new Error('Server sent an invalid max player count');
 		}
 
+		const description = parse(motd);
+
 		return {
 			host,
 			port: opts.port,
@@ -128,7 +130,11 @@ export default async function query(host: string, options?: QueryOptions): Promi
 			levelName,
 			onlinePlayers,
 			maxPlayers,
-			description: parseDescription(motd),
+			motd: {
+				raw: format(description),
+				clean: clean(description),
+				html: toHTML(description)
+			},
 			roundTripLatency: Date.now() - startTime
 		};
 	} finally {

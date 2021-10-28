@@ -1,5 +1,6 @@
 import { ModInfo, RawStatusResponse } from './RawStatusResponse';
-import Description from '../structure/Description';
+import { MOTD } from './MOTD';
+import Favicon from '../structure/Favicon';
 
 interface SamplePlayer {
 	name: string,
@@ -18,10 +19,10 @@ interface StatusResponse {
 	onlinePlayers: number | null,
 	maxPlayers: number | null,
 	samplePlayers: SamplePlayer[] | null,
-	description: Description | null,
-	favicon: string | null,
+	motd: MOTD | null,
+	favicon: Favicon | null,
 	modInfo: ModInfo | null,
-	rawResponse: RawStatusResponse | null,
+	rawResponse?: RawStatusResponse | null,
 	roundTripLatency: number
 }
 
@@ -30,8 +31,7 @@ interface BedrockStatusResponse {
 	port: number,
 	edition: string | null,
 	serverGUID: bigint,
-	motdLine1: Description | null,
-	motdLine2: Description | null,
+	motd: MOTD,
 	version: string | null,
 	protocolVersion: number | null,
 	maxPlayers: number | null,

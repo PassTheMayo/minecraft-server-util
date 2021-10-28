@@ -1,9 +1,9 @@
-import Description from '../structure/Description';
+import { MOTD } from './MOTD';
 
 interface ScanLANServer {
     host: string;
     port: number;
-    description: Description;
+    motd: MOTD;
 }
 
 interface ScanLANResponse {

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import parseDescription from './parseDescription';
+import { parse, format, clean, toHTML } from 'minecraft-motd-util';
 import { SRVRecord } from './resolveSRV';
 import { StatusResponse } from '../model/StatusResponse';
 
@@ -32,7 +32,7 @@ function formatResultFE01FA(host: string, port: number, srvRecord: SRVRecord | n
 	assert(typeof maxPlayers === 'number', 'Expected maxPlayers to be a number, got ' + typeof maxPlayers);
 	assert(Number.isInteger(maxPlayers), 'Expected maxPlayers to be an integer, got ' + maxPlayers);
 
-	const description = parseDescription(motd);
+	const description = parse(motd);
 
 	return {
 		host,
@@ -43,7 +43,11 @@ function formatResultFE01FA(host: string, port: number, srvRecord: SRVRecord | n
 		onlinePlayers,
 		maxPlayers,
 		samplePlayers: null,
-		description,
+		motd: description ? {
+			raw: format(description),
+			clean: clean(description),
+			html: toHTML(description)
+		} : null,
 		favicon: null,
 		modInfo: null,
 		rawResponse: null,

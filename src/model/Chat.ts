@@ -1,4 +1,4 @@
-type ColorCode =
+type ColorNames =
 	| 'black'
 	| 'dark_blue'
 	| 'dark_green'
@@ -14,7 +14,26 @@ type ColorCode =
 	| 'red'
 	| 'light_purple'
 	| 'yellow'
-	| 'white';
+	| 'white'
+	| 'minecoin_gold';
+
+type ColorCodes = '0'
+	| '1'
+	| '2'
+	| '3'
+	| '4'
+	| '5'
+	| '6'
+	| '7'
+	| '8'
+	| '9'
+	| 'a'
+	| 'b'
+	| 'c'
+	| 'd'
+	| 'e'
+	| 'f'
+	| 'g';
 
 type FormatCode =
 	| 'obfuscated'
@@ -25,14 +44,14 @@ type FormatCode =
 	| 'reset';
 
 interface Chat {
-	text?: string,
-	bold?: 'true' | 'false',
-	italic?: 'true' | 'false',
-	underlined?: 'true' | 'false',
-	strikethrough?: 'true' | 'false',
-	obfuscated?: 'true' | 'false',
-	color?: ColorCode | FormatCode,
+	text: string,
+	bold?: string,
+	italic?: string,
+	underlined?: string,
+	strikethrough?: string,
+	obfuscated?: string,
+	color?: ColorNames | ColorCodes,
 	extra?: Chat[]
 }
 
-export { Chat, ColorCode, FormatCode };
+export { Chat, ColorCodes, ColorNames, FormatCode };

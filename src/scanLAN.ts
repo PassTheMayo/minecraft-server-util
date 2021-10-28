@@ -1,7 +1,7 @@
 import assert from 'assert';
 import dgram from 'dgram';
 import { TextDecoder } from 'util';
-import Description from './structure/Description';
+import { parse, format, clean, toHTML } from 'minecraft-motd-util';
 import { ScanLANOptions } from './model/Options';
 import { ScanLANResponse, ScanLANServer } from './model/ScanLANResponse';
 
@@ -51,24 +51,22 @@ export default async function scanLAN(options?: ScanLANOptions): Promise<ScanLAN
 		const port = parseInt(match[2]);
 		if (isNaN(port)) return;
 
-		if (servers.length > 0) {
-			// Check if the server already exists in the list of servers for long scan times
-			const server = servers.find((server) => server.host === info.address && server.port === port);
-			if (server) return;
+		const server = servers.find((server) => server.host === info.address && server.port === port);
+		if (server) return;
 
-			servers.push({
-				host: info.address,
-				port,
-				description: new Description(match[1] ?? '')
-			});
-		} else {
-			// Add the server to the servers list
-			servers.push({
-				host: info.address,
-				port,
-				description: new Description(match[1] ?? '')
-			});
-		}
+		const description = parse(match[1]);
+
+		const motd = {
+			raw: format(description),
+			clean: clean(description),
+			html: toHTML(description)
+		};
+
+		servers.push({
+			host: info.address,
+			port,
+			motd
+		});
 	});
 
 	// Bind to the 4445 port which is used for receiving and broadcasting "Open to LAN" worlds

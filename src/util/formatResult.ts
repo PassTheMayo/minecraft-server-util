@@ -1,8 +1,9 @@
 import assert from 'assert';
-import parseDescription from './parseDescription';
+import { parse, format, clean, toHTML } from 'minecraft-motd-util';
 import { SRVRecord } from './resolveSRV';
 import { StatusResponse } from '../model/StatusResponse';
 import { RawStatusResponse } from '../model/RawStatusResponse';
+import Favicon from '../structure/Favicon';
 
 /**
  * Formats the raw response from a status request into a more useable format
@@ -29,11 +30,11 @@ function formatResult(host: string, port: number, srvRecord: SRVRecord | null, r
 	const onlinePlayers = result?.players?.online ?? null;
 	const maxPlayers = result?.players?.max ?? null;
 	const samplePlayers = result?.players?.sample ?? null;
-	const description = typeof result.description !== 'undefined' ? parseDescription(result.description) : null;
+	const description = typeof result.description !== 'undefined' ? parse(result.description) : null;
 	const favicon = result?.favicon ?? null;
 	const modInfo = result?.modinfo ?? null;
 
-	return {
+	const response = {
 		host,
 		port,
 		srvRecord,
@@ -42,12 +43,22 @@ function formatResult(host: string, port: number, srvRecord: SRVRecord | null, r
 		onlinePlayers,
 		maxPlayers,
 		samplePlayers,
-		description,
-		favicon,
+		motd: description ? {
+			raw: format(description),
+			clean: clean(description),
+			html: toHTML(description)
+		} : null,
+		favicon: favicon ? new Favicon(favicon) : null,
 		modInfo,
-		rawResponse: result,
 		roundTripLatency
 	};
+
+	Object.defineProperty(response, 'rawResponse', {
+		value: result,
+		enumerable: false
+	});
+
+	return response;
 }
 
 export default formatResult;

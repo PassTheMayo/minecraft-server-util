@@ -1,9 +1,9 @@
 import assert from 'assert';
+import { parse, clean, format, toHTML } from 'minecraft-motd-util';
 import Packet from './structure/Packet';
 import resolveSRV, { SRVRecord } from './util/resolveSRV';
 import { FullQueryResponse } from './model/QueryResponse';
 import UDPSocket from './structure/UDPSocket';
-import parseDescription from './util/parseDescription';
 import { QueryOptions } from './model/Options';
 
 const ipAddressRegEx = /^\d{1,3}(\.\d{1,3}){3}$/;
@@ -137,7 +137,7 @@ export default async function queryFull(host: string, options?: QueryOptions): P
 			levelName = map.get('map') ?? null;
 			onlinePlayers = parseInt(map.get('numplayers') || '') ?? null;
 			maxPlayers = parseInt(map.get('maxplayers') || '') ?? null;
-			description = parseDescription(map.get('motd') ?? '');
+			description = parse(map.get('motd') ?? '');
 		}
 
 		return {
@@ -152,7 +152,11 @@ export default async function queryFull(host: string, options?: QueryOptions): P
 			onlinePlayers,
 			maxPlayers,
 			players,
-			description,
+			motd: {
+				raw: format(description),
+				clean: clean(description),
+				html: toHTML(description)
+			},
 			roundTripLatency: Date.now() - startTime
 		};
 	} finally {

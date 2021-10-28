@@ -1,4 +1,4 @@
-import Description from '../structure/Description';
+import { MOTD } from './MOTD';
 import { SRVRecord } from '../util/resolveSRV';
 
 interface BasicQueryResponse {
@@ -9,7 +9,7 @@ interface BasicQueryResponse {
     levelName: string,
     onlinePlayers: number,
     maxPlayers: number,
-    description: Description,
+    motd: MOTD,
     roundTripLatency: number
 }
 
@@ -25,7 +25,7 @@ interface FullQueryResponse {
     onlinePlayers: number | null,
     maxPlayers: number | null,
     players: string[],
-    description: Description,
+    motd: MOTD,
     roundTripLatency: number
 }
 

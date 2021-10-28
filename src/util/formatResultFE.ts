@@ -1,5 +1,5 @@
 import assert from 'assert';
-import parseDescription from './parseDescription';
+import { parse, format, clean, toHTML } from 'minecraft-motd-util';
 import { SRVRecord } from './resolveSRV';
 import { StatusResponse } from '../model/StatusResponse';
 
@@ -28,7 +28,7 @@ function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null,
 	assert(Number.isInteger(roundTripLatency), 'Expected roundTripLatency to be an integer, got ' + roundTripLatency);
 	assert(roundTripLatency >= 0, 'Expected roundTripLatency >= 0, got ' + port);
 
-	const description = parseDescription(motd);
+	const description = parse(motd);
 
 	return {
 		host,
@@ -39,7 +39,11 @@ function formatResultFE(host: string, port: number, srvRecord: SRVRecord | null,
 		onlinePlayers,
 		maxPlayers,
 		samplePlayers: null,
-		description,
+		motd: description ? {
+			raw: format(description),
+			clean: clean(description),
+			html: toHTML(description)
+		} : null,
 		favicon: null,
 		modInfo: null,
 		rawResponse: null,

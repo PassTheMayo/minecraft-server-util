@@ -1,11 +1,11 @@
 import assert from 'assert';
 import crypto from 'crypto';
 import { TextDecoder } from 'util';
+import { parse, clean, format, toHTML } from 'minecraft-motd-util';
 import Packet from './structure/Packet';
 import UDPSocket from './structure/UDPSocket';
 import { BedrockStatusResponse } from './model/StatusResponse';
 import { BedrockStatusOptions } from './model/Options';
-import parseDescription from './util/parseDescription';
 
 const magic = [0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78];
 
@@ -80,13 +80,18 @@ export default async function statusBedrock(host: string, options?: BedrockStatu
 		// Grab each element out of the split response string, they may be missing which we'll fix later in the code
 		const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = splitResponse;
 
+		const description = parse(motdLine1 + '\n\u00A7r' + motdLine2);
+
 		return {
 			host,
 			port: opts.port,
 			edition: edition && edition.length > 0 ? edition : null,
 			serverGUID,
-			motdLine1: motdLine1 && motdLine1.length > 0 ? parseDescription(motdLine1) : null,
-			motdLine2: motdLine2 && motdLine1.length > 0 ? parseDescription(motdLine2) : null,
+			motd: {
+				raw: format(description),
+				clean: clean(description),
+				html: toHTML(description)
+			},
 			version: version && version.length > 0 ? version : null,
 			protocolVersion: isNaN(parseInt(protocolVersion)) ? null : parseInt(protocolVersion),
 			maxPlayers: isNaN(parseInt(maxPlayers)) ? null : parseInt(maxPlayers),
