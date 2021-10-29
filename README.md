@@ -25,6 +25,7 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
     - [Scan for LAN games](#scan-for-lan-games)
     - [Scan for LAN games with options](#scan-for-lan-games-with-options)
     - [Execute console commands with RCON](#execute-console-commands-with-rcon)
+    - [Send a Votifier vote](#send-a-votifier-vote)
 - [Frequently Asked Questions](#frequently-asked-questions)
     - [How do I check if the server is up/down?](#how-do-i-check-if-the-server-is-updown)
     - [How do I browserify/webpack this module?](#how-do-i-browserifywebpack-this-module)
@@ -236,6 +237,31 @@ client.connect()
     .catch((error) => {
         console.error(error);
     });
+```
+
+### Send a Votifier vote
+
+A server plugin like [NuVotifier](https://www.spigotmc.org/resources/nuvotifier.13449/) is required for this to work. You must also know the token configured within the server's plugin configuration. This method was not intended to be abused by players looking to automate vote rewards, because it will not work without that token.
+
+```js
+const util = require('minecraft-server-util');
+
+util.sendVote({
+    host: 'play.hypixel.net',
+    port: 8192, // optional, defaults to 8192
+    serviceName: 'test-service',
+    username: 'PassTheMayo',
+    timestamp: Date.now(), // optional, defaults to current time
+    uuid: '85e5f06e-ff89-4c11-8050-329e8fdc29de', // optional but recommended, UUID of user
+    timeout: 1000 * 15, // optional, defaults to 15 seconds
+    token: '' // the token set within the Votifier plugin config on the server
+})
+    .then(() => {
+        console.log('Successfully sent vote');
+    })
+    .catch((error) => {
+        console.error(error);
+    })
 ```
 
 ## Frequently Asked Questions

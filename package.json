@@ -1,6 +1,6 @@
 {
 	"name": "minecraft-server-util",
-	"version": "4.0.0",
+	"version": "4.1.0",
 	"description": "A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -18,7 +18,9 @@
 		"status",
 		"ping",
 		"query",
-		"rcon"
+		"rcon",
+		"vote",
+		"votifier"
 	],
 	"author": "Jacob Gunther",
 	"license": "MIT",
@@ -43,6 +45,6 @@
 	},
 	"dependencies": {
 		"ansi-styles": "^5.0.0",
-		"minecraft-motd-util": "^1.0.5"
+		"minecraft-motd-util": "^1.1.2"
 	}
 }
