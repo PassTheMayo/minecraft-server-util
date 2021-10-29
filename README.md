@@ -26,6 +26,7 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
     - [Scan for LAN games with options](#scan-for-lan-games-with-options)
     - [Execute console commands with RCON](#execute-console-commands-with-rcon)
     - [Send a Votifier vote](#send-a-votifier-vote)
+- [Implementations](#implementations)
 - [Frequently Asked Questions](#frequently-asked-questions)
     - [How do I check if the server is up/down?](#how-do-i-check-if-the-server-is-updown)
     - [How do I browserify/webpack this module?](#how-do-i-browserifywebpack-this-module)
@@ -263,6 +264,12 @@ util.sendVote({
         console.error(error);
     })
 ```
+
+## Implementations
+
+This section is reserved for interesting projects that have implemented this library into their service. If you wish for your project to get added here, please open a pull request with your changes to this README file and wait for review.
+
+- [**mineservers.io**](https://mineservers.io) - A new and fresh Minecraft server listing platform
 
 ## Frequently Asked Questions
 
