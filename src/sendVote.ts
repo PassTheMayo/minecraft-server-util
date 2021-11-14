@@ -48,7 +48,7 @@ export default async function sendVote(options: SendVoteOptions): Promise<void> 
 		assert(options.timestamp > 0, `Expected 'options.timestamp' to be greater than or equal to 1, got ${options.timestamp}`);
 	}
 
-	assert(typeof options.uuid === 'undefined' || options.uuid === 'string', `Expected 'options.uuid' to be either 'undefined' or a 'string', got '${typeof options.uuid}'`);
+	assert(typeof options.uuid === 'undefined' || typeof options.uuid === 'string', `Expected 'options.uuid' to be either 'undefined' or a 'string', got '${typeof options.uuid}'`);
 	assert(typeof options.timeout === 'number' || typeof options.timestamp === 'undefined', `Expected 'options.timeout' to be a number or undefined, got ${typeof options.timeout}`);
 
 	if (typeof options.timeout !== 'undefined') {
