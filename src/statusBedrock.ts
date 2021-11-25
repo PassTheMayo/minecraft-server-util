@@ -44,10 +44,12 @@ export default async function statusBedrock(host: string, options?: BedrockStatu
 
 	const startTime = Date.now();
 
-	// Create a new UDP connection to the specified address
-	const socket = new UDPSocket(host, opts.port, opts.timeout);
+	let socket;
 
 	try {
+		// Create a new UDP connection to the specified address
+		socket = new UDPSocket(host, opts.port, opts.timeout);
+
 		// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
 		const pingPacket = new Packet();
 		pingPacket.writeByte(0x01); // Packet ID
@@ -105,6 +107,6 @@ export default async function statusBedrock(host: string, options?: BedrockStatu
 		};
 	} finally {
 		// Destroy the socket, it is no longer needed
-		await socket.destroy();
+		await socket?.destroy();
 	}
 }

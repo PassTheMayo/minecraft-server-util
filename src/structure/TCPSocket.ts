@@ -62,51 +62,36 @@ class TCPSocket {
 			});
 
 			d.run(() => {
-				const cleanupHandlers = () => {
-					socket.removeListener('connect', connectHandler);
-					socket.removeListener('close', closeHandler);
-					socket.removeListener('end', endHandler);
-					socket.removeListener('error', errorHandler);
-					socket.removeListener('timeout', timeoutHandler);
-				};
+				try {
+					const cleanupHandlers = () => {
+						socket.removeListener('connect', connectHandler);
+						socket.removeListener('error', errorHandler);
+					};
 
-				const connectHandler = () => {
-					cleanupHandlers();
+					const connectHandler = () => {
+						cleanupHandlers();
 
-					resolve(new TCPSocket(socket));
-				};
+						resolve(new TCPSocket(socket));
+					};
 
-				const closeHandler = () => {
-					cleanupHandlers();
+					const errorHandler = (error?: Error) => {
+						cleanupHandlers();
 
-					reject();
-				};
+						socket.end();
 
-				const endHandler = () => {
-					cleanupHandlers();
+						reject(error ?? new Error('Failed to connect to the server, is it online?'));
+					};
 
-					reject();
-				};
-
-				const errorHandler = (error: Error) => {
-					cleanupHandlers();
-
-					reject(error);
-				};
-
-				const timeoutHandler = () => {
-					cleanupHandlers();
-
-					reject();
-				};
-
-				const socket = net.createConnection({ host, port, timeout });
-				socket.on('connect', connectHandler);
-				socket.on('close', closeHandler);
-				socket.on('end', endHandler);
-				socket.on('error', errorHandler);
-				socket.on('timeout', timeoutHandler);
-				socket.setTimeout(timeout);
+					const socket = net.createConnection({ host, port, timeout });
+					socket.on('connect', connectHandler);
+					socket.on('close', errorHandler);
+					socket.on('end', errorHandler);
+					socket.on('error', errorHandler);
+					socket.on('timeout', errorHandler);
+					socket.setTimeout(timeout);
+				} catch (e) {
+					reject(e);
+				}
 			});
 		});
 	}

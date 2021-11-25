@@ -60,10 +60,12 @@ export default async function query(host: string, options?: QueryOptions): Promi
 
 	const startTime = Date.now();
 
-	// Create a new UDP connection to the specified address
-	const socket = new UDPSocket(srvRecord?.host ?? host, opts.port, opts.timeout);
+	let socket;
 
 	try {
+		// Create a new UDP connection to the specified address
+		socket = new UDPSocket(srvRecord?.host ?? host, opts.port, opts.timeout);
+
 		{
 			// Create a Handshake packet and send it to the server
 			// https://wiki.vg/Query#Request
@@ -139,6 +141,6 @@ export default async function query(host: string, options?: QueryOptions): Promi
 		};
 	} finally {
 		// Destroy the socket, it is no longer needed
-		await socket.destroy();
+		await socket?.destroy();
 	}
 }

@@ -41,5 +41,21 @@
 	},
 	"ignorePatterns": [
 		"dist/**/*"
+	],
+	"overrides": [
+		{
+			"files": "test/**/*",
+			"env": {
+				"commonjs": true
+			},
+			"rules": {
+				"@typescript-eslint/no-var-requires": "off"
+			},
+			"globals": {
+				"test": true,
+				"expect": true,
+				"jest": true
+			}
+		}
 	]
 }

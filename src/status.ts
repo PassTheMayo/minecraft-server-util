@@ -55,10 +55,12 @@ export default async function status(host: string, options?: StatusOptions): Pro
 
 	const startTime = Date.now();
 
-	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+	let socket;
 
 	try {
+		// Create a new TCP connection to the specified address
+		socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+
 		// Create the necessary packets and send them to the server
 		{
 			// https://wiki.vg/Server_List_Ping#Handshake
@@ -96,6 +98,6 @@ export default async function status(host: string, options?: StatusOptions): Pro
 		return formatResult(host, opts.port, srvRecord, result, Date.now() - startTime);
 	} finally {
 		// Destroy the socket, it is no longer needed
-		await socket.destroy();
+		await socket?.destroy();
 	}
 }

@@ -75,9 +75,19 @@ export default async function scanLAN(options?: ScanLANOptions): Promise<ScanLAN
 	});
 
 	// Return the timeout promise that will resolve when the scan time is up
-	return new Promise((resolve) => setTimeout(() => {
-		resolve({ servers });
+	return new Promise((resolve, reject) => {
+		const timeout = setTimeout(() => {
+			resolve({ servers });
 
-		socket.close();
-	}, opts.scanTime));
+			socket.close();
+		}, opts.scanTime);
+
+		socket.on('error', (error: Error) => {
+			socket.close();
+
+			clearTimeout(timeout);
+
+			reject(error);
+		});
+	});
 }

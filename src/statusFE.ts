@@ -56,10 +56,12 @@ export default async function statusFE(host: string, options?: StatusOptions): P
 
 	const startTime = Date.now();
 
-	// Create a new TCP connection to the specified address
-	const socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+	let socket;
 
 	try {
+		// Create a new TCP connection to the specified address
+		socket = await TCPSocket.connect(srvRecord?.host ?? host, srvRecord?.port ?? opts.port, opts.timeout);
+
 		// Create the necessary packets and send them to the server
 		// https://wiki.vg/Server_List_Ping#Beta_1.8_to_1.3
 		const packet = new Packet();
@@ -94,6 +96,6 @@ export default async function statusFE(host: string, options?: StatusOptions): P
 		return formatResultFE(host, opts.port, srvRecord, motd, playerCount, maxPlayers, Date.now() - startTime);
 	} finally {
 		// Destroy the socket, it is no longer needed
-		await socket.destroy();
+		await socket?.destroy();
 	}
 }
