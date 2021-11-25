@@ -62,27 +62,29 @@ class TCPSocket {
 			});
 
 			d.run(() => {
+				let socket: net.Socket | undefined = undefined;
+
 				try {
 					const cleanupHandlers = () => {
-						socket.removeListener('connect', connectHandler);
-						socket.removeListener('error', errorHandler);
+						socket?.removeListener('connect', connectHandler);
+						socket?.removeListener('error', errorHandler);
 					};
 
 					const connectHandler = () => {
 						cleanupHandlers();
 
-						resolve(new TCPSocket(socket));
+						resolve(new TCPSocket(socket as net.Socket));
 					};
 
 					const errorHandler = (error?: Error) => {
 						cleanupHandlers();
 
-						socket.end();
+						socket?.end();
 
 						reject(error ?? new Error('Failed to connect to the server, is it online?'));
 					};
 
-					const socket = net.createConnection({ host, port, timeout });
+					socket = net.createConnection({ host, port, timeout });
 					socket.on('connect', connectHandler);
 					socket.on('close', errorHandler);
 					socket.on('end', errorHandler);
@@ -90,6 +92,8 @@ class TCPSocket {
 					socket.on('timeout', errorHandler);
 					socket.setTimeout(timeout);
 				} catch (e) {
+					socket?.end();
+
 					reject(e);
 				}
 			});
