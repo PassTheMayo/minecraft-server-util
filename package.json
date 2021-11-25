@@ -5,11 +5,11 @@
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"scripts": {
-		"prepublishOnly": "npm run clean && npm run build && npm run lint",
+		"prepublishOnly": "npm run clean && npm run build && npm run lint && npm test",
 		"build": "tsc",
 		"clean": "rimraf build/",
 		"lint": "eslint .",
-		"test": "jest --detectOpenHandles"
+		"test": "jest --detectOpenHandles --forceExit"
 	},
 	"keywords": [
 		"minecraft",
