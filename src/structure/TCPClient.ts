@@ -460,6 +460,17 @@ class TCPClient extends EventEmitter {
 		this.writeBytes(encoder.encode(value));
 	}
 
+	async readStringUntil(byte: number): Promise<string> {
+		let buf = Buffer.alloc(0);
+		let value;
+
+		while ((value = await this.readByte()) !== byte) {
+			buf = Buffer.concat([buf, Buffer.from([value])]);
+		}
+
+		return decoder.decode(buf);
+	}
+
 	flush(prefixLength = true): Promise<void> {
 		if (!this.socket) return Promise.resolve();
 

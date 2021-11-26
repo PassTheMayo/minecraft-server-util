@@ -82,7 +82,7 @@ util.status('play.hypixel.net') // port is default 25565
 ```js
 const util = require('minecraft-server-util');
 
-util.status('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, protocolVersion: 47 }) // These are the default options
+util.status('play.hypixel.net', 25565, { timeout: 1000 * 5 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -114,7 +114,7 @@ Please note that retrieving the status of a Bedrock Edition server is an experim
 ```js
 const util = require('minecraft-server-util');
 
-util.statusBedrock('play.hypixel.net', { port: 19132, enableSRV: true, timeout: 5000 }) // These are the default options, `clientGUID` is set to random bytes
+util.statusBedrock('play.hypixel.net', 19132, { timeout: 1000 * 5 })
     .then((response) => {
         console.log(response);
     })
@@ -130,7 +130,7 @@ util.statusBedrock('play.hypixel.net', { port: 19132, enableSRV: true, timeout: 
 ```js
 const util = require('minecraft-server-util');
 
-util.query('play.hypixel.net')
+util.queryBasic('play.hypixel.net')
     .then((response) => {
         console.log(response);
     })
@@ -146,7 +146,7 @@ util.query('play.hypixel.net')
 ```js
 const util = require('minecraft-server-util');
 
-util.query('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, sessionID: 0 }) // These are the default options
+util.queryBasic('play.hypixel.net', 25565, { sessionID: 1 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -178,7 +178,7 @@ util.queryFull('play.hypixel.net')
 ```js
 const util = require('minecraft-server-util');
 
-util.queryFull('play.hypixel.net', { port: 25565, enableSRV: true, timeout: 5000, sessionID: 0 }) // These are the default options
+util.queryFull('play.hypixel.net', 25565, { sessionID: 1 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -206,7 +206,7 @@ util.scanLAN() // Scans for 5 seconds by default
 ```js
 const util = require('minecraft-server-util');
 
-util.scanLAN({ scanTime: 5000 }) // These are the default options
+util.scanLAN({ scanTime: 1000 * 5 }) // These are the default options
     .then((response) => {
         console.log(response);
     })
@@ -222,22 +222,24 @@ util.scanLAN({ scanTime: 5000 }) // These are the default options
 ```js
 const util = require('minecraft-server-util');
 
-const client = new util.RCON('play.hypixel.net', { port: 25575, enableSRV: true, timeout: 5000, password: 'abc123' }); // These are the default options
+const client = new util.RCON();
 
-client.on('output', (message) => {
+client.on('message', (message) => {
     console.log(message);
 
-    // The client must be closed AFTER receiving the message.
-    // Closing too early will cause the client to never output
-    // any message.
-    client.close();
+    // `client.close()` needs to be called after the entire message is received from the server,
+    // calling early will yield no message.
+    await client.close();
 });
 
-client.connect()
-    .then(() => client.run('list')) // List all players online
-    .catch((error) => {
-        console.error(error);
-    });
+(async () => {
+    await client.connect('localhost', 25575, { timeout: 1000 * 5 }); // Options is optional, defaults to 5 second timeout
+    await client.login('abc123'); // RCON password
+    await client.run('say Hello, world!');
+
+    // You can also use `client.execute()` in place of `client.run()` which will
+    // return the first message from the server.
+})();
 ```
 
 ### Send a Votifier vote
@@ -247,15 +249,13 @@ A server plugin like [NuVotifier](https://www.spigotmc.org/resources/nuvotifier.
 ```js
 const util = require('minecraft-server-util');
 
-util.sendVote({
-    host: 'play.hypixel.net',
-    port: 8192, // optional, defaults to 8192
+util.sendVote('play.hypixel.net', 8192, {
     serviceName: 'test-service',
+    token: '', // the token set within the Votifier plugin config on the server
     username: 'PassTheMayo',
+    uuid: '85e5f06e-ff89-4c11-8050-329e8fdc29de', // optional but recommended, UUID of user with dashes
     timestamp: Date.now(), // optional, defaults to current time
-    uuid: '85e5f06e-ff89-4c11-8050-329e8fdc29de', // optional but recommended, UUID of user
-    timeout: 1000 * 15, // optional, defaults to 15 seconds
-    token: '' // the token set within the Votifier plugin config on the server
+    timeout: 1000 * 5 // optional, defaults to 15 seconds
 })
     .then(() => {
         console.log('Successfully sent vote');
@@ -285,7 +285,7 @@ This module cannot be used in a browser environment because the TCP/UDP protocol
 
 ### Why am I getting weird values?
 
-The values in the response are all provided by the server that you're requesting it from. This library has no control over what values it receives, thus meaning that it can be any value. If you're getting weird information back, ask the server owner why they're running a plugin that modifies these values.
+The values in the response are all provided by the server that you're requesting it from. This library has no control over what values it receives, meaning that it can be any value. If you're getting weird information back, ask the server owner why they're running a plugin that modifies these values.
 
 ### Why is the sample players array empty?
 

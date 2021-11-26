@@ -6,4 +6,5 @@ export * from './statusBedrock';
 export * from './queryBasic';
 export * from './queryFull';
 export * from './scanLAN';
+export * from './sendVote';
 export * from './structure/RCON';
