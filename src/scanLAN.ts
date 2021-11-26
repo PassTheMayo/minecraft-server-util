@@ -1,86 +1,53 @@
 import assert from 'assert';
 import dgram from 'dgram';
 import { TextDecoder } from 'util';
-import { parse, format, clean, toHTML } from 'minecraft-motd-util';
-import { ScanLANOptions } from './model/Options';
-import { ScanLANResponse, ScanLANServer } from './model/ScanLANResponse';
 
-const pattern = /\[MOTD\](.+)?(?=\[\/MOTD\])\[\/MOTD\]\[AD\](\d+)\[\/AD\]/;
-const decoder = new TextDecoder('utf-8');
-
-function applyDefaultOptions(options?: ScanLANOptions): Required<ScanLANOptions> {
-	// Apply the provided options on the default options
-	return Object.assign({
-		scanTime: 1000 * 5
-	} as Required<ScanLANOptions>, options);
+export interface ScanLANOptions {
+	scanTime: number
 }
 
-/**
- * Scans the local area network for any Minecraft worlds.
- * @param {ScanLANOptions} [options] The options to use when scanning LAN
- * @returns {Promise<ScanLANResponse>} The response of the scan
- * @async
- */
-export default async function scanLAN(options?: ScanLANOptions): Promise<ScanLANResponse> {
-	// Applies the provided options on top of the default options
-	const opts = applyDefaultOptions(options);
+export interface ScannedServer {
+	host: string,
+	port: number,
+	motd: string
+}
 
-	// Assert that the arguments are the correct type and format
-	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an object or undefined, got ${typeof options}`);
-	assert(typeof opts === 'object', `Expected 'options' to be an object, got ${typeof opts}`);
-	assert(typeof opts.scanTime === 'number', `Expected 'options.scanTime' to be a number, got ${typeof opts.scanTime}`);
-	assert(opts.scanTime >= 1500, `Expected 'options.scanTime' to be greater than or equal to 1500, got ${opts.scanTime}`);
+const decoder = new TextDecoder('utf8');
+const pattern = /\[MOTD\](.*)\[\/MOTD\]\[AD\](\d{1,5})\[\/AD\]/;
 
-	// Create a list of servers that the socket will append to
-	const servers: ScanLANServer[] = [];
+export async function scanLAN(options: Partial<ScanLANOptions> = {}): Promise<ScannedServer[]> {
+	assert(typeof options === 'object', `Expected 'options' to be an 'object', got '${typeof options}'`);
 
-	// Create a new UDP socket and listen for messages
+	const servers: ScannedServer[] = [];
+
 	const socket = dgram.createSocket('udp4');
 
-	// Wait for messages being broadcased
 	socket.on('message', (message, info) => {
-		const text = decoder.decode(message);
+		const match = decoder.decode(message).match(pattern);
+		if (!match || match.length < 3) return;
 
-		// Ensure that the text sent to the scan port matches the "Open to LAN" format
-		if (!pattern.test(text)) return;
+		let port = parseInt(match[2]);
+		if (isNaN(port)) port = 25565;
 
-		const match = text.match(pattern);
-		if (!match) return;
-
-		// Parse the port out of the matched text
-		const port = parseInt(match[2]);
-		if (isNaN(port)) return;
-
-		const server = servers.find((server) => server.host === info.address && server.port === port);
-		if (server) return;
-
-		const description = parse(match[1]);
-
-		const motd = {
-			raw: format(description),
-			clean: clean(description),
-			html: toHTML(description)
-		};
+		if (servers.some((server) => server.host === info.address && server.port === port)) return;
 
 		servers.push({
 			host: info.address,
 			port,
-			motd
+			motd: match[1]
 		});
 	});
 
-	// Bind to the 4445 port which is used for receiving and broadcasting "Open to LAN" worlds
 	socket.bind(4445, () => {
 		socket.addMembership('224.0.2.60');
 	});
 
-	// Return the timeout promise that will resolve when the scan time is up
 	return new Promise((resolve, reject) => {
-		const timeout = setTimeout(() => {
-			resolve({ servers });
+		const timeout = setTimeout(async () => {
+			await new Promise<void>((resolve) => socket.close(() => resolve()));
 
-			socket.close();
-		}, opts.scanTime);
+			resolve(servers);
+		}, options?.scanTime ?? 1000 * 5);
 
 		socket.on('error', (error: Error) => {
 			socket.close();
