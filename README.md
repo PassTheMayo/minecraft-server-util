@@ -59,7 +59,7 @@ Beta 1.8 - 1.3.2  | :x:                | :x:                | :x:               
 
 ## API Documentation
 
-The entire API of this library is documented within the [wiki](https://github.com/PassTheMayo/minecraft-server-util/wiki).
+https://passthemayo.gitbook.io/minecraft-server-util/
 
 ## Examples
 
