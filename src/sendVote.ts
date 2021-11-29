@@ -2,15 +2,7 @@ import assert from 'assert';
 import crypto from 'crypto';
 import { TextEncoder } from 'util';
 import TCPClient from './structure/TCPClient';
-
-export interface SendVoteOptions {
-	token: string,
-	username: string,
-	serviceName?: string,
-	uuid?: string,
-	timestamp?: number,
-	timeout?: number
-}
+import { SendVoteOptions } from './types/SendVoteOptions';
 
 const encoder = new TextEncoder();
 

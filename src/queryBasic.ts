@@ -2,6 +2,7 @@ import assert from 'assert';
 import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import UDPClient from './structure/UDPClient';
 import { QueryOptions } from './types/QueryOptions';
+import { resolveUDPSRV } from './util/srvRecord';
 
 export interface BasicQueryResponse {
 	motd: {
@@ -19,14 +20,25 @@ export interface BasicQueryResponse {
 	hostIP: string
 }
 
-export async function queryBasic(host: string, port = 25565, options: Partial<QueryOptions> = {}): Promise<BasicQueryResponse> {
+export async function queryBasic(host: string, port = 25565, options?: QueryOptions): Promise<BasicQueryResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
 	assert(Number.isInteger(port), `Expected 'port' to be an integer, got '${port}'`);
 	assert(port >= 0, `Expected 'port' to be greater than or equal to 0, got '${port}'`);
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
-	assert(typeof options === 'object', `Expected 'options' to be an 'object', got '${typeof options}'`);
+	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
+
+	let srvRecord = null;
+
+	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+		srvRecord = await resolveUDPSRV(host);
+
+		if (srvRecord) {
+			host = srvRecord.host;
+			port = srvRecord.port;
+		}
+	}
 
 	const sessionID = (options?.sessionID ?? 1) & 0x0F0F0F0F;
 

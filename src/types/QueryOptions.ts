@@ -1,3 +1,4 @@
 export interface QueryOptions {
-    sessionID: number
+	sessionID?: number,
+	enableSRV?: boolean
 }

@@ -40,7 +40,8 @@
 		]
 	},
 	"ignorePatterns": [
-		"dist/**/*"
+		"dist/**/*",
+		"test.js"
 	],
 	"overrides": [
 		{

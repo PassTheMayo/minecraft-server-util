@@ -2,37 +2,28 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import UDPClient from './structure/UDPClient';
+import { BedrockStatusOptions } from './types/BedrockStatusOptions';
+import { BedrockStatusResponse } from './types/BedrockStatusResponse';
+import { resolveUDPSRV } from './util/srvRecord';
 
-export interface BedrockStatusResponse {
-	edition: string,
-	motd: {
-		raw: string,
-		clean: string,
-		html: string
-	},
-	version: {
-		name: string,
-		protocol: number
-	},
-	players: {
-		online: number,
-		max: number
-	},
-	serverGUID: bigint,
-	serverID: string,
-	gameMode: string,
-	gameModeID: number,
-	portIPv4: number,
-	portIPv6: number
-}
-
-export async function statusBedrock(host: string, port = 19132): Promise<BedrockStatusResponse> {
+export async function statusBedrock(host: string, port = 19132, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
 	assert(Number.isInteger(port), `Expected 'port' to be an integer, got '${port}'`);
 	assert(port >= 0, `Expected 'port' to be greater than or equal to 0, got '${port}'`);
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
+
+	let srvRecord = null;
+
+	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+		srvRecord = await resolveUDPSRV(host);
+
+		if (srvRecord) {
+			host = srvRecord.host;
+			port = srvRecord.port;
+		}
+	}
 
 	const socket = new UDPClient(host, port);
 
@@ -86,7 +77,8 @@ export async function statusBedrock(host: string, port = 19132): Promise<Bedrock
 				gameMode,
 				gameModeID: parseInt(gameModeID),
 				portIPv4: parseInt(portIPv4),
-				portIPv6: parseInt(portIPv6)
+				portIPv6: parseInt(portIPv6),
+				srvRecord
 			};
 		}
 	} finally {
