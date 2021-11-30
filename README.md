@@ -1,6 +1,7 @@
 # minecraft-server-util
 
 [![npm version](https://img.shields.io/npm/v/minecraft-server-util?label=version)](https://www.npmjs.com/package/minecraft-server-util)
+![Version](https://img.shields.io/github/languages/top/PassTheMayo/minecraft-server-util)
 [![License](https://img.shields.io/npm/l/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/blob/master/LICENSE)
 ![npm weekly downloads](https://img.shields.io/npm/dw/minecraft-server-util)
 [![GitHub open issues](https://img.shields.io/github/issues-raw/PassTheMayo/minecraft-server-util)](https://github.com/PassTheMayo/minecraft-server-util/issues)
