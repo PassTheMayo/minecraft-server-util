@@ -31,8 +31,14 @@ class TCPClient extends EventEmitter {
 				reject(error);
 			});
 
-			this.socket.on('close', () => {
+			this.socket.on('timeout', () => {
+				reject(new Error('Socket timed out while connecting'));
+			});
+
+			this.socket.on('close', (hasError) => {
 				this.isConnected = false;
+
+				if (!hasError) reject();
 
 				this.emit('close');
 			});
