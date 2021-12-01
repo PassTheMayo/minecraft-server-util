@@ -13,6 +13,7 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 	assert(Number.isInteger(port), `Expected 'port' to be an integer, got '${port}'`);
 	assert(port >= 0, `Expected 'port' to be greater than or equal to 0, got '${port}'`);
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
+	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
 	let srvRecord = null;
 
