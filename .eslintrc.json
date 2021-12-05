@@ -53,9 +53,9 @@
 				"@typescript-eslint/no-var-requires": "off"
 			},
 			"globals": {
+				"describe": true,
 				"test": true,
-				"expect": true,
-				"jest": true
+				"expect": true
 			}
 		}
 	]
