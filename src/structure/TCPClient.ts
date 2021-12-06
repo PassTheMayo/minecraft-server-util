@@ -498,7 +498,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	close(): Promise<void> {
-		if (!this.socket) return Promise.resolve();
+		if (!this.socket || !this.isConnected) return Promise.resolve();
 
 		return new Promise((resolve) => {
 			this.socket?.end(() => {

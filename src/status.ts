@@ -60,8 +60,6 @@ export async function status(host: string, port = 25565, options?: JavaStatusOpt
 
 			const motd = parse(response.description);
 
-			await socket.close();
-
 			return {
 				version: {
 					name: response.version.name,
