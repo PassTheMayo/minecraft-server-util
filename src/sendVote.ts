@@ -87,6 +87,6 @@ export async function sendVote(host: string, port = 8192, options: SendVoteOptio
 			}
 		}
 	} finally {
-		await socket.close();
+		socket.close();
 	}
 }

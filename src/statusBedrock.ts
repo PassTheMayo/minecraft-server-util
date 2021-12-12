@@ -15,6 +15,10 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
 	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
+	if (typeof options === 'object') {
+		assert(typeof options.enableSRV === 'boolean' || typeof options.enableSRV === 'undefined', `Expected 'options.enableSRV' to be a 'boolean' or 'undefined', got '${typeof options.enableSRV}'`);
+	}
+
 	let srvRecord = null;
 
 	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
@@ -25,6 +29,9 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 			port = srvRecord.port;
 		}
 	}
+
+	// TODO implement timeouts for all methods, better socket error handling
+	// use inspiration for timeouts from https://medium.com/swlh/closing-tcp-udp-sockets-with-timeouts-and-error-handling-in-nodejs-e06b063c0bf6
 
 	const socket = new UDPClient(host, port);
 
@@ -77,8 +84,8 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 				serverID,
 				gameMode,
 				gameModeID: parseInt(gameModeID),
-				portIPv4: parseInt(portIPv4),
-				portIPv6: parseInt(portIPv6),
+				portIPv4: portIPv4 ? parseInt(portIPv4) : null,
+				portIPv6: portIPv6 ? parseInt(portIPv6) : null,
 				srvRecord
 			};
 		}

@@ -31,7 +31,9 @@ class TCPClient extends EventEmitter {
 				reject(error);
 			});
 
-			this.socket.on('timeout', () => {
+			this.socket.on('timeout', async () => {
+				this.socket?.destroy();
+
 				reject(new Error('Socket timed out while connecting'));
 			});
 
@@ -497,14 +499,10 @@ class TCPClient extends EventEmitter {
 		});
 	}
 
-	close(): Promise<void> {
-		if (!this.socket || !this.isConnected) return Promise.resolve();
+	close(): void {
+		if (!this.socket) return;
 
-		return new Promise((resolve) => {
-			this.socket?.end(() => {
-				resolve();
-			});
-		});
+		this.socket.destroy();
 	}
 
 	_waitForData(): Promise<void> {

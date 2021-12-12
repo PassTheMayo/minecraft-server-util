@@ -146,10 +146,10 @@ class RCON extends EventEmitter2 implements RCONEvents {
 		}
 	}
 
-	close(): Promise<void> {
-		if (this.socket === null) return Promise.resolve();
+	close(): void {
+		if (!this.socket) return;
 
-		return this.socket.close();
+		this.socket.close();
 	}
 }
 

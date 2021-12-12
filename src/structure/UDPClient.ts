@@ -474,9 +474,11 @@ class UDPClient extends EventEmitter {
 	_waitForData(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.once('data', () => {
-				process.nextTick(() => {
-					resolve();
-				});
+				resolve();
+			});
+
+			this.socket.on('error', (error) => {
+				reject(error);
 			});
 
 			this.once('close', () => {

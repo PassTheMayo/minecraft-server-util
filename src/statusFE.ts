@@ -57,6 +57,6 @@ export async function statusFE(host: string, port = 25565, options?: JavaStatusO
 			};
 		}
 	} finally {
-		await socket.close();
+		socket.close();
 	}
 }

@@ -5,7 +5,12 @@ import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusResponse } from './types/JavaStatusResponse';
 import { resolveTCPSRV } from './util/srvRecord';
 
-export async function status(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusResponse> {
+/**
+ * Retrieves the status of a Java Edition Minecraft server. Supports version 1.7.2 to latest.
+ * - `options.enableSRV` enables SRV record support for some Minecraft servers that use it.
+ * - `options.timeout` specifies the timeout duration before the method is rejected.
+ */
+export function status(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -14,53 +19,77 @@ export async function status(host: string, port = 25565, options?: JavaStatusOpt
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
 	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
-	let srvRecord = null;
+	if (typeof options === 'object') {
+		assert(typeof options.enableSRV === 'boolean' || typeof options.enableSRV === 'undefined', `Expected 'options.enableSRV' to be a 'boolean' or 'undefined', got '${typeof options.enableSRV}'`);
+		assert(typeof options.timeout === 'number' || typeof options.timeout === 'undefined', `Expected 'options.timeout' to be a 'number' or 'undefined', got '${typeof options.timeout}'`);
 
-	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-		srvRecord = await resolveTCPSRV(host);
-
-		if (srvRecord) {
-			host = srvRecord.host;
-			port = srvRecord.port;
+		if (typeof options.timeout === 'number') {
+			assert(Number.isInteger(options.timeout), `Expected 'options.timeout' to be an integer, got '${options.timeout}'`);
+			assert(options.timeout >= 0, `Expected 'options.timeout' to be greater than or equal to 0, got '${options.timeout}'`);
 		}
 	}
 
-	const socket = new TCPClient();
+	return new Promise(async (resolve, reject) => {
+		let socket: TCPClient | undefined = undefined;
 
-	await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+		setTimeout(() => {
+			socket?.close();
 
-	try {
-		// Handshake packet
-		// https://wiki.vg/Server_List_Ping#Handshake
-		{
-			socket.writeVarInt(0x00);
-			socket.writeVarInt(47);
-			socket.writeStringVarInt(host);
-			socket.writeUInt16BE(port);
-			socket.writeVarInt(1);
-			await socket.flush();
-		}
+			reject(new Error('Timed out while waiting for server response'));
+		}, options?.timeout ?? 1000 * 5);
 
-		// Request packet
-		// https://wiki.vg/Server_List_Ping#Request
-		{
-			socket.writeVarInt(0x00);
-			await socket.flush();
-		}
+		try {
+			let srvRecord = null;
 
-		// Response packet
-		// https://wiki.vg/Server_List_Ping#Response
-		{
-			await socket.readVarInt();
+			if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+				srvRecord = await resolveTCPSRV(host);
 
-			const packetType = await socket.readVarInt();
-			if (packetType !== 0x00) throw new Error('Expected server to send packet type 0x00, received ' + packetType);
+				if (srvRecord) {
+					host = srvRecord.host;
+					port = srvRecord.port;
+				}
+			}
 
-			const response = JSON.parse(await socket.readStringVarInt());
+			socket = new TCPClient();
+
+			await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+
+			// Handshake packet
+			// https://wiki.vg/Server_List_Ping#Handshake
+			{
+				socket.writeVarInt(0x00);
+				socket.writeVarInt(47);
+				socket.writeStringVarInt(host);
+				socket.writeUInt16BE(port);
+				socket.writeVarInt(1);
+				await socket.flush();
+			}
+
+			// Request packet
+			// https://wiki.vg/Server_List_Ping#Request
+			{
+				socket.writeVarInt(0x00);
+				await socket.flush();
+			}
+
+			let response;
+
+			// Response packet
+			// https://wiki.vg/Server_List_Ping#Response
+			{
+				await socket.readVarInt();
+
+				const packetType = await socket.readVarInt();
+				if (packetType !== 0x00) throw new Error('Expected server to send packet type 0x00, received ' + packetType);
+
+				response = JSON.parse(await socket.readStringVarInt());
+			}
+
+			socket.close();
 
 			const motd = parse(response.description);
 
-			return {
+			resolve({
 				version: {
 					name: response.version.name,
 					protocol: response.version.protocol
@@ -77,9 +106,11 @@ export async function status(host: string, port = 25565, options?: JavaStatusOpt
 				},
 				favicon: response.favicon ?? null,
 				srvRecord
-			};
+			});
+		} catch (e) {
+			socket?.close();
+
+			reject(e);
 		}
-	} finally {
-		await socket.close();
-	}
+	});
 }

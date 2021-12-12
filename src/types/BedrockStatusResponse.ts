@@ -19,7 +19,7 @@ export interface BedrockStatusResponse {
 	serverID: string,
 	gameMode: string,
 	gameModeID: number,
-	portIPv4: number,
-	portIPv6: number,
+	portIPv4: number | null,
+	portIPv6: number | null,
 	srvRecord: SRVRecord | null
 }

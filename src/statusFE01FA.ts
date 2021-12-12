@@ -78,6 +78,6 @@ export async function statusFE01FA(host: string, port = 25565, options?: JavaSta
 			};
 		}
 	} finally {
-		await socket.close();
+		socket.close();
 	}
 }
