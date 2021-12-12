@@ -32,10 +32,10 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 	return new Promise(async (resolve, reject) => {
 		let socket: TCPClient | undefined = undefined;
 
-		setTimeout(() => {
+		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while waiting for server response'));
+			reject(new Error('Timed out while retrieving server status'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {
@@ -85,9 +85,11 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 				response = JSON.parse(await socket.readStringVarInt());
 			}
 
-			socket.close();
-
 			const motd = parse(response.description);
+
+			clearTimeout(timeout);
+
+			socket.close();
 
 			resolve({
 				version: {
@@ -108,6 +110,8 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 				srvRecord
 			});
 		} catch (e) {
+			clearTimeout(timeout);
+
 			socket?.close();
 
 			reject(e);

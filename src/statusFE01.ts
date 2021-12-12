@@ -14,58 +14,86 @@ export async function statusFE01(host: string, port = 25565, options?: JavaStatu
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
 	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
-	let srvRecord = null;
+	if (typeof options === 'object') {
+		assert(typeof options.enableSRV === 'boolean' || typeof options.enableSRV === 'undefined', `Expected 'options.enableSRV' to be a 'boolean' or 'undefined', got '${typeof options.enableSRV}'`);
+		assert(typeof options.timeout === 'number' || typeof options.timeout === 'undefined', `Expected 'options.timeout' to be a 'number' or 'undefined', got '${typeof options.timeout}'`);
 
-	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-		srvRecord = await resolveTCPSRV(host);
-
-		if (srvRecord) {
-			host = srvRecord.host;
-			port = srvRecord.port;
+		if (typeof options.timeout === 'number') {
+			assert(Number.isInteger(options.timeout), `Expected 'options.timeout' to be an integer, got '${options.timeout}'`);
+			assert(options.timeout >= 0, `Expected 'options.timeout' to be greater than or equal to 0, got '${options.timeout}'`);
 		}
 	}
 
-	const socket = new TCPClient();
+	return new Promise(async (resolve, reject) => {
+		let socket: TCPClient | undefined = undefined;
 
-	await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+		const timeout = setTimeout(() => {
+			socket?.close();
 
-	try {
-		// Ping packet
-		// https://wiki.vg/Server_List_Ping#1.4_to_1.5
-		{
-			socket.writeBytes(Uint8Array.from([0xFE, 0x01]));
-			await socket.flush(false);
+			reject(new Error('Timed out while retrieving server status'));
+		}, options?.timeout ?? 1000 * 5);
+
+		let srvRecord = null;
+
+		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+			srvRecord = await resolveTCPSRV(host);
+
+			if (srvRecord) {
+				host = srvRecord.host;
+				port = srvRecord.port;
+			}
 		}
 
-		// Server to client packet
-		// https://wiki.vg/Server_List_Ping#Server_to_client
-		{
-			const kickIdentifier = await socket.readByte();
-			if (kickIdentifier !== 0xFF) throw new Error('Expected server to send 0xFF kick packet, got ' + kickIdentifier);
+		socket = new TCPClient();
 
-			const remainingLength = await socket.readInt16BE();
-			const remainingData = await socket.readBytes(remainingLength * 2);
+		await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
 
-			const [protocolVersionString, version, motdString, onlinePlayersString, maxPlayersString] = remainingData.slice(6).swap16().toString('utf16le').split('\0');
+		try {
+			// Ping packet
+			// https://wiki.vg/Server_List_Ping#1.4_to_1.5
+			{
+				socket.writeBytes(Uint8Array.from([0xFE, 0x01]));
+				await socket.flush(false);
+			}
 
-			const motd = parse(motdString);
+			// Server to client packet
+			// https://wiki.vg/Server_List_Ping#Server_to_client
+			{
+				const kickIdentifier = await socket.readByte();
+				if (kickIdentifier !== 0xFF) throw new Error('Expected server to send 0xFF kick packet, got ' + kickIdentifier);
 
-			return {
-				protocolVersion: parseInt(protocolVersionString),
-				version,
-				players: {
-					online: parseInt(onlinePlayersString),
-					max: parseInt(maxPlayersString)
-				},
-				motd: {
-					raw: format(motd),
-					clean: clean(motd),
-					html: toHTML(motd)
-				},
-				srvRecord
-			};
+				const remainingLength = await socket.readInt16BE();
+				const remainingData = await socket.readBytes(remainingLength * 2);
+
+				const [protocolVersionString, version, motdString, onlinePlayersString, maxPlayersString] = remainingData.slice(6).swap16().toString('utf16le').split('\0');
+
+				const motd = parse(motdString);
+
+				socket.close();
+
+				clearTimeout(timeout);
+
+				resolve({
+					protocolVersion: parseInt(protocolVersionString),
+					version,
+					players: {
+						online: parseInt(onlinePlayersString),
+						max: parseInt(maxPlayersString)
+					},
+					motd: {
+						raw: format(motd),
+						clean: clean(motd),
+						html: toHTML(motd)
+					},
+					srvRecord
+				});
+			}
+		} catch (e) {
+			clearTimeout(timeout);
+
+			socket?.close();
+
+			reject(e);
 		}
-	} finally {
-		socket.close();
-	}
+	});
 }

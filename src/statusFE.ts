@@ -13,50 +13,78 @@ export async function statusFE(host: string, port = 25565, options?: JavaStatusO
 	assert(port <= 65535, `Expected 'port' to be less than or equal to 65535, got '${port}'`);
 	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
-	let srvRecord = null;
+	if (typeof options === 'object') {
+		assert(typeof options.enableSRV === 'boolean' || typeof options.enableSRV === 'undefined', `Expected 'options.enableSRV' to be a 'boolean' or 'undefined', got '${typeof options.enableSRV}'`);
+		assert(typeof options.timeout === 'number' || typeof options.timeout === 'undefined', `Expected 'options.timeout' to be a 'number' or 'undefined', got '${typeof options.timeout}'`);
 
-	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-		srvRecord = await resolveTCPSRV(host);
-
-		if (srvRecord) {
-			host = srvRecord.host;
-			port = srvRecord.port;
+		if (typeof options.timeout === 'number') {
+			assert(Number.isInteger(options.timeout), `Expected 'options.timeout' to be an integer, got '${options.timeout}'`);
+			assert(options.timeout >= 0, `Expected 'options.timeout' to be greater than or equal to 0, got '${options.timeout}'`);
 		}
 	}
 
-	const socket = new TCPClient();
+	return new Promise(async (resolve, reject) => {
+		let socket: TCPClient | undefined = undefined;
 
-	await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+		const timeout = setTimeout(() => {
+			socket?.close();
 
-	try {
-		// Ping packet
-		// https://wiki.vg/Server_List_Ping#Beta_1.8_to_1.3
-		{
-			socket.writeByte(0xFE);
-			await socket.flush(false);
+			reject(new Error('Timed out while retrieving server status'));
+		}, options?.timeout ?? 1000 * 5);
+
+		let srvRecord = null;
+
+		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+			srvRecord = await resolveTCPSRV(host);
+
+			if (srvRecord) {
+				host = srvRecord.host;
+				port = srvRecord.port;
+			}
 		}
 
-		// Response packet
-		// https://wiki.vg/Server_List_Ping#Beta_1.8_to_1.3
-		{
-			const packetID = await socket.readByte();
-			if (packetID !== 0xFF) throw new Error('Expected server to send 0xFF kick packet, got ' + packetID);
+		socket = new TCPClient();
 
-			const packetLength = await socket.readInt16BE();
-			const remainingData = await socket.readBytes(packetLength * 2);
+		await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
 
-			const [motd, onlinePlayersString, maxPlayersString] = remainingData.swap16().toString('utf16le').split('\u00A7');
+		try {
+			// Ping packet
+			// https://wiki.vg/Server_List_Ping#Beta_1.8_to_1.3
+			{
+				socket.writeByte(0xFE);
+				await socket.flush(false);
+			}
 
-			return {
-				players: {
-					online: parseInt(onlinePlayersString),
-					max: parseInt(maxPlayersString)
-				},
-				motd,
-				srvRecord
-			};
+			// Response packet
+			// https://wiki.vg/Server_List_Ping#Beta_1.8_to_1.3
+			{
+				const packetID = await socket.readByte();
+				if (packetID !== 0xFF) throw new Error('Expected server to send 0xFF kick packet, got ' + packetID);
+
+				const packetLength = await socket.readInt16BE();
+				const remainingData = await socket.readBytes(packetLength * 2);
+
+				const [motd, onlinePlayersString, maxPlayersString] = remainingData.swap16().toString('utf16le').split('\u00A7');
+
+				socket.close();
+
+				clearTimeout(timeout);
+
+				resolve({
+					players: {
+						online: parseInt(onlinePlayersString),
+						max: parseInt(maxPlayersString)
+					},
+					motd,
+					srvRecord
+				});
+			}
+		} catch (e) {
+			clearTimeout(timeout);
+
+			socket?.close();
+
+			reject(e);
 		}
-	} finally {
-		socket.close();
-	}
+	});
 }

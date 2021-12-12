@@ -1,4 +1,5 @@
 export interface QueryOptions {
 	sessionID?: number,
-	enableSRV?: boolean
+	enableSRV?: boolean,
+	timeout?: number
 }

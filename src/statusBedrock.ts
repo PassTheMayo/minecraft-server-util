@@ -17,79 +17,100 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 
 	if (typeof options === 'object') {
 		assert(typeof options.enableSRV === 'boolean' || typeof options.enableSRV === 'undefined', `Expected 'options.enableSRV' to be a 'boolean' or 'undefined', got '${typeof options.enableSRV}'`);
-	}
+		assert(typeof options.timeout === 'number' || typeof options.timeout === 'undefined', `Expected 'options.timeout' to be a 'number' or 'undefined', got '${typeof options.timeout}'`);
 
-	let srvRecord = null;
-
-	if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-		srvRecord = await resolveUDPSRV(host);
-
-		if (srvRecord) {
-			host = srvRecord.host;
-			port = srvRecord.port;
+		if (typeof options.timeout === 'number') {
+			assert(Number.isInteger(options.timeout), `Expected 'options.timeout' to be an integer, got '${options.timeout}'`);
+			assert(options.timeout >= 0, `Expected 'options.timeout' to be greater than or equal to 0, got '${options.timeout}'`);
 		}
 	}
 
-	// TODO implement timeouts for all methods, better socket error handling
-	// use inspiration for timeouts from https://medium.com/swlh/closing-tcp-udp-sockets-with-timeouts-and-error-handling-in-nodejs-e06b063c0bf6
+	return new Promise(async (resolve, reject) => {
+		let socket: UDPClient | undefined = undefined;
 
-	const socket = new UDPClient(host, port);
+		const timeout = setTimeout(() => {
+			socket?.close();
 
-	try {
-		// Unconnected ping packet
-		// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
-		{
-			socket.writeByte(0x01);
-			socket.writeInt64BE(BigInt(Date.now()));
-			socket.writeBytes(Uint8Array.from([0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78]));
-			socket.writeBytes(randomBytes(4));
-			await socket.flush(false);
+			reject(new Error('Timed out while retrieving server status'));
+		}, options?.timeout ?? 1000 * 5);
+
+		let srvRecord = null;
+
+		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+			srvRecord = await resolveUDPSRV(host);
+
+			if (srvRecord) {
+				host = srvRecord.host;
+				port = srvRecord.port;
+			}
 		}
 
-		// Unconnected pong packet
-		// https://wiki.vg/Raknet_Protocol#Unconnected_Pong
-		{
-			const packetType = await socket.readByte();
-			if (packetType !== 0x1C) throw new Error('Expected server to send packet type 0x1C, received ' + packetType);
+		socket = new UDPClient(host, port);
 
-			await socket.readInt64BE();
+		try {
+			// Unconnected ping packet
+			// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
+			{
+				socket.writeByte(0x01);
+				socket.writeInt64BE(BigInt(Date.now()));
+				socket.writeBytes(Uint8Array.from([0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78]));
+				socket.writeBytes(randomBytes(4));
+				await socket.flush(false);
+			}
 
-			const serverGUID = await socket.readInt64BE();
+			// Unconnected pong packet
+			// https://wiki.vg/Raknet_Protocol#Unconnected_Pong
+			{
+				const packetType = await socket.readByte();
+				if (packetType !== 0x1C) throw new Error('Expected server to send packet type 0x1C, received ' + packetType);
 
-			await socket.readBytes(16);
+				await socket.readInt64BE();
 
-			const responseLength = await socket.readInt16BE();
-			const response = await socket.readString(responseLength);
+				const serverGUID = await socket.readInt64BE();
 
-			const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = response.split(';');
+				await socket.readBytes(16);
 
-			const motd = parse(motdLine1 + '\n' + motdLine2);
+				const responseLength = await socket.readInt16BE();
+				const response = await socket.readString(responseLength);
 
-			return {
-				edition,
-				motd: {
-					raw: format(motd),
-					clean: clean(motd),
-					html: toHTML(motd)
-				},
-				version: {
-					name: version,
-					protocol: parseInt(protocolVersion)
-				},
-				players: {
-					online: parseInt(onlinePlayers),
-					max: parseInt(maxPlayers)
-				},
-				serverGUID,
-				serverID,
-				gameMode,
-				gameModeID: parseInt(gameModeID),
-				portIPv4: portIPv4 ? parseInt(portIPv4) : null,
-				portIPv6: portIPv6 ? parseInt(portIPv6) : null,
-				srvRecord
-			};
+				const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = response.split(';');
+
+				const motd = parse(motdLine1 + '\n' + motdLine2);
+
+				socket.close();
+
+				clearTimeout(timeout);
+
+				resolve({
+					edition,
+					motd: {
+						raw: format(motd),
+						clean: clean(motd),
+						html: toHTML(motd)
+					},
+					version: {
+						name: version,
+						protocol: parseInt(protocolVersion)
+					},
+					players: {
+						online: parseInt(onlinePlayers),
+						max: parseInt(maxPlayers)
+					},
+					serverGUID,
+					serverID,
+					gameMode,
+					gameModeID: parseInt(gameModeID),
+					portIPv4: portIPv4 ? parseInt(portIPv4) : null,
+					portIPv6: portIPv6 ? parseInt(portIPv6) : null,
+					srvRecord
+				});
+			}
+		} catch (e) {
+			clearTimeout(timeout);
+
+			socket?.close();
+
+			reject(e);
 		}
-	} finally {
-		socket.close();
-	}
+	});
 }

@@ -500,9 +500,8 @@ class TCPClient extends EventEmitter {
 	}
 
 	close(): void {
-		if (!this.socket) return;
-
-		this.socket.destroy();
+		this.socket?.end();
+		this.socket?.destroy();
 	}
 
 	_waitForData(): Promise<void> {
