@@ -3,9 +3,9 @@ import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import TCPClient from './structure/TCPClient';
 import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusFE01Response } from './types/JavaStatusFE01Response';
-import { resolveTCPSRV } from './util/srvRecord';
+import { resolveSRV } from './util/srvRecord';
 
-export async function statusFE01(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFE01Response> {
+export function statusFE01(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFE01Response> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -36,7 +36,7 @@ export async function statusFE01(host: string, port = 25565, options?: JavaStatu
 		let srvRecord = null;
 
 		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveTCPSRV(host);
+			srvRecord = await resolveSRV(host);
 
 			if (srvRecord) {
 				host = srvRecord.host;

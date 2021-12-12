@@ -5,7 +5,7 @@ const port = parseInt(process.env.PORT || '19132');
 
 jest.setTimeout(1000 * 15);
 
-test('successful test', (done) => {
+test('statusBedrock() - success', (done) => {
 	util.statusBedrock(address, port)
 		.then((result) => {
 			expect(typeof result).toBe('object');
@@ -131,31 +131,61 @@ test('statusBedrock() - unknown host', (done) => {
 });
 
 test('statusBedrock() - negative port', (done) => {
-	util.statusBedrock(address, -1)
-		.then(() => {
-			done(new Error('Expected statusBedrock() method to fail with negative port'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.statusBedrock(address, -1);
+
+		done(new Error('Expected statusBedrock() method to fail with negative port'));
+	} catch {
+		done();
+	}
 });
 
 test('statusBedrock() - out-of-range port', (done) => {
-	util.statusBedrock(address, 65536)
-		.then(() => {
-			done(new Error('Expected statusBedrock() method to fail with out-of-range port'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.statusBedrock(address, 65536);
+
+		done(new Error('Expected statusBedrock() method to fail with out-of-range port'));
+	} catch {
+		done();
+	}
 });
 
 test('statusBedrock() - invalid `options.enableSRV`', (done) => {
-	util.statusBedrock(address, port, { enableSRV: 'true' })
-		.then(() => {
-			done(new Error('Expected statusBedrock() method to fail with invalid `options.enableSRV`'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.statusBedrock(address, port, { enableSRV: 'true' });
+
+		done(new Error('Expected statusBedrock() method to fail with invalid `options.enableSRV`'));
+	} catch {
+		done();
+	}
+});
+
+test('statusBedrock() - invalid `options.timeout`', (done) => {
+	try {
+		util.statusBedrock(address, port, { timeout: '5000' });
+
+		done(new Error('Expected statusBedrock() method to fail with invalid `options.timeout`'));
+	} catch {
+		done();
+	}
+});
+
+test('statusBedrock() - negative `options.timeout`', (done) => {
+	try {
+		util.statusBedrock(address, port, { timeout: -1 });
+
+		done(new Error('Expected statusBedrock() method to fail with negative `options.timeout`'));
+	} catch {
+		done();
+	}
+});
+
+test('statusBedrock() - floating point `options.timeout`', (done) => {
+	try {
+		util.statusBedrock(address, port, { timeout: 5000.123 });
+
+		done(new Error('Expected statusBedrock() method to fail with floating point `options.timeout`'));
+	} catch {
+		done();
+	}
 });

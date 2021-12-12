@@ -2,7 +2,7 @@ import assert from 'assert';
 import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import UDPClient from './structure/UDPClient';
 import { QueryOptions } from './types/QueryOptions';
-import { resolveUDPSRV } from './util/srvRecord';
+import { resolveSRV } from './util/srvRecord';
 
 export interface FullQueryResponse {
 	motd: {
@@ -23,7 +23,7 @@ export interface FullQueryResponse {
 	hostPort: number
 }
 
-export async function queryFull(host: string, port = 25565, options?: QueryOptions): Promise<FullQueryResponse> {
+export function queryFull(host: string, port = 25565, options?: QueryOptions): Promise<FullQueryResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -55,7 +55,7 @@ export async function queryFull(host: string, port = 25565, options?: QueryOptio
 		let srvRecord = null;
 
 		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveUDPSRV(host);
+			srvRecord = await resolveSRV(host, 'udp');
 
 			if (srvRecord) {
 				host = srvRecord.host;

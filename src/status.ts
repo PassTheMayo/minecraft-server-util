@@ -3,7 +3,7 @@ import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import TCPClient from './structure/TCPClient';
 import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusResponse } from './types/JavaStatusResponse';
-import { resolveTCPSRV } from './util/srvRecord';
+import { resolveSRV } from './util/srvRecord';
 
 /**
  * Retrieves the status of a Java Edition Minecraft server. Supports version 1.7.2 to latest.
@@ -42,7 +42,7 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 			let srvRecord = null;
 
 			if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-				srvRecord = await resolveTCPSRV(host);
+				srvRecord = await resolveSRV(host);
 
 				if (srvRecord) {
 					host = srvRecord.host;

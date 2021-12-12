@@ -4,11 +4,11 @@ import { TextEncoder } from 'util';
 import TCPClient from './structure/TCPClient';
 import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusFE01FAResponse } from './types/JavaStatusFE01FAResponse';
-import { resolveTCPSRV } from './util/srvRecord';
+import { resolveSRV } from './util/srvRecord';
 
 const encoder = new TextEncoder();
 
-export async function statusFE01FA(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFE01FAResponse> {
+export function statusFE01FA(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFE01FAResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -39,7 +39,7 @@ export async function statusFE01FA(host: string, port = 25565, options?: JavaSta
 		let srvRecord = null;
 
 		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveTCPSRV(host);
+			srvRecord = await resolveSRV(host);
 
 			if (srvRecord) {
 				host = srvRecord.host;

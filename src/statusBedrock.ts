@@ -4,9 +4,9 @@ import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import UDPClient from './structure/UDPClient';
 import { BedrockStatusOptions } from './types/BedrockStatusOptions';
 import { BedrockStatusResponse } from './types/BedrockStatusResponse';
-import { resolveUDPSRV } from './util/srvRecord';
+import { resolveSRV } from './util/srvRecord';
 
-export async function statusBedrock(host: string, port = 19132, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+export function statusBedrock(host: string, port = 19132, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -37,7 +37,7 @@ export async function statusBedrock(host: string, port = 19132, options?: Bedroc
 		let srvRecord = null;
 
 		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveUDPSRV(host);
+			srvRecord = await resolveSRV(host, 'udp');
 
 			if (srvRecord) {
 				host = srvRecord.host;

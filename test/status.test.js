@@ -5,7 +5,7 @@ const port = parseInt(process.env.PORT || '25565');
 
 jest.setTimeout(1000 * 15);
 
-test('successful test', (done) => {
+test('status() - success', (done) => {
 	util.status(address, port)
 		.then((result) => {
 			expect(typeof result).toBe('object');
@@ -117,61 +117,61 @@ test('status() - unknown host', (done) => {
 });
 
 test('status() - negative port', (done) => {
-	util.status(address, -1)
-		.then(() => {
-			done(new Error('Expected status() method to fail with negative port'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, -1);
+
+		done(new Error('Expected status() method to fail with negative port'));
+	} catch {
+		done();
+	}
 });
 
 test('status() - out-of-range port', (done) => {
-	util.status(address, 65536)
-		.then(() => {
-			done(new Error('Expected status() method to fail with out-of-range port'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, 65536);
+
+		done(new Error('Expected status() method to fail with out-of-range port'));
+	} catch {
+		done();
+	}
 });
 
 test('status() - invalid `options.enableSRV`', (done) => {
-	util.status(address, port, { enableSRV: 'true' })
-		.then(() => {
-			done(new Error('Expected status() method to fail with invalid `options.enableSRV`'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, port, { enableSRV: 'true' });
+
+		done(new Error('Expected status() method to fail with invalid `options.enableSRV`'));
+	} catch {
+		done();
+	}
 });
 
 test('status() - invalid `options.timeout`', (done) => {
-	util.status(address, port, { timeout: '5000' })
-		.then(() => {
-			done(new Error('Expected status() method to fail with invalid `options.timeout`'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, port, { timeout: '5000' });
+
+		done(new Error('Expected status() method to fail with invalid `options.timeout`'));
+	} catch {
+		done();
+	}
 });
 
 test('status() - negative `options.timeout`', (done) => {
-	util.status(address, port, { timeout: -1 })
-		.then(() => {
-			done(new Error('Expected status() method to fail with negative `options.timeout`'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, port, { timeout: -1 });
+
+		done(new Error('Expected status() method to fail with negative `options.timeout`'));
+	} catch {
+		done();
+	}
 });
 
 test('status() - floating point `options.timeout`', (done) => {
-	util.status(address, port, { timeout: 5000.123 })
-		.then(() => {
-			done(new Error('Expected status() method to fail with floating point `options.timeout`'));
-		})
-		.catch(() => {
-			done();
-		});
+	try {
+		util.status(address, port, { timeout: 5000.123 });
+
+		done(new Error('Expected status() method to fail with floating point `options.timeout`'));
+	} catch {
+		done();
+	}
 });

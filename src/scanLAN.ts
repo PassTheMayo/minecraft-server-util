@@ -15,7 +15,7 @@ export interface ScannedServer {
 const decoder = new TextDecoder('utf8');
 const pattern = /\[MOTD\](.*)\[\/MOTD\]\[AD\](\d{1,5})\[\/AD\]/;
 
-export async function scanLAN(options?: ScanLANOptions): Promise<ScannedServer[]> {
+export function scanLAN(options?: ScanLANOptions): Promise<ScannedServer[]> {
 	assert(typeof options === 'object' || typeof options === 'undefined', `Expected 'options' to be an 'object' or 'undefined', got '${typeof options}'`);
 
 	if (typeof options === 'object') {
