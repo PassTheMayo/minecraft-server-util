@@ -8,8 +8,7 @@
 		"prepublishOnly": "npm run clean && npm run build && npm run lint",
 		"build": "tsc",
 		"clean": "rimraf dist/",
-		"lint": "eslint .",
-		"test": "jest test/ --detectOpenHandles"
+		"lint": "eslint ."
 	},
 	"keywords": [
 		"minecraft",
@@ -30,7 +29,6 @@
 		"@typescript-eslint/eslint-plugin": "^5.7.0",
 		"@typescript-eslint/parser": "^5.7.0",
 		"eslint": "^8.4.1",
-		"jest": "^27.4.5",
 		"rimraf": "^3.0.2",
 		"ts-node": "^10.4.0",
 		"tslib": "^2.3.1",
