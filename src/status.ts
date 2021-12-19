@@ -5,11 +5,6 @@ import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusResponse } from './types/JavaStatusResponse';
 import { resolveSRV } from './util/srvRecord';
 
-/**
- * Retrieves the status of a Java Edition Minecraft server. Supports version 1.7.2 to latest.
- * - `options.enableSRV` enables SRV record support for some Minecraft servers that use it.
- * - `options.timeout` specifies the timeout duration before the method is rejected.
- */
 export function status(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);

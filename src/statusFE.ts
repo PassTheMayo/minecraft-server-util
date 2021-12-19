@@ -4,7 +4,12 @@ import { JavaStatusOptions } from './types/JavaStatusOptions';
 import { JavaStatusFEResponse } from './types/JavaStatusFEResponse';
 import { resolveSRV } from './util/srvRecord';
 
+/**
+ * @deprecated
+ */
 export function statusFE(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFEResponse> {
+	process.emitWarning('Use of statusFE() has been deprecated since 5.2.0 in favor of a statusLegacy(). This method will be removed during the next major release of the minecraft-server-util library.', 'DeprecationWarning');
+
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);

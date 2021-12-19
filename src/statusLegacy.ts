@@ -1,16 +1,17 @@
 import assert from 'assert';
 import { clean, format, parse, toHTML } from 'minecraft-motd-util';
+import { TextDecoder } from 'util';
 import TCPClient from './structure/TCPClient';
 import { JavaStatusOptions } from './types/JavaStatusOptions';
-import { JavaStatusFE01Response } from './types/JavaStatusFE01Response';
+import { JavaStatusLegacyResponse } from './types/JavaStatusLegacyResponse';
 import { resolveSRV } from './util/srvRecord';
 
-/**
- * @deprecated
- */
-export function statusFE01(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusFE01Response> {
-	process.emitWarning('Use of statusFE01() has been deprecated since 5.2.0 in favor of a statusLegacy(). This method will be removed during the next major release of the minecraft-server-util library.', 'DeprecationWarning');
+// Credit for this method is owed to fabianwennink <3
+// https://github.com/fabianwennink/minecraft-server-util/blob/master/src/statusFE01All.ts
 
+const decoder = new TextDecoder('utf-16be');
+
+export function statusLegacy(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusLegacyResponse> {
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
@@ -54,45 +55,71 @@ export function statusFE01(host: string, port = 25565, options?: JavaStatusOptio
 		await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
 
 		try {
-			// Ping packet
-			// https://wiki.vg/Server_List_Ping#1.4_to_1.5
+			// Client to server packet
+			// https://wiki.vg/Server_List_Ping#Client_to_server
 			{
-				socket.writeBytes(Uint8Array.from([0xFE, 0x01]));
+				socket.writeBytes(Uint8Array.from([0xFE, 0x01, 0xFA]));
 				await socket.flush(false);
 			}
+
+			let protocolVersion;
+			let versionName;
+			let rawMOTD;
+			let onlinePlayers;
+			let maxPlayers;
 
 			// Server to client packet
 			// https://wiki.vg/Server_List_Ping#Server_to_client
 			{
-				const kickIdentifier = await socket.readByte();
-				if (kickIdentifier !== 0xFF) throw new Error('Expected server to send 0xFF kick packet, got ' + kickIdentifier);
+				const packetType = await socket.readByte();
+				if (packetType !== 0xFF) throw new Error('Packet returned from server was unexpected type');
 
-				const remainingLength = await socket.readInt16BE();
-				const remainingData = await socket.readBytes(remainingLength * 2);
+				const length = await socket.readUInt16BE();
+				const data = decoder.decode(await socket.readBytes(length * 2));
 
-				const [protocolVersionString, version, motdString, onlinePlayersString, maxPlayersString] = remainingData.slice(6).swap16().toString('utf16le').split('\0');
+				if (data[0] === '\u00A7' || data[1] === '1') {
+					// 1.4+ server
+					const split = data.split('\0');
 
-				const motd = parse(motdString);
+					protocolVersion = parseInt(split[1]);
+					versionName = split[2];
+					rawMOTD = split[3];
+					onlinePlayers = parseInt(split[4]);
+					maxPlayers = parseInt(split[5]);
+				} else {
+					// < 1.4 server
+					const split = data.split('\u00A7');
 
-				socket.close();
-
-				clearTimeout(timeout);
-
-				resolve({
-					protocolVersion: parseInt(protocolVersionString),
-					version,
-					players: {
-						online: parseInt(onlinePlayersString),
-						max: parseInt(maxPlayersString)
-					},
-					motd: {
-						raw: format(motd),
-						clean: clean(motd),
-						html: toHTML(motd)
-					},
-					srvRecord
-				});
+					protocolVersion = null;
+					versionName = null;
+					rawMOTD = split[0];
+					onlinePlayers = parseInt(split[1]);
+					maxPlayers = parseInt(split[2]);
+				}
 			}
+
+			socket.close();
+
+			clearTimeout(timeout);
+
+			const motd = parse(rawMOTD);
+
+			resolve({
+				version: versionName !== null && protocolVersion !== null ? null : {
+					name: versionName,
+					protocol: protocolVersion
+				},
+				players: {
+					online: onlinePlayers,
+					max: maxPlayers
+				},
+				motd: {
+					raw: format(motd),
+					clean: clean(motd),
+					html: toHTML(motd)
+				},
+				srvRecord
+			});
 		} catch (e) {
 			clearTimeout(timeout);
 
