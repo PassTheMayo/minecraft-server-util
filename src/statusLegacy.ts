@@ -105,7 +105,7 @@ export function statusLegacy(host: string, port = 25565, options?: JavaStatusOpt
 			const motd = parse(rawMOTD);
 
 			resolve({
-				version: versionName !== null && protocolVersion !== null ? null : {
+				version: versionName === null && protocolVersion === null ? null : {
 					name: versionName,
 					protocol: protocolVersion
 				},
