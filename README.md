@@ -9,8 +9,6 @@
 
 A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers. It uses modern Minecraft protocols to support the latest servers and also includes backward compatibility for older versions. This library supports both Java Edition and Bedrock Edition servers, as long as the correct method is used.
 
----
-
 Everything you need to know to get started is located within our documentation website. If you have any more questions, you can ask within our [Discord server](https://discord.gg/e7jgDYY).
 
 **https://passthemayo.gitbook.io/minecraft-server-util/**
