@@ -15,35 +15,49 @@ class TCPClient extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			this.socket = net.createConnection(options);
 
-			this.socket.on('connect', () => {
+			const connectHandler = () => {
 				this.isConnected = true;
 
+				this.socket?.removeListener('connect', connectHandler);
+				this.socket?.removeListener('error', errorHandler);
+				this.socket?.removeListener('timeout', timeoutHandler);
+				this.socket?.removeListener('close', closeHandler);
+
 				resolve();
-			});
+			};
 
-			this.socket.on('data', (data) => {
-				this.data = Buffer.concat([this.data, data]);
+			const errorHandler = (error: Error) => {
+				this.socket?.destroy();
 
-				this.emit('data', data);
-			});
-
-			this.socket.on('error', (error) => {
 				reject(error);
-			});
+			};
 
-			this.socket.on('timeout', async () => {
+			const timeoutHandler = async () => {
 				this.socket?.destroy();
 
 				reject(new Error('Socket timed out while connecting'));
-			});
+			};
 
-			this.socket.on('close', (hasError) => {
+			const closeHandler = (hasError: boolean) => {
 				this.isConnected = false;
+
+				this.socket?.destroy();
 
 				if (!hasError) reject();
 
 				this.emit('close');
+			};
+
+			this.socket.on('data', (data) => {
+				this.data = Buffer.concat([this.data, data]);
+
+				this.emit('data');
 			});
+
+			this.socket.on('connect', () => connectHandler());
+			this.socket.on('error', (error) => errorHandler(error));
+			this.socket.on('timeout', () => timeoutHandler());
+			this.socket.on('close', (hasError) => closeHandler(hasError));
 		});
 	}
 
@@ -500,21 +514,29 @@ class TCPClient extends EventEmitter {
 	}
 
 	close(): void {
+		this.socket?.removeAllListeners();
 		this.socket?.end();
 		this.socket?.destroy();
 	}
 
 	_waitForData(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			this.once('data', () => {
-				process.nextTick(() => {
-					resolve();
-				});
-			});
+			const dataHandler = () => {
+				this.removeListener('data', dataHandler);
+				this.removeListener('close', closeHandler);
 
-			this.once('close', () => {
+				resolve();
+			};
+
+			const closeHandler = () => {
+				this.removeListener('data', dataHandler);
+				this.removeListener('close', closeHandler);
+
 				reject(new Error('Socket closed unexpectedly while waiting for data'));
-			});
+			};
+
+			this.on('data', () => dataHandler());
+			this.on('close', () => closeHandler());
 		});
 	}
 }
