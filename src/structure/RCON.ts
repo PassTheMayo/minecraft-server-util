@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { EventEmitter2, OnOptions } from 'eventemitter2';
+import { EventEmitter } from 'events';
 import { NetConnectOpts } from 'net';
 import { TextEncoder } from 'util';
 import TCPClient from './TCPClient';
@@ -16,13 +16,12 @@ export interface Message {
 }
 
 export interface RCONEvents {
-	on(event: 'message', listener: (data: Message) => void, options?: boolean | OnOptions): void
-	once(event: 'message', listener: (data: Message) => void, options?: boolean | OnOptions): void
-	many(event: 'message', timesToListen: number, listener: (data: Message) => void, options?: boolean | OnOptions): void
+	on(event: 'message', listener: (data: Message) => void): void
+	once(event: 'message', listener: (data: Message) => void): void
 	emit(event: 'message', value: Message): void
 }
 
-class RCON extends EventEmitter2 implements RCONEvents {
+class RCON extends EventEmitter implements RCONEvents {
 	public isLoggedIn = false;
 	private socket: TCPClient | null = null;
 	private requestID = 0;

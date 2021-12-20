@@ -473,17 +473,22 @@ class UDPClient extends EventEmitter {
 
 	_waitForData(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			this.once('data', () => {
+			const dataHandler = () => {
+				this.removeListener('data', dataHandler);
+				this.socket.removeListener('error', errorHandler);
+
 				resolve();
-			});
+			};
 
-			this.socket.on('error', (error) => {
+			const errorHandler = (error: Error) => {
+				this.removeListener('data', dataHandler);
+				this.socket.removeListener('error', errorHandler);
+
 				reject(error);
-			});
+			};
 
-			this.once('close', () => {
-				reject(new Error('Socket closed unexpectedly while waiting for data'));
-			});
+			this.once('data', () => dataHandler());
+			this.socket.on('error', (error) => errorHandler(error));
 		});
 	}
 }
