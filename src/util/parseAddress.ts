@@ -7,7 +7,6 @@ const addressMatch = /^([^:]+)(?::(\d{1,5}))?$/;
 
 export function parseAddress(value: string, defaultPort = 25565): ParsedAddress | null {
 	const match = value.match(addressMatch);
-	console.log(match);
 	if (!match) return null;
 
 	const port = match[2] ? parseInt(match[2]) : defaultPort;
