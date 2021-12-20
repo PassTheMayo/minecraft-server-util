@@ -9,6 +9,7 @@ export * from './queryFull';
 export * from './scanLAN';
 export * from './sendVote';
 export * from './structure/RCON';
+export * from './util/parseAddress';
 
 export * from './types/BedrockStatusOptions';
 export * from './types/BedrockStatusResponse';
