@@ -58,7 +58,7 @@ export function statusLegacy(host: string, port = 25565, options?: JavaStatusOpt
 			// Client to server packet
 			// https://wiki.vg/Server_List_Ping#Client_to_server
 			{
-				socket.writeBytes(Uint8Array.from([0xFE, 0x01, 0xFA]));
+				socket.writeBytes(Uint8Array.from([0xFE, 0x01]));
 				await socket.flush(false);
 			}
 
