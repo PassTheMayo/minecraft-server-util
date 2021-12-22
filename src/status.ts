@@ -25,7 +25,7 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 	}
 
 	return new Promise(async (resolve, reject) => {
-		let socket: TCPClient | undefined = undefined;
+		const socket = new TCPClient();
 
 		const timeout = setTimeout(() => {
 			socket?.close();
@@ -44,8 +44,6 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 					port = srvRecord.port;
 				}
 			}
-
-			socket = new TCPClient();
 
 			await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
 

@@ -28,11 +28,11 @@ export function sendVote(host: string, port = 8192, options: SendVoteOptions): P
 			reject(new Error('Timed out while retrieving server status'));
 		}, options?.timeout ?? 1000 * 5);
 
-		socket = new TCPClient();
-
-		await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
-
 		try {
+			socket = new TCPClient();
+
+			await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+
 			let challengeToken;
 
 			// Handshake packet

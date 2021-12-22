@@ -26,7 +26,7 @@ export function statusBedrock(host: string, port = 19132, options?: BedrockStatu
 	}
 
 	return new Promise(async (resolve, reject) => {
-		let socket: UDPClient | undefined = undefined;
+		const socket = new UDPClient(host, port);
 
 		const timeout = setTimeout(() => {
 			socket?.close();
@@ -34,20 +34,18 @@ export function statusBedrock(host: string, port = 19132, options?: BedrockStatu
 			reject(new Error('Timed out while retrieving server status'));
 		}, options?.timeout ?? 1000 * 5);
 
-		let srvRecord = null;
-
-		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveSRV(host, 'udp');
-
-			if (srvRecord) {
-				host = srvRecord.host;
-				port = srvRecord.port;
-			}
-		}
-
-		socket = new UDPClient(host, port);
-
 		try {
+			let srvRecord = null;
+
+			if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+				srvRecord = await resolveSRV(host, 'udp');
+
+				if (srvRecord) {
+					host = srvRecord.host;
+					port = srvRecord.port;
+				}
+			}
+
 			// Unconnected ping packet
 			// https://wiki.vg/Raknet_Protocol#Unconnected_Ping
 			{

@@ -31,7 +31,7 @@ export function statusLegacy(host: string, port = 25565, options?: JavaStatusOpt
 	}
 
 	return new Promise(async (resolve, reject) => {
-		let socket: TCPClient | undefined = undefined;
+		const socket = new TCPClient();
 
 		const timeout = setTimeout(() => {
 			socket?.close();
@@ -39,22 +39,20 @@ export function statusLegacy(host: string, port = 25565, options?: JavaStatusOpt
 			reject(new Error('Timed out while retrieving server status'));
 		}, options?.timeout ?? 1000 * 5);
 
-		let srvRecord = null;
-
-		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveSRV(host);
-
-			if (srvRecord) {
-				host = srvRecord.host;
-				port = srvRecord.port;
-			}
-		}
-
-		socket = new TCPClient();
-
-		await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
-
 		try {
+			let srvRecord = null;
+
+			if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+				srvRecord = await resolveSRV(host);
+
+				if (srvRecord) {
+					host = srvRecord.host;
+					port = srvRecord.port;
+				}
+			}
+
+			await socket.connect({ host, port, timeout: options?.timeout ?? 1000 * 5 });
+
 			// Client to server packet
 			// https://wiki.vg/Server_List_Ping#Client_to_server
 			{

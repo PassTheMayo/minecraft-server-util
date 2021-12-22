@@ -40,8 +40,10 @@ export function queryBasic(host: string, port = 25565, options?: QueryOptions): 
 		}
 	}
 
+	const sessionID = (options?.sessionID ?? 1) & 0x0F0F0F0F;
+
 	return new Promise(async (resolve, reject) => {
-		let socket: UDPClient | undefined = undefined;
+		const socket = new UDPClient(host, port);
 
 		const timeout = setTimeout(() => {
 			socket?.close();
@@ -49,22 +51,18 @@ export function queryBasic(host: string, port = 25565, options?: QueryOptions): 
 			reject(new Error('Timed out while querying server for status'));
 		}, options?.timeout ?? 1000 * 5);
 
-		let srvRecord = null;
-
-		if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
-			srvRecord = await resolveSRV(host, 'udp');
-
-			if (srvRecord) {
-				host = srvRecord.host;
-				port = srvRecord.port;
-			}
-		}
-
-		const sessionID = (options?.sessionID ?? 1) & 0x0F0F0F0F;
-
-		socket = new UDPClient(host, port);
-
 		try {
+			let srvRecord = null;
+
+			if (typeof options === 'undefined' || typeof options.enableSRV === 'undefined' || options.enableSRV) {
+				srvRecord = await resolveSRV(host, 'udp');
+
+				if (srvRecord) {
+					host = srvRecord.host;
+					port = srvRecord.port;
+				}
+			}
+
 			// Request packet
 			// https://wiki.vg/Query#Request
 			{
