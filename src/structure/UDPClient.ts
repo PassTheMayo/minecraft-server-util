@@ -468,7 +468,11 @@ class UDPClient extends EventEmitter {
 	}
 
 	close(): void {
-		this.socket?.close();
+		try {
+			this.socket?.close();
+		} catch {
+			// Ignore
+		}
 	}
 
 	_waitForData(): Promise<void> {
