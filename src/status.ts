@@ -70,7 +70,8 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 			// Response packet
 			// https://wiki.vg/Server_List_Ping#Response
 			{
-				await socket.readVarInt();
+				const packetLength = await socket.readVarInt();
+				await socket.ensureBufferedData(packetLength);
 
 				const packetType = await socket.readVarInt();
 				if (packetType !== 0x00) throw new Error('Expected server to send packet type 0x00, received ' + packetType);

@@ -70,9 +70,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readBytes(length: number): Promise<Buffer> {
-		while (this.data.byteLength < length) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(length);
 
 		const value = this.data.slice(0, length);
 
@@ -86,9 +84,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt8(): Promise<number> {
-		while (this.data.byteLength < 1) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(1);
 
 		const value = this.data.readUInt8(0);
 
@@ -105,9 +101,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt8(): Promise<number> {
-		while (this.data.byteLength < 1) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(1);
 
 		const value = this.data.readInt8(0);
 
@@ -124,9 +118,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt16BE(): Promise<number> {
-		while (this.data.byteLength < 2) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(2);
 
 		const value = this.data.readUInt16BE(0);
 
@@ -143,9 +135,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt16BE(): Promise<number> {
-		while (this.data.byteLength < 2) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(2);
 
 		const value = this.data.readInt16BE(0);
 
@@ -162,9 +152,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt16LE(): Promise<number> {
-		while (this.data.byteLength < 2) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(2);
 
 		const value = this.data.readUInt16LE(0);
 
@@ -181,9 +169,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt16LE(): Promise<number> {
-		while (this.data.byteLength < 2) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(2);
 
 		const value = this.data.readInt16LE(0);
 
@@ -200,9 +186,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt32BE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readUInt32BE(0);
 
@@ -219,9 +203,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt32BE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readInt32BE(0);
 
@@ -238,9 +220,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt32LE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readUInt32LE(0);
 
@@ -257,9 +237,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt32LE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readInt32LE(0);
 
@@ -276,9 +254,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt64BE(): Promise<bigint> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readBigUInt64BE(0);
 
@@ -295,9 +271,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt64BE(): Promise<bigint> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readBigInt64BE(0);
 
@@ -314,9 +288,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readUInt64LE(): Promise<bigint> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readBigUInt64LE(0);
 
@@ -333,9 +305,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readInt64LE(): Promise<bigint> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readBigInt64LE(0);
 
@@ -352,9 +322,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readFloatBE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readFloatBE(0);
 
@@ -371,9 +339,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readFloatLE(): Promise<number> {
-		while (this.data.byteLength < 4) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(4);
 
 		const value = this.data.readFloatLE(0);
 
@@ -390,9 +356,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readDoubleBE(): Promise<number> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readDoubleBE(0);
 
@@ -409,9 +373,7 @@ class TCPClient extends EventEmitter {
 	}
 
 	async readDoubleLE(): Promise<number> {
-		while (this.data.byteLength < 8) {
-			await this._waitForData();
-		}
+		await this.ensureBufferedData(8);
 
 		const value = this.data.readDoubleLE(0);
 
@@ -447,7 +409,6 @@ class TCPClient extends EventEmitter {
 
 	async readStringVarInt(): Promise<string> {
 		const length = await this.readVarInt();
-
 		const data = await this.readBytes(length);
 
 		return decoder.decode(data);
@@ -517,6 +478,14 @@ class TCPClient extends EventEmitter {
 		this.socket?.removeAllListeners();
 		this.socket?.end();
 		this.socket?.destroy();
+	}
+
+	async ensureBufferedData(size: number): Promise<void> {
+		if (this.data.byteLength >= size) return Promise.resolve();
+
+		while (this.data.byteLength < size) {
+			await this._waitForData();
+		}
 	}
 
 	_waitForData(): Promise<void> {

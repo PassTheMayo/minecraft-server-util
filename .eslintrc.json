@@ -35,27 +35,6 @@
 			"error",
 			"always"
 		],
-		"@typescript-eslint/ban-ts-comment": [
-			"off"
-		],
 		"no-async-promise-executor": "off"
-	},
-	"ignorePatterns": [
-		"dist/**/*",
-		"test.js"
-	],
-	"overrides": [
-		{
-			"files": "test/**/*",
-			"rules": {
-				"@typescript-eslint/no-var-requires": "off"
-			},
-			"globals": {
-				"describe": true,
-				"test": true,
-				"expect": true,
-				"jest": true
-			}
-		}
-	]
+	}
 }

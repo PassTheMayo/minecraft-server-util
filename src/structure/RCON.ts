@@ -98,7 +98,8 @@ class RCON extends EventEmitter implements RCONEvents {
 			// Login response packet
 			// https://wiki.vg/RCON#3:_Login
 			{
-				await this.socket.readInt32LE();
+				const packetLength = await this.socket.readInt32LE();
+				this.socket.ensureBufferedData(packetLength);
 
 				const requestID = await this.socket.readInt32LE();
 				if (requestID === -1) throw new Error('Invalid RCON password');
@@ -170,6 +171,8 @@ class RCON extends EventEmitter implements RCONEvents {
 		if (this.socket === null || !this.socket.isConnected || !this.isLoggedIn) return Promise.reject(new Error('Attempted to read packet when socket was disconnected or RCON was not logged in'));
 
 		const packetLength = await this.socket.readInt32LE();
+		await this.socket.ensureBufferedData(packetLength);
+
 		const requestID = await this.socket.readInt32LE();
 		const packetType = await this.socket.readInt32LE();
 
