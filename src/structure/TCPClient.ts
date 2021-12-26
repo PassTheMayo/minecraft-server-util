@@ -480,21 +480,21 @@ class TCPClient extends EventEmitter {
 		this.socket?.destroy();
 	}
 
-	async ensureBufferedData(size: number): Promise<void> {
-		if (this.data.byteLength >= size) return Promise.resolve();
+	async ensureBufferedData(byteLength: number): Promise<void> {
+		if (this.data.byteLength >= byteLength) return Promise.resolve();
 
-		while (this.data.byteLength < size) {
-			await this._waitForData();
-		}
+		return this._waitForData(byteLength);
 	}
 
-	_waitForData(): Promise<void> {
+	_waitForData(byteLength = 1): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			const dataHandler = () => {
-				this.removeListener('data', dataHandler);
-				this.removeListener('close', closeHandler);
+				if (this.data.byteLength >= byteLength) {
+					this.removeListener('data', dataHandler);
+					this.removeListener('close', closeHandler);
 
-				resolve();
+					resolve();
+				}
 			};
 
 			const closeHandler = () => {

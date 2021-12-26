@@ -436,21 +436,21 @@ class UDPClient extends EventEmitter {
 		}
 	}
 
-	async ensureBufferedData(size: number): Promise<void> {
-		if (this.data.byteLength >= size) return Promise.resolve();
+	async ensureBufferedData(byteLength: number): Promise<void> {
+		if (this.data.byteLength >= byteLength) return Promise.resolve();
 
-		while (this.data.byteLength < size) {
-			await this._waitForData();
-		}
+		return this._waitForData(byteLength);
 	}
 
-	_waitForData(): Promise<void> {
+	_waitForData(byteLength = 1): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			const dataHandler = () => {
-				this.removeListener('data', dataHandler);
-				this.socket.removeListener('error', errorHandler);
+				if (this.data.byteLength >= byteLength) {
+					this.removeListener('data', dataHandler);
+					this.socket.removeListener('error', errorHandler);
 
-				resolve();
+					resolve();
+				}
 			};
 
 			const errorHandler = (error: Error) => {
