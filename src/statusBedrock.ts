@@ -1,5 +1,4 @@
 import assert from 'assert';
-import { randomBytes } from 'crypto';
 import { clean, format, parse, toHTML } from 'minecraft-motd-util';
 import UDPClient from './structure/UDPClient';
 import { BedrockStatusOptions } from './types/BedrockStatusOptions';
@@ -52,7 +51,7 @@ export function statusBedrock(host: string, port = 19132, options?: BedrockStatu
 				socket.writeByte(0x01);
 				socket.writeInt64BE(BigInt(Date.now()));
 				socket.writeBytes(Uint8Array.from([0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78]));
-				socket.writeBytes(randomBytes(4));
+				socket.writeInt64BE(BigInt(2));
 				await socket.flush(false);
 			}
 
