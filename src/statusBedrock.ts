@@ -72,7 +72,7 @@ export function statusBedrock(host: string, port = 19132, options?: BedrockStatu
 
 				const [edition, motdLine1, protocolVersion, version, onlinePlayers, maxPlayers, serverID, motdLine2, gameMode, gameModeID, portIPv4, portIPv6] = response.split(';');
 
-				const motd = parse(motdLine1 + '\n' + motdLine2);
+				const motd = parse(motdLine1 + (motdLine2 ? '\n' + motdLine2 : ''));
 
 				socket.close();
 
