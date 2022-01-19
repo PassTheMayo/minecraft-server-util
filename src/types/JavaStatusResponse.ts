@@ -19,5 +19,6 @@ export interface JavaStatusResponse {
 		html: string
 	},
 	favicon: string | null,
-	srvRecord: SRVRecord | null
+	srvRecord: SRVRecord | null,
+	roundTripLatency: number
 }
