@@ -21,6 +21,8 @@ export interface BasicQueryResponse {
 }
 
 export function queryBasic(host: string, port = 25565, options?: QueryOptions): Promise<BasicQueryResponse> {
+	host = host.trim();
+
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);

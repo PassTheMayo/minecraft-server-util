@@ -6,6 +6,8 @@ import { BedrockStatusResponse } from './types/BedrockStatusResponse';
 import { resolveSRV } from './util/srvRecord';
 
 export function statusBedrock(host: string, port = 19132, options?: BedrockStatusOptions): Promise<BedrockStatusResponse> {
+	host = host.trim();
+
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);

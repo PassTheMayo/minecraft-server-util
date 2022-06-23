@@ -7,6 +7,8 @@ import { SendVoteOptions } from './types/SendVoteOptions';
 const encoder = new TextEncoder();
 
 export function sendVote(host: string, port = 8192, options: SendVoteOptions): Promise<void> {
+	host = host.trim();
+
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);

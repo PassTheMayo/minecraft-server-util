@@ -12,6 +12,8 @@ import { resolveSRV } from './util/srvRecord';
 const decoder = new TextDecoder('utf-16be');
 
 export function statusLegacy(host: string, port = 25565, options?: JavaStatusOptions): Promise<JavaStatusLegacyResponse> {
+	host = host.trim();
+
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
