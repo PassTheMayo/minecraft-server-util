@@ -54,7 +54,7 @@ export function sendVote(host: string, port = 8192, options: SendVoteOptions): P
 				const payload: Record<string, string | number> = {
 					serviceName: options.serviceName ?? 'minecraft-server-util (https://github.com/PassTheMayo/minecraft-server-util)',
 					username: options.username,
-					address: host + ':' + port,
+					address: options.address ?? host + ':' + port,
 					timestamp: options.timestamp ?? Date.now(),
 					challenge: challengeToken
 				};
