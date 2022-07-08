@@ -43,6 +43,7 @@ export function sendVote(host: string, port = 8192, options: SendVoteOptions): P
 				const version = await socket.readStringUntil(0x0A);
 				const split = version.split(' ');
 
+				if (split[0] !== 'VOTIFIER') throw new Error('Not connected to a Votifier server. Expected VOTIFIER in handshake, received: ' + version);
 				if (split[1] !== '2') throw new Error('Unsupported Votifier version: ' + split[1]);
 
 				challengeToken = split[2];

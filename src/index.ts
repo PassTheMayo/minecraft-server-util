@@ -8,6 +8,7 @@ export * from './queryBasic';
 export * from './queryFull';
 export * from './scanLAN';
 export * from './sendVote';
+export * from './sendLegacyVote';
 export * from './structure/RCON';
 export * from './util/parseAddress';
 
@@ -21,4 +22,5 @@ export * from './types/JavaStatusOptions';
 export * from './types/JavaStatusResponse';
 export * from './types/QueryOptions';
 export * from './types/SendVoteOptions';
+export * from './types/SendLegacyVoteOptions';
 export * from './types/SRVRecord';
