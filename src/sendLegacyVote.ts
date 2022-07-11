@@ -1,7 +1,7 @@
 import assert from 'assert';
 import crypto from 'crypto';
 import TCPClient from './structure/TCPClient';
-import {SendLegacyVoteOptions} from './types/SendLegacyVoteOptions';
+import { SendLegacyVoteOptions } from './types/SendLegacyVoteOptions';
 
 const wordwrap = (str: string, size: number): string => str.replace(
 	new RegExp(`(?![^\\n]{1,${size}}$)([^\\n]{1,${size}})\\s`, 'g'), '$1\n'
@@ -9,6 +9,9 @@ const wordwrap = (str: string, size: number): string => str.replace(
 
 export function sendLegacyVote(host: string, port = 8192, options: SendLegacyVoteOptions): Promise<void> {
 	host = host.trim();
+
+	options.key = options.key.replace(/ /g, '+');
+	options.key = wordwrap(options.key, 65);
 
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
 	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
@@ -48,18 +51,12 @@ export function sendLegacyVote(host: string, port = 8192, options: SendLegacyVot
 			// Send vote packet
 			// https://github.com/NuVotifier/NuVotifier/wiki/Technical-QA#protocol-v1
 			{
-				// Format the key
-				options.key = options.key.replace(/ /g, '+');
-				options.key = wordwrap(options.key, 65);
-
 				const timestamp = options.timestamp ?? Date.now();
 				const address = options.address ?? host + ':' + port;
 
-				// Create public key key and vote strings
 				const publicKey = `-----BEGIN PUBLIC KEY-----\n${options.key}\n-----END PUBLIC KEY-----\n`;
 				const vote = `VOTE\n${options.serviceName}\n${options.username}\n${address}\n${timestamp}\n`;
 
-				// Encrypt the vote
 				const encryptedPayload = crypto.publicEncrypt(
 					{
 						key: publicKey,
@@ -68,12 +65,11 @@ export function sendLegacyVote(host: string, port = 8192, options: SendLegacyVot
 					Buffer.from(vote)
 				);
 
-				// Send vote to server
 				socket.writeBytes(encryptedPayload);
 				await socket.flush(false);
 			}
 
-			// Close connection
+			// Close connection and resolve
 			{
 				clearTimeout(timeout);
 
