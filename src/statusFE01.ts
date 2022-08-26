@@ -37,7 +37,7 @@ export function statusFE01(host: string, port = 25565, options?: JavaStatusOptio
 		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while retrieving server status'));
+			reject(new Error('Server is offline or unreachable'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {

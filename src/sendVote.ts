@@ -27,7 +27,7 @@ export function sendVote(host: string, port = 8192, options: SendVoteOptions): P
 		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while retrieving server status'));
+			reject(new Error('Server is offline or unreachable'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {

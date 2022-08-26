@@ -53,7 +53,7 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while querying server for status'));
+			reject(new Error('Server is offline or unreachable'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {

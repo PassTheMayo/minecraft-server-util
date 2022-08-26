@@ -33,7 +33,7 @@ export function status(host: string, port = 25565, options?: JavaStatusOptions):
 		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while retrieving server status'));
+			reject(new Error('Server is offline or unreachable'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {

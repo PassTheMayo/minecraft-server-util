@@ -32,7 +32,7 @@ export function statusBedrock(host: string, port = 19132, options?: BedrockStatu
 		const timeout = setTimeout(() => {
 			socket?.close();
 
-			reject(new Error('Timed out while retrieving server status'));
+			reject(new Error('Server is offline or unreachable'));
 		}, options?.timeout ?? 1000 * 5);
 
 		try {

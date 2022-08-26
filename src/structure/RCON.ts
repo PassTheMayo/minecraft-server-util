@@ -47,7 +47,7 @@ class RCON extends EventEmitter implements RCONEvents {
 			this.socket = new TCPClient();
 
 			const timeout = setTimeout(() => {
-				reject(new Error('Failed to connect to RCON server within timeout duration'));
+				reject(new Error('Server is offline or unreachable'));
 
 				this.socket?.close();
 			}, options?.timeout ?? 1000 * 5);
@@ -75,7 +75,7 @@ class RCON extends EventEmitter implements RCONEvents {
 			if (this.socket === null || !this.socket.isConnected) return reject(new Error('login() attempted before RCON has connected'));
 
 			const timeout = setTimeout(() => {
-				reject(new Error('Failed to connect to RCON server within timeout duration'));
+				reject(new Error('Server is offline or unreachable'));
 
 				this.socket?.close();
 			}, options?.timeout ?? 1000 * 5);

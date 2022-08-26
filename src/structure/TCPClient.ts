@@ -35,7 +35,7 @@ class TCPClient extends EventEmitter {
 			const timeoutHandler = async () => {
 				this.socket?.destroy();
 
-				reject(new Error('Socket timed out while connecting'));
+				reject(new Error('Server is offline or unreachable'));
 			};
 
 			const closeHandler = (hasError: boolean) => {
