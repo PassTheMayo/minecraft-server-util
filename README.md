@@ -12,3 +12,7 @@ A Node.js library for Minecraft servers that can retrieve status, perform querie
 Everything you need to know to get started is located within our documentation website. If you have any more questions, you can ask within our [Discord server](https://discord.gg/e7jgDYY).
 
 **https://passthemayo.gitbook.io/minecraft-server-util/**
+
+---
+
+**Please note** &mdash; While this library is relatively reliable at retrieving the status of Minecraft server, I still recommend using my other API service **[mcstatus.io](https://mcstatus.io)**. Using a service like this prevents any issues you may face down the road. It is entirely free to use and has more features than this library.
