@@ -504,8 +504,8 @@ class TCPClient extends EventEmitter {
 				reject(new Error('Socket closed unexpectedly while waiting for data'));
 			};
 
-			this.on('data', () => dataHandler());
-			this.on('close', () => closeHandler());
+			this.on('data', dataHandler);
+			this.on('close', closeHandler);
 		});
 	}
 }
