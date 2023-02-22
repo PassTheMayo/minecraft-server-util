@@ -402,7 +402,7 @@ class UDPClient extends EventEmitter {
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			const value = await this.readByte();
-			if(value === 0x00 && await this.checkUpcomingData(suffixes)) {
+			if (value === 0x00 && await this.checkUpcomingData(suffixes)) {
 				break;
 			}
 			buf = Buffer.concat([buf, Buffer.from([value])]);
@@ -410,7 +410,7 @@ class UDPClient extends EventEmitter {
 		return Array.from(buf).map((point) => String.fromCodePoint(point)).join('');
 	}
 
-	async checkUpcomingData(suffixes: Buffer[]): Promise<Buffer|null> {
+	async checkUpcomingData(suffixes: Buffer[]): Promise<Buffer | null> {
 		let i = 0;
 		while (suffixes.length) {
 			await this.ensureBufferedData(i + 1);
