@@ -4,6 +4,18 @@ import UDPClient from './structure/UDPClient';
 import { QueryOptions } from './types/QueryOptions';
 import { resolveSRV } from './util/srvRecord';
 
+const validKeys: Buffer[] = [
+	'gametype',
+	'game_id',
+	'version',
+	'plugins',
+	'map',
+	'numplayers',
+	'maxplayers',
+	'hostport',
+	'hostip'
+].map(s => Buffer.from(s, 'utf-8'));
+
 export interface FullQueryResponse {
 	motd: {
 		raw: string,
@@ -123,7 +135,7 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 
 					if (key.length < 1) break;
 
-					const value = await socket.readStringNT();
+					const value = await socket.readStringNTFollowedBy(validKeys);
 
 					data[key] = value;
 				}
