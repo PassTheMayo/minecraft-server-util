@@ -14,7 +14,7 @@ const validKeys: Buffer[] = [
 	'maxplayers',
 	'hostport',
 	'hostip'
-].map(s => Buffer.from(s, 'utf-8'));
+].map(s => Buffer.from(s, 'ascii'));
 
 export interface FullQueryResponse {
 	motd: {
