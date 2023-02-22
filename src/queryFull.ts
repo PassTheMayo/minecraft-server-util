@@ -135,7 +135,12 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 
 					if (key.length < 1) break;
 
-					const value = await socket.readStringNTFollowedBy(validKeys);
+					let value;
+					if(key === 'hostname') {
+						value = await socket.readStringNTFollowedBy(validKeys);
+					} else  {
+						value = await socket.readStringNT();
+					}
 
 					data[key] = value;
 				}
