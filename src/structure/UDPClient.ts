@@ -496,6 +496,10 @@ class UDPClient extends EventEmitter {
 			this.socket.on('error', (error) => errorHandler(error));
 		});
 	}
+
+	hasRemainingData(): boolean {
+		return this.data.byteLength > 0;
+	}
 }
 
 export default UDPClient;

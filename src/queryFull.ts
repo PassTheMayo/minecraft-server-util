@@ -161,6 +161,10 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 
 				socket.close();
 
+				if (socket.hasRemainingData()) {
+					reject(new Error('Server sent more data than expected'));
+				}
+
 				clearTimeout(timeout);
 
 				resolve({
