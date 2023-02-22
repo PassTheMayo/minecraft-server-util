@@ -4,6 +4,18 @@ import UDPClient from './structure/UDPClient';
 import { QueryOptions } from './types/QueryOptions';
 import { resolveSRV } from './util/srvRecord';
 
+const validKeys: Buffer[] = [
+	'gametype',
+	'game_id',
+	'version',
+	'plugins',
+	'map',
+	'numplayers',
+	'maxplayers',
+	'hostport',
+	'hostip'
+].map(s => Buffer.from(s, 'ascii'));
+
 export interface FullQueryResponse {
 	motd: {
 		raw: string,
@@ -123,7 +135,12 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 
 					if (key.length < 1) break;
 
-					const value = await socket.readStringNT();
+					let value;
+					if (key === 'hostname') {
+						value = await socket.readStringNTFollowedBy(validKeys);
+					} else {
+						value = await socket.readStringNT();
+					}
 
 					data[key] = value;
 				}
@@ -143,6 +160,10 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 				const plugins = data.plugins.split(/(?::|;) */g);
 
 				socket.close();
+
+				if (socket.hasRemainingData()) {
+					throw new Error('Server sent more data than expected');
+				}
 
 				clearTimeout(timeout);
 

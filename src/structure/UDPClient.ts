@@ -397,6 +397,38 @@ class UDPClient extends EventEmitter {
 		return Array.from(buf).map((point) => String.fromCodePoint(point)).join('');
 	}
 
+	async readStringNTFollowedBy(suffixes: Buffer[]): Promise<string> {
+		let buf = Buffer.alloc(0);
+		// eslint-disable-next-line no-constant-condition
+		while (true) {
+			const value = await this.readByte();
+			if (value === 0x00 && await this.checkUpcomingData(suffixes)) {
+				break;
+			}
+			buf = Buffer.concat([buf, Buffer.from([value])]);
+		}
+		return Array.from(buf).map((point) => String.fromCodePoint(point)).join('');
+	}
+
+	async checkUpcomingData(suffixes: Buffer[]): Promise<Buffer | null> {
+		let i = 0;
+		while (suffixes.length) {
+			await this.ensureBufferedData(i + 1);
+			const remaining = [];
+			for (const suffix of suffixes) {
+				if (this.data[i] === suffix[i]) {
+					if (i === suffix.length - 1) {
+						return suffix;
+					}
+					remaining.push(suffix);
+				}
+			}
+			suffixes = remaining;
+			i++;
+		}
+		return null;
+	}
+
 	writeStringNT(value: string): void {
 		const data = encoder.encode(value);
 
@@ -463,6 +495,10 @@ class UDPClient extends EventEmitter {
 			this.once('data', () => dataHandler());
 			this.socket.on('error', (error) => errorHandler(error));
 		});
+	}
+
+	hasRemainingData(): boolean {
+		return this.data.byteLength > 0;
 	}
 }
 
