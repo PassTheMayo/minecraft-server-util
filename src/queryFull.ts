@@ -39,7 +39,7 @@ export function queryFull(host: string, port = 25565, options?: QueryOptions): P
 	host = host.trim();
 
 	assert(typeof host === 'string', `Expected 'host' to be a 'string', got '${typeof host}'`);
-	assert(host.length > 1, `Expected 'host' to have a length greater than 0, got ${host.length}`);
+	assert(host.length > 0, `Expected 'host' to have a length greater than 0, got ${host.length}`);
 	assert(typeof port === 'number', `Expected 'port' to be a 'number', got '${typeof port}'`);
 	assert(Number.isInteger(port), `Expected 'port' to be an integer, got '${port}'`);
 	assert(port >= 0, `Expected 'port' to be greater than or equal to 0, got '${port}'`);
