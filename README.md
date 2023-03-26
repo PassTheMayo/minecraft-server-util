@@ -14,4 +14,4 @@ Everything you need to know to get started is located within our documentation w
 
 &#9888; **Future Deprecation Warning** &#9888;
 
-Please note that this library will be deprecated in the near future due to issues with unreliable networking in the Node.js standard library. It is recommended that you use my other service, [mcstatus.io](https://mcstatus.io) instead, as it has been extensively tested for all Minecraft versions, and does not rely on your network which may or may not support all Minecraft ping protocols. You may still use this library as it *should* work as well, but no support will be provided.
+Please note that this library will be deprecated in the near future due to issues with unreliable networking in the Node.js standard library. It is recommended that you use my other service, [mcstatus.io](https://mcstatus.io), as it has been extensively tested for all Minecraft versions, does not rely on your network, and uses the well supported REST API for implementing it in just about any application. You may still use this library as it *should* work as well, but no support will be provided.
