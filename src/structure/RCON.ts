@@ -102,10 +102,10 @@ class RCON extends EventEmitter implements RCONEvents {
 				this.socket.ensureBufferedData(packetLength);
 
 				const requestID = await this.socket.readInt32LE();
-				if (requestID === -1) throw new Error('Invalid RCON password');
+				if (requestID === -1) reject(new Error('Invalid RCON password'));
 
 				const packetType = await this.socket.readInt32LE();
-				if (packetType !== 2) throw new Error('Expected server to send packet type 2, received ' + packetType);
+				if (packetType !== 2) reject(new Error('Expected server to send packet type 2, received ' + packetType));
 
 				await this.socket.readBytes(2);
 			}
