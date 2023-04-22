@@ -130,7 +130,7 @@ class RCON extends EventEmitter implements RCONEvents {
 
 	async run(command: string): Promise<number> {
 		assert(typeof command === 'string', `Expected 'command' to be a 'string', got '${typeof command}'`);
-		assert(command.length > 1, `Expected 'command' to have a length greater than 0, got ${command.length}`);
+		assert(command.length > 0, `Expected 'command' to have a length greater than 0, got ${command.length}`);
 
 		if (this.socket === null || !this.socket.isConnected) throw new Error('run() attempted before RCON has connected');
 		if (!this.isLoggedIn) throw new Error('run() attempted before RCON has successfully logged in');
