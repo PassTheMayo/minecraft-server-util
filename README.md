@@ -8,10 +8,12 @@
 
 A Node.js library for Minecraft servers that can retrieve status, perform queries, and RCON into servers. It uses modern Minecraft protocols to support the latest servers and also includes backward compatibility for older versions. This library supports both Java Edition and Bedrock Edition servers, as long as the correct method is used.
 
-Everything you need to know to get started is located within our documentation website: **https://passthemayo.gitbook.io/minecraft-server-util/**
+---
+
+**Deprecation Notice**
+
+This library has been deprecated, meaning it is no longer actively maintained. While you can still use it, it is highly recommend that you do not as it may be removed from the npm registry in the far future. I have dedicated my time to an alternative service &mdash; [mcstatus.io](https://mcstatus.io) &mdash; which is more extensively tested, more stable, and contains more features than this library.
 
 ---
 
-&#9888; **Future Deprecation Warning** &#9888;
-
-Please note that this library will be deprecated in the near future due to issues with unreliable networking in the Node.js standard library. It is recommended that you use my other service, [mcstatus.io](https://mcstatus.io), as it has been extensively tested for all Minecraft versions, does not rely on your network, and uses the well supported REST API for implementing it in just about any application. You may still use this library as it *should* work as well, but no support will be provided.
+If you still wish to use this library, everything you need to know to get started is located within our documentation website: **https://passthemayo.gitbook.io/minecraft-server-util/**
